@@ -5,10 +5,14 @@ export interface Lead {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  source: string;
+  phone: string | null;
+  business_name: string | null;
+  services_interested: string[] | null;
+  budget_range: string | null;
+  lead_source: string | null;
+  notes: string | null;
   status: LeadStatus;
-  budget?: string;
+  created_at: string;
 }
 
 export interface Column {

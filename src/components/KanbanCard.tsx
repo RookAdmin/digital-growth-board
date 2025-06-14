@@ -1,10 +1,9 @@
-
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Draggable } from '@hello-pangea/dnd';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, Briefcase } from 'lucide-react';
 
 interface KanbanCardProps {
   lead: Lead;
@@ -33,19 +32,28 @@ export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
           <Card>
             <CardHeader className="p-4">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-base font-bold">{lead.name}</CardTitle>
-                <Badge className={`${statusColors[lead.status]} text-white`}>{lead.status}</Badge>
+                <div className="flex-1 mr-2">
+                  <CardTitle className="text-base font-bold">{lead.name}</CardTitle>
+                  {lead.business_name && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <Briefcase size={14} /> <span>{lead.business_name}</span>
+                    </div>
+                  )}
+                </div>
+                <Badge className={`${statusColors[lead.status]} text-white shrink-0`}>{lead.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
               <div className="flex items-center gap-2 mb-2">
                 <Mail size={14} /> <span>{lead.email}</span>
               </div>
-              <div className="flex items-center gap-2 mb-2">
-                <Phone size={14} /> <span>{lead.phone}</span>
-              </div>
-              <p className="mb-2"><strong>Source:</strong> {lead.source}</p>
-              {lead.budget && <p className="mb-4"><strong>Budget:</strong> {lead.budget}</p>}
+              {lead.phone && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Phone size={14} /> <span>{lead.phone}</span>
+                </div>
+              )}
+              {lead.lead_source && <p className="mb-2"><strong>Source:</strong> {lead.lead_source}</p>}
+              {lead.budget_range && <p className="mb-4"><strong>Budget:</strong> {lead.budget_range}</p>}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
                  <Button className="w-full" size="sm">Convert to Client</Button>
               )}
