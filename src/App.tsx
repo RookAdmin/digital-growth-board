@@ -10,6 +10,7 @@ import SignupPage from "./pages/Signup";
 import DashboardPage from "./pages/Dashboard";
 import ClientsPage from "./pages/Clients";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -23,8 +24,12 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard/leads" element={<DashboardPage />} />
-          <Route path="/dashboard/clients" element={<ClientsPage />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard/leads" element={<DashboardPage />} />
+            <Route path="/dashboard/clients" element={<ClientsPage />} />
+          </Route>
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
