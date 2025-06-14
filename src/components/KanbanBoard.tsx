@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
@@ -32,7 +31,11 @@ const initialData: KanbanData = {
   columnOrder: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Converted', 'Dropped'],
 };
 
-export const KanbanBoard = () => {
+interface KanbanBoardProps {
+  searchTerm?: string;
+}
+
+export const KanbanBoard = ({ searchTerm = '' }: KanbanBoardProps) => {
   const queryClient = useQueryClient();
   const [data, setData] = useState<KanbanData>(initialData);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -51,7 +54,17 @@ export const KanbanBoard = () => {
 
   useEffect(() => {
     if (leadsData) {
-      const leads = leadsData.reduce((acc, lead) => {
+      const filteredLeadsData = leadsData.filter(lead => {
+        const term = searchTerm.toLowerCase();
+        if (!term) return true;
+        return (
+          lead.name.toLowerCase().includes(term) ||
+          lead.email.toLowerCase().includes(term) ||
+          (lead.phone && lead.phone.toLowerCase().includes(term))
+        );
+      });
+
+      const leads = filteredLeadsData.reduce((acc, lead) => {
         acc[lead.id] = lead;
         return acc;
       }, {} as { [key: string]: Lead });
@@ -59,7 +72,7 @@ export const KanbanBoard = () => {
       const columns: { [key: string]: Column } = JSON.parse(JSON.stringify(initialData.columns));
       Object.values(columns).forEach(c => (c.leadIds = []));
       
-      leadsData.forEach(lead => {
+      filteredLeadsData.forEach(lead => {
         if (columns[lead.status]) {
           columns[lead.status].leadIds.push(lead.id);
         }
@@ -71,7 +84,7 @@ export const KanbanBoard = () => {
         columnOrder: initialData.columnOrder,
       });
     }
-  }, [leadsData]);
+  }, [leadsData, searchTerm]);
 
   useEffect(() => {
     const channel = supabase.channel('realtime-leads')

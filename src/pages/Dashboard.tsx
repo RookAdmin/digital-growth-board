@@ -2,8 +2,12 @@
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { Header } from '@/components/Header';
 import { AddLeadDialog } from '@/components/AddLeadDialog';
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
 
 const DashboardPage = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header isAuthenticated={true} />
@@ -13,9 +17,17 @@ const DashboardPage = () => {
               <h1 className="text-3xl font-bold tracking-tight">Leads Dashboard</h1>
               <p className="text-muted-foreground">Drag and drop to manage your sales pipeline.</p>
             </div>
-            <AddLeadDialog />
+            <div className="flex items-center gap-4">
+              <Input
+                placeholder="Search by name, email, phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+              <AddLeadDialog />
+            </div>
           </div>
-          <KanbanBoard />
+          <KanbanBoard searchTerm={searchTerm} />
       </main>
     </div>
   );
