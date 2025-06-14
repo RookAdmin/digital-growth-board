@@ -9,33 +9,92 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_onboarding_data: {
+        Row: {
+          brand_assets_url: string | null
+          business_goals: string | null
+          client_id: string
+          company_name: string | null
+          competitor_info: string | null
+          created_at: string
+          id: string
+          progress: number
+          social_media_links: Json | null
+          target_audience: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_assets_url?: string | null
+          business_goals?: string | null
+          client_id: string
+          company_name?: string | null
+          competitor_info?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          social_media_links?: Json | null
+          target_audience?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_assets_url?: string | null
+          business_goals?: string | null
+          client_id?: string
+          company_name?: string | null
+          competitor_info?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          social_media_links?: Json | null
+          target_audience?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_onboarding_data_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
+          budget_range: string | null
           business_name: string | null
           created_at: string
           email: string
           id: string
           lead_id: string
           name: string
+          onboarding_status: string
           phone: string | null
+          services_interested: string[] | null
         }
         Insert: {
+          budget_range?: string | null
           business_name?: string | null
           created_at?: string
           email: string
           id?: string
           lead_id: string
           name: string
+          onboarding_status?: string
           phone?: string | null
+          services_interested?: string[] | null
         }
         Update: {
+          budget_range?: string | null
           business_name?: string | null
           created_at?: string
           email?: string
           id?: string
           lead_id?: string
           name?: string
+          onboarding_status?: string
           phone?: string | null
+          services_interested?: string[] | null
         }
         Relationships: [
           {

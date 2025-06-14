@@ -23,6 +23,23 @@ export interface Client {
   business_name: string | null;
   lead_id: string;
   created_at: string;
+  services_interested: string[] | null;
+  budget_range: string | null;
+  onboarding_status: string;
+}
+
+export interface ClientOnboardingData {
+  id: string;
+  client_id: string;
+  company_name: string | null;
+  social_media_links: { platform: string; url: string }[] | null;
+  business_goals: string | null;
+  brand_assets_url: string | null;
+  target_audience: string | null;
+  competitor_info: string | null;
+  progress: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface LeadNote {

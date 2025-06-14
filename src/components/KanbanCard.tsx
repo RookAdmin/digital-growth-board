@@ -7,6 +7,18 @@ import { Mail, Phone, Briefcase } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useNavigate } from 'react-router-dom';
 
 interface KanbanCardProps {
   lead: Lead;
@@ -25,6 +37,8 @@ const statusColors: { [key in Lead['status']]: string } = {
 
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
@@ -35,6 +49,8 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         phone: leadToConvert.phone,
         business_name: leadToConvert.business_name,
         lead_id: leadToConvert.id,
+        services_interested: leadToConvert.services_interested,
+        budget_range: leadToConvert.budget_range,
       }).select().single();
 
       if (clientError) throw clientError;
@@ -51,21 +67,31 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         console.error('Failed to update lead status, but client was created:', clientData);
         throw leadError;
       }
+      return clientData;
     },
-    onSuccess: () => {
+    onSuccess: (newClient) => {
       toast.success("Lead converted to client!");
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      if (newClient) {
+        navigate(`/clients?onboarding=${newClient.id}`);
+      }
     },
     onError: (error: Error) => {
       toast.error(`Conversion failed: ${error.message}`);
     },
   });
 
-  const handleConvertToClient = (e: React.MouseEvent) => {
+  const handleConfirmConversion = (e: React.MouseEvent) => {
     e.stopPropagation();
     convertToClientMutation.mutate(lead);
+    setIsConfirmOpen(false);
   };
+  
+  const handleOpenDialog = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsConfirmOpen(true);
+  }
 
   return (
     <Draggable draggableId={lead.id} index={index}>
@@ -103,14 +129,30 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
               {lead.lead_source && <p className="mb-2"><strong>Source:</strong> {lead.lead_source}</p>}
               {lead.budget_range && <p className="mb-4"><strong>Budget:</strong> {lead.budget_range}</p>}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
-                 <Button
-                    className="w-full"
-                    size="sm"
-                    onClick={handleConvertToClient}
-                    disabled={convertToClientMutation.isPending}
-                  >
-                    {convertToClientMutation.isPending ? 'Converting...' : 'Convert to Client'}
-                  </Button>
+                 <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      onClick={handleOpenDialog}
+                      disabled={convertToClientMutation.isPending}
+                    >
+                      {convertToClientMutation.isPending ? 'Converting...' : 'Convert to Client'}
+                    </Button>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will convert "{lead.name}" into a client. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleConfirmConversion}>
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </CardContent>
           </Card>
