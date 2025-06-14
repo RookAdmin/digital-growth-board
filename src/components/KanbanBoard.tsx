@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
-import { KanbanData, Lead, LeadStatus } from '@/types';
+import { KanbanData, Lead, LeadStatus, Column } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,7 +53,7 @@ export const KanbanBoard = () => {
         return acc;
       }, {} as { [key: string]: Lead });
 
-      const columns = JSON.parse(JSON.stringify(initialData.columns));
+      const columns: { [key: string]: Column } = JSON.parse(JSON.stringify(initialData.columns));
       Object.values(columns).forEach(c => (c.leadIds = []));
       
       leadsData.forEach(lead => {

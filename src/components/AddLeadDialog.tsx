@@ -76,7 +76,7 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (newLead: LeadFormValues) => {
-      const { error } = await supabase.from("leads").insert([{ ...newLead, status: 'New' }]).select();
+      const { error } = await supabase.from("leads").insert({ ...newLead, status: 'New' }).select();
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
