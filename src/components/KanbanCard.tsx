@@ -1,4 +1,3 @@
-
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 interface KanbanCardProps {
   lead: Lead;
   index: number;
+  onCardClick: (lead: Lead) => void;
 }
 
 const statusColors: { [key in Lead['status']]: string } = {
@@ -23,7 +23,7 @@ const statusColors: { [key in Lead['status']]: string } = {
   Dropped: "bg-red-500 hover:bg-red-500",
 };
 
-export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
+export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
 
   const convertToClientMutation = useMutation({
@@ -62,7 +62,8 @@ export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
     },
   });
 
-  const handleConvertToClient = () => {
+  const handleConvertToClient = (e: React.MouseEvent) => {
+    e.stopPropagation();
     convertToClientMutation.mutate(lead);
   };
 
@@ -74,8 +75,9 @@ export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className="mb-4"
+          onClick={() => onCardClick(lead)}
         >
-          <Card>
+          <Card className="hover:bg-accent transition-colors cursor-pointer">
             <CardHeader className="p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1 mr-2">

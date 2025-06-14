@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
@@ -5,6 +6,7 @@ import { KanbanData, Lead, LeadStatus, Column } from '@/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LeadDetailsModal } from './LeadDetailsModal';
 
 const fetchLeads = async (): Promise<Lead[]> => {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
@@ -33,6 +35,7 @@ const initialData: KanbanData = {
 export const KanbanBoard = () => {
   const queryClient = useQueryClient();
   const [data, setData] = useState<KanbanData>(initialData);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const { data: leadsData, isLoading } = useQuery({
     queryKey: ['leads'],
@@ -83,6 +86,10 @@ export const KanbanBoard = () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
+
+  const handleUpdateLeadStatus = (leadId: string, status: LeadStatus) => {
+    updateLeadMutation.mutate({ leadId, status });
+  };
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -136,15 +143,23 @@ export const KanbanBoard = () => {
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto p-4 h-full">
-        {data.columnOrder.map(columnId => {
-          const column = data.columns[columnId];
-          if (!column) return null;
-          const leads = column.leadIds.map(leadId => data.leads[leadId]).filter(Boolean);
-          return <KanbanColumn key={column.id} columnId={column.id} title={column.title} leads={leads} />;
-        })}
-      </div>
-    </DragDropContext>
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex gap-4 overflow-x-auto p-4 h-full">
+          {data.columnOrder.map(columnId => {
+            const column = data.columns[columnId];
+            if (!column) return null;
+            const leads = column.leadIds.map(leadId => data.leads[leadId]).filter(Boolean);
+            return <KanbanColumn key={column.id} columnId={column.id} title={column.title} leads={leads} onCardClick={setSelectedLead} />;
+          })}
+        </div>
+      </DragDropContext>
+      <LeadDetailsModal
+        lead={selectedLead}
+        isOpen={!!selectedLead}
+        onClose={() => setSelectedLead(null)}
+        onUpdateLeadStatus={handleUpdateLeadStatus}
+      />
+    </>
   );
 };

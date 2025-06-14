@@ -47,6 +47,35 @@ export type Database = {
           },
         ]
       }
+      lead_notes: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          note: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          note: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           budget_range: string | null
@@ -91,6 +120,88 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      proposal_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          proposal_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          proposal_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          proposal_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_items_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          approved_at: string | null
+          client_id: string
+          created_at: string
+          id: string
+          sent_at: string | null
+          signature_url: string | null
+          status: string
+          terms: string | null
+          title: string
+          total_amount: number
+        }
+        Insert: {
+          approved_at?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          signature_url?: string | null
+          status?: string
+          terms?: string | null
+          title: string
+          total_amount?: number
+        }
+        Update: {
+          approved_at?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          signature_url?: string | null
+          status?: string
+          terms?: string | null
+          title?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

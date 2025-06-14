@@ -25,6 +25,39 @@ export interface Client {
   created_at: string;
 }
 
+export interface LeadNote {
+  id: string;
+  lead_id: string;
+  note: string;
+  created_at: string;
+}
+
+export type ProposalStatus = "Draft" | "Sent" | "Approved" | "Rejected";
+
+export interface ProposalItem {
+  id: string;
+  proposal_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  created_at: string;
+}
+
+export interface Proposal {
+  id: string;
+  client_id: string;
+  title: string;
+  status: ProposalStatus;
+  terms: string | null;
+  total_amount: number;
+  signature_url: string | null;
+  approved_at: string | null;
+  sent_at: string | null;
+  created_at: string;
+  clients?: { name: string; email: string };
+  proposal_items?: ProposalItem[];
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;
