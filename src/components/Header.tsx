@@ -21,6 +21,9 @@ export const Header = ({ isAuthenticated = false }: HeaderProps) => {
               <Button variant="ghost" asChild>
                 <Link to="/dashboard/leads">Dashboard</Link>
               </Button>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard/clients">Clients</Link>
+              </Button>
               <Button variant="outline">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout

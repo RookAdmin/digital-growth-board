@@ -1,9 +1,13 @@
+
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Draggable } from '@hello-pangea/dnd';
 import { Mail, Phone, Briefcase } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "sonner";
 
 interface KanbanCardProps {
   lead: Lead;
@@ -11,15 +15,57 @@ interface KanbanCardProps {
 }
 
 const statusColors: { [key in Lead['status']]: string } = {
-  New: "bg-blue-500 hover:bg-blue-500",
-  Contacted: "bg-cyan-500 hover:bg-cyan-500",
+  New: "bg-gray-500 hover:bg-gray-500",
+  Contacted: "bg-blue-500 hover:bg-blue-500",
   Qualified: "bg-yellow-500 hover:bg-yellow-500",
-  "Proposal Sent": "bg-orange-500 hover:bg-orange-500",
+  "Proposal Sent": "bg-purple-500 hover:bg-purple-500",
   Converted: "bg-green-500 hover:bg-green-500",
   Dropped: "bg-red-500 hover:bg-red-500",
 };
 
 export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
+  const queryClient = useQueryClient();
+
+  const convertToClientMutation = useMutation({
+    mutationFn: async (leadToConvert: Lead) => {
+      // 1. Create a client
+      const { data: clientData, error: clientError } = await supabase.from('clients').insert({
+        name: leadToConvert.name,
+        email: leadToConvert.email,
+        phone: leadToConvert.phone,
+        business_name: leadToConvert.business_name,
+        lead_id: leadToConvert.id,
+      }).select().single();
+
+      if (clientError) throw clientError;
+
+      // 2. Update lead status
+      const { error: leadError } = await supabase
+        .from('leads')
+        .update({ status: 'Converted' })
+        .eq('id', leadToConvert.id);
+
+      if (leadError) {
+        // This is not a true transaction, so we'll just log an error if the second step fails.
+        // A robust solution could use a database function (RPC) to ensure atomicity.
+        console.error('Failed to update lead status, but client was created:', clientData);
+        throw leadError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Lead converted to client!");
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Conversion failed: ${error.message}`);
+    },
+  });
+
+  const handleConvertToClient = () => {
+    convertToClientMutation.mutate(lead);
+  };
+
   return (
     <Draggable draggableId={lead.id} index={index}>
       {(provided) => (
@@ -55,7 +101,14 @@ export const KanbanCard = ({ lead, index }: KanbanCardProps) => {
               {lead.lead_source && <p className="mb-2"><strong>Source:</strong> {lead.lead_source}</p>}
               {lead.budget_range && <p className="mb-4"><strong>Budget:</strong> {lead.budget_range}</p>}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
-                 <Button className="w-full" size="sm">Convert to Client</Button>
+                 <Button
+                    className="w-full"
+                    size="sm"
+                    onClick={handleConvertToClient}
+                    disabled={convertToClientMutation.isPending}
+                  >
+                    {convertToClientMutation.isPending ? 'Converting...' : 'Convert to Client'}
+                  </Button>
               )}
             </CardContent>
           </Card>

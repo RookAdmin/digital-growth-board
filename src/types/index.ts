@@ -15,6 +15,16 @@ export interface Lead {
   created_at: string;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  business_name: string | null;
+  lead_id: string;
+  created_at: string;
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;
