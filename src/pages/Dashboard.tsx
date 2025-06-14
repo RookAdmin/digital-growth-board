@@ -1,11 +1,18 @@
 
+import { KanbanBoard } from '@/components/KanbanBoard';
+import { Header } from '@/components/Header';
+
 const DashboardPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Dashboard</h1>
-        <p className="text-xl text-muted-foreground">
-          The leads Kanban board will be displayed here once Supabase is connected.
-        </p>
+    <div className="flex flex-col h-screen bg-background">
+      <Header isAuthenticated={true} />
+      <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-6 pt-6 pb-2">
+            <h1 className="text-3xl font-bold tracking-tight">Leads Dashboard</h1>
+            <p className="text-muted-foreground">Drag and drop to manage your sales pipeline.</p>
+          </div>
+          <KanbanBoard />
+      </main>
     </div>
   );
 };
