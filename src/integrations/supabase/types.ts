@@ -186,7 +186,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          lead_id: string
+          lead_id: string | null
           name: string
           onboarding_status: string
           phone: string | null
@@ -198,7 +198,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
-          lead_id: string
+          lead_id?: string | null
           name: string
           onboarding_status?: string
           phone?: string | null
@@ -210,7 +210,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-          lead_id?: string
+          lead_id?: string | null
           name?: string
           onboarding_status?: string
           phone?: string | null

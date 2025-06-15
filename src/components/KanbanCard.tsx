@@ -1,9 +1,10 @@
+
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Draggable } from '@hello-pangea/dnd';
-import { Mail, Phone, Briefcase } from 'lucide-react';
+import { Mail, Phone, Briefcase, Trash2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ const statusColors: { [key in Lead['status']]: string } = {
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
@@ -118,6 +120,20 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
     },
   });
 
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const { error } = await supabase.from('leads').delete().eq('id', leadId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Lead deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete lead: ${error.message}`);
+    },
+  });
+
   const handleConfirmConversion = (e: React.MouseEvent) => {
     e.stopPropagation();
     convertToClientMutation.mutate(lead);
@@ -128,6 +144,17 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
     e.stopPropagation();
     setIsConfirmOpen(true);
   }
+
+  const handleOpenDeleteDialog = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDeletion = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteLeadMutation.mutate(lead.id);
+    setIsDeleteConfirmOpen(false);
+  };
 
   return (
     <Draggable draggableId={lead.id} index={index}>
@@ -150,7 +177,38 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                     </div>
                   )}
                 </div>
-                <Badge className={`${statusColors[lead.status]} text-white shrink-0`}>{lead.status}</Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge className={`${statusColors[lead.status]} text-white`}>{lead.status}</Badge>
+                  <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleOpenDeleteDialog}
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      disabled={deleteLeadMutation.isPending}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the lead "{lead.name}". This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleConfirmDeletion}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={deleteLeadMutation.isPending}
+                        >
+                          {deleteLeadMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
