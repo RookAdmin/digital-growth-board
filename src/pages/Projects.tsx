@@ -24,6 +24,10 @@ const ProjectsPage = () => {
             name,
             email,
             business_name
+          ),
+          tasks (
+            id,
+            status
           )
         `)
         .order('created_at', { ascending: false });

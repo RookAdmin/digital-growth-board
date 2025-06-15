@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, DollarSign, Users, Eye } from 'lucide-react';
-import { Project, ProjectStatus } from '@/types';
+import { Calendar, DollarSign, Users, Eye, CheckSquare } from 'lucide-react';
+import { Project, ProjectStatus, TaskStatus } from '@/types';
 import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { format } from 'date-fns';
 
@@ -86,6 +86,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   <TableHead>Project</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Tasks</TableHead>
                   <TableHead>Deadline</TableHead>
                   <TableHead>Team</TableHead>
                   <TableHead>Budget</TableHead>
@@ -117,6 +118,18 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                         <span className="mr-1">{getStatusIcon(project.status)}</span>
                         {project.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {project.tasks && project.tasks.length > 0 ? (
+                        <div className="flex items-center gap-1 text-sm">
+                          <CheckSquare className="h-4 w-4" />
+                          <span>
+                            {project.tasks.filter((t) => t.status === 'Completed').length} / {project.tasks.length}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">No tasks</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       {project.deadline ? (

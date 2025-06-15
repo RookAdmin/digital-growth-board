@@ -116,6 +116,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   clients?: { name: string; email: string; business_name: string | null };
+  tasks?: { id: string; status: TaskStatus }[];
 }
 
 export interface Task {
