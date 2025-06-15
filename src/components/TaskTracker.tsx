@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +9,34 @@ import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskStatus, TaskPriority } from '@/types';
 import { TaskComments } from './TaskComments';
 import { format } from 'date-fns';
-import { Calendar, Users, AlertTriangle, CheckCircle, Clock, Milestone, MessageSquare, ChevronDown, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, AlertTriangle, CheckCircle, Clock, Milestone, MessageSquare, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddTaskForm } from './AddTaskForm';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from '@/lib/utils';
 
 interface TaskTrackerProps {
   projectId: string;
@@ -68,6 +92,9 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
   const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null);
   const [openComments, setOpenComments] = useState<string | null>(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [editedTask, setEditedTask] = useState<Partial<Task>>({});
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks', projectId],
@@ -109,6 +136,51 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     }
   });
 
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const { error: commentError } = await supabase.from('task_comments').delete().eq('task_id', taskId);
+      if (commentError) throw new Error(`Failed to delete comments: ${commentError.message}`);
+      
+      const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      toast.success("Task deleted");
+      setTaskToDelete(null);
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete task: ${error.message}`);
+      setTaskToDelete(null);
+    },
+  });
+
+  const editTaskMutation = useMutation({
+    mutationFn: async (taskData: Partial<Task> & { id: string }) => {
+      const { id, ...updateData } = taskData;
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      toast.success('Task updated successfully');
+      setTaskToEdit(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to update task');
+      console.error('Task update error:', error);
+    },
+  });
+
   // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
@@ -140,6 +212,33 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
 
   const toggleComments = (taskId: string) => {
     setOpenComments(openComments === taskId ? null : taskId);
+  };
+  
+  const handleDeleteTask = () => {
+    if (taskToDelete) {
+      deleteTaskMutation.mutate(taskToDelete.id);
+    }
+  };
+
+  const handleEditTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (taskToEdit) {
+      if (!editedTask.title || editedTask.title.trim() === '') {
+        toast.error("Title cannot be empty");
+        return;
+      }
+      editTaskMutation.mutate({ ...editedTask, id: taskToEdit.id });
+    }
+  };
+
+  const openEditModal = (task: Task) => {
+    setTaskToEdit(task);
+    setEditedTask({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority,
+      due_date: task.due_date,
+    });
   };
 
   const milestones = tasks.filter(task => task.type === 'milestone');
@@ -182,7 +281,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium">{milestone.title}</h4>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <div className={`flex items-center gap-1 ${getPriorityColor(milestone.priority)}`}>
                           {getPriorityIcon(milestone.priority)}
                           <span className="text-xs font-medium">{milestone.priority}</span>
@@ -191,11 +290,13 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                           {milestone.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
                           {milestone.status}
                         </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleComments(milestone.id)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditModal(milestone)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => setTaskToDelete(milestone)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleComments(milestone.id)}>
                           <MessageSquare className="h-4 w-4" />
                         </Button>
                       </div>
@@ -206,7 +307,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       {milestone.due_date && (
                         <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
+                          <CalendarIcon className="h-3 w-3" />
                           {format(new Date(milestone.due_date), 'MMM dd, yyyy')}
                         </div>
                       )}
@@ -280,7 +381,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                         <h4 className={`font-medium ${task.status === 'Completed' ? 'line-through text-muted-foreground' : ''}`}>
                           {task.title}
                         </h4>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
                             {getPriorityIcon(task.priority)}
                             <span className="text-xs font-medium">{task.priority}</span>
@@ -289,11 +390,13 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                             {task.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
                             {task.status}
                           </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleComments(task.id)}
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditModal(task)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => setTaskToDelete(task)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleComments(task.id)}>
                             <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
@@ -304,7 +407,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         {task.due_date && (
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                            <CalendarIcon className="h-3 w-3" />
                             {format(new Date(task.due_date), 'MMM dd, yyyy')}
                           </div>
                         )}
@@ -336,6 +439,116 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
           ) : null}
         </CardContent>
       </Card>
+      
+      {taskToEdit && (
+        <Dialog open={!!taskToEdit} onOpenChange={(open) => !open && setTaskToEdit(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Task</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEditTask} className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="title" className="text-right">
+                  Title
+                </Label>
+                <Input
+                  id="title"
+                  value={editedTask.title || ''}
+                  onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={editedTask.description || ''}
+                  onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select
+                    value={editedTask.priority || 'medium'}
+                    onValueChange={(value) => setEditedTask({ ...editedTask, priority: value as TaskPriority })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Due Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal mt-1",
+                          !editedTask.due_date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {editedTask.due_date ? format(new Date(editedTask.due_date), "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={editedTask.due_date ? new Date(editedTask.due_date) : undefined}
+                        onSelect={(date) => setEditedTask({ ...editedTask, due_date: date ? date.toISOString().split('T')[0] : null })}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="ghost">Cancel</Button>
+                </DialogClose>
+                <Button type="submit" disabled={editTaskMutation.isPending}>
+                  {editTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {taskToDelete && (
+        <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the task "{taskToDelete.title}" and any associated comments.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setTaskToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteTask}
+                disabled={deleteTaskMutation.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteTaskMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 };
