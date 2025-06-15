@@ -100,6 +100,9 @@ export interface ClientFile {
 }
 
 export type ProjectStatus = "Not Started" | "In Progress" | "Review" | "Completed";
+export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Blocked";
+export type TaskType = "task" | "milestone";
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface Project {
   id: string;
@@ -113,6 +116,21 @@ export interface Project {
   created_at: string;
   updated_at: string;
   clients?: { name: string; email: string; business_name: string | null };
+}
+
+export interface Task {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  type: TaskType;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  assigned_team_members: string[] | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Column {
