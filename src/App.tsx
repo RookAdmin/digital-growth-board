@@ -16,6 +16,7 @@ import ClientPortalPage from "./pages/ClientPortal";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TeamPage from "./pages/Team";
+import ReportingPage from "./pages/Reporting";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/dashboard/scheduling" element={<SchedulingPage />} />
             <Route path="/dashboard/files" element={<FilesPage />} />
             <Route path="/dashboard/team" element={<TeamPage />} />
+            <Route path="/dashboard/reporting" element={<ReportingPage />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

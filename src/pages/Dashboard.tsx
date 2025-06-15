@@ -4,6 +4,9 @@ import { Header } from '@/components/Header';
 import { AddLeadDialog } from '@/components/AddLeadDialog';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { ChartBarIncreasing } from 'lucide-react';
 
 const DashboardPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +27,12 @@ const DashboardPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
               />
+              <Link to="/dashboard/reporting">
+                <Button variant="outline">
+                  <ChartBarIncreasing className="mr-2 h-4 w-4" />
+                  View Reports
+                </Button>
+              </Link>
               <AddLeadDialog />
             </div>
           </div>
