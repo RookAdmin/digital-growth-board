@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +10,16 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format, parseISO, addDays, startOfDay, endOfDay, setHours, isWithinInterval, addMinutes, isBefore } from 'date-fns';
 import { BookingDialog } from '@/components/BookingDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
   const { data, error } = await supabase
@@ -52,6 +61,17 @@ const createMeetingSlot = async ({ dateTime, duration, clientId }: { dateTime: D
     });
   
   if (error) throw new Error(error.message);
+};
+
+const updateMeetingSlot = async ({ slotId, dateTime }: { slotId: string, dateTime: Date }) => {
+  const { error } = await supabase
+    .from('meeting_slots')
+    .update({ date_time: dateTime.toISOString() })
+    .eq('id', slotId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 };
 
 const deleteMeetingSlot = async (slotId: string) => {
@@ -116,6 +136,9 @@ const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
 const SchedulingPage = () => {
   const queryClient = useQueryClient();
   const [selectedSlot, setSelectedSlot] = useState<MeetingSlot | null>(null);
+  const [slotToReschedule, setSlotToReschedule] = useState<MeetingSlot | null>(null);
+  const [rescheduleConfirmationOpen, setRescheduleConfirmationOpen] = useState(false);
+  const [newSlotForReschedule, setNewSlotForReschedule] = useState<MeetingSlot | null>(null);
 
   const { data: meetingSlots, isLoading } = useQuery({
     queryKey: ['meeting-slots'],
@@ -136,6 +159,21 @@ const SchedulingPage = () => {
     },
     onError: (error) => {
       toast.error(`Failed to book slot: ${error.message}`);
+    },
+  });
+
+  const updateSlotMutation = useMutation({
+    mutationFn: updateMeetingSlot,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meeting-slots'] });
+      toast.success('Meeting rescheduled successfully!');
+      setSlotToReschedule(null);
+      setNewSlotForReschedule(null);
+    },
+    onError: (error) => {
+      toast.error(`Failed to reschedule meeting: ${error.message}`);
+      setSlotToReschedule(null);
+      setNewSlotForReschedule(null);
     },
   });
 
@@ -181,6 +219,49 @@ const SchedulingPage = () => {
     }
   };
 
+  const handleRescheduleClick = (slot: MeetingSlot) => {
+    setSlotToReschedule(slot);
+    toast.info("Select a new available time slot from the list.");
+  };
+
+  const handleAvailableSlotClick = (availableSlot: MeetingSlot) => {
+    if (slotToReschedule) {
+      setNewSlotForReschedule(availableSlot);
+      setRescheduleConfirmationOpen(true);
+    } else {
+      setSelectedSlot(availableSlot);
+    }
+  };
+
+  const confirmReschedule = () => {
+    if (slotToReschedule && newSlotForReschedule) {
+      const newStartTime = parseISO(newSlotForReschedule.date_time);
+      const newEndTime = addMinutes(newStartTime, slotToReschedule.duration_minutes);
+
+      const otherBookedSlots = bookedSlots.filter(s => s.id !== slotToReschedule.id);
+      const bookedIntervals = otherBookedSlots.map(s => ({
+          start: parseISO(s.date_time),
+          end: addMinutes(parseISO(s.date_time), s.duration_minutes),
+      }));
+
+      const overlaps = bookedIntervals.some(bookedInterval => 
+          isBefore(newStartTime, bookedInterval.end) && isBefore(bookedInterval.start, newEndTime)
+      );
+
+      if (overlaps) {
+        toast.error("The new time slot overlaps with another scheduled meeting.");
+        setRescheduleConfirmationOpen(false);
+        return;
+      }
+
+      updateSlotMutation.mutate({
+        slotId: slotToReschedule.id,
+        dateTime: parseISO(newSlotForReschedule.date_time),
+      });
+    }
+    setRescheduleConfirmationOpen(false);
+  };
+
   if (isLoading || isLoadingClients) {
     return (
       <div className="flex flex-col h-screen bg-background">
@@ -203,8 +284,16 @@ const SchedulingPage = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight">Schedule Your Kickoff Meeting</h1>
             <p className="text-muted-foreground mt-2">
-              Book a time that works best for you to discuss your project requirements.
+              {slotToReschedule 
+                ? `Rescheduling meeting for ${slotToReschedule.clients?.name}. Please select a new slot.`
+                : 'Book a time that works best for you to discuss your project requirements.'
+              }
             </p>
+            {slotToReschedule && (
+                <Button variant="outline" size="sm" onClick={() => setSlotToReschedule(null)} className="mt-2">
+                    Cancel Reschedule
+                </Button>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -226,7 +315,7 @@ const SchedulingPage = () => {
               ) : (
                 <div className="space-y-4">
                   {availableSlots.map((slot) => (
-                    <Card key={slot.id} className="hover:shadow-md transition-shadow">
+                    <Card key={slot.id} className={`hover:shadow-md transition-shadow ${slotToReschedule ? 'cursor-pointer' : ''}`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg flex items-center gap-2">
@@ -245,10 +334,11 @@ const SchedulingPage = () => {
                       </CardHeader>
                       <CardContent>
                         <Button 
-                          onClick={() => setSelectedSlot(slot)}
+                          onClick={() => handleAvailableSlotClick(slot)}
                           className="w-full"
+                          disabled={updateSlotMutation.isPending}
                         >
-                          Book This Slot
+                          {slotToReschedule ? 'Reschedule to this Slot' : 'Book This Slot'}
                         </Button>
                       </CardContent>
                     </Card>
@@ -309,22 +399,34 @@ const SchedulingPage = () => {
                             Notes: {slot.notes}
                           </div>
                         )}
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="mt-4 w-full"
-                          onClick={() => deleteSlotMutation.mutate(slot.id)}
-                          disabled={deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id}
-                        >
-                          {deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id ? (
-                            'Cancelling...'
-                          ) : (
-                            <>
-                              <X className="h-4 w-4 mr-2" />
-                              Cancel Meeting
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => handleRescheduleClick(slot)}
+                            disabled={updateSlotMutation.isPending || (deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id)}
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Reschedule
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => deleteSlotMutation.mutate(slot.id)}
+                            disabled={(deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id) || updateSlotMutation.isPending}
+                          >
+                            {deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id ? (
+                              'Cancelling...'
+                            ) : (
+                              <>
+                                <X className="h-4 w-4 mr-2" />
+                                Cancel Meeting
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -349,6 +451,25 @@ const SchedulingPage = () => {
           isBooking={createSlotMutation.isPending}
         />
       )}
+      <AlertDialog open={rescheduleConfirmationOpen} onOpenChange={setRescheduleConfirmationOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Reschedule</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Are you sure you want to move this meeting from{' '}
+                    <strong>{slotToReschedule && format(parseISO(slotToReschedule.date_time), 'PPP p')}</strong> to {' '}
+                    <strong>{newSlotForReschedule && format(parseISO(newSlotForReschedule.date_time), 'PPP p')}</strong>?
+                    The duration will remain {slotToReschedule?.duration_minutes} minutes.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => { setSlotToReschedule(null); setNewSlotForReschedule(null); }}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmReschedule} disabled={updateSlotMutation.isPending}>
+                  {updateSlotMutation.isPending ? 'Rescheduling...' : 'Confirm'}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </div>
   );
 };
