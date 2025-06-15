@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthError } from '@supabase/supabase-js';
 
 interface ClientUser {
   id: string;
@@ -68,6 +69,32 @@ export const useClientAuth = () => {
       email,
       password,
     });
+
+    if (error) {
+      return { data, error };
+    }
+
+    if (data.user) {
+      const { data: clientUserData, error: clientUserError } = await supabase
+        .from('client_users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      
+      if (clientUserError || !clientUserData) {
+        await supabase.auth.signOut();
+        const customError = new AuthError(
+          'Access denied. You are not a registered client user.',
+          401
+        );
+        setClientUser(null);
+        return { data: null, error: customError };
+      }
+
+      setClientUser(clientUserData);
+      return { data, error: null };
+    }
+    
     return { data, error };
   };
 
