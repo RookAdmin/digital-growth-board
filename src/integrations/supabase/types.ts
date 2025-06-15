@@ -420,6 +420,7 @@ export type Database = {
           date_time: string
           duration_minutes: number
           id: string
+          meeting_link: string | null
           meeting_type: string | null
           notes: string | null
           status: string
@@ -431,6 +432,7 @@ export type Database = {
           date_time: string
           duration_minutes?: number
           id?: string
+          meeting_link?: string | null
           meeting_type?: string | null
           notes?: string | null
           status?: string
@@ -442,6 +444,7 @@ export type Database = {
           date_time?: string
           duration_minutes?: number
           id?: string
+          meeting_link?: string | null
           meeting_type?: string | null
           notes?: string | null
           status?: string

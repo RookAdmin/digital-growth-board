@@ -83,9 +83,10 @@ export interface MeetingSlot {
   client_id: string | null;
   meeting_type: string | null;
   notes: string | null;
+  meeting_link: string | null;
   created_at: string;
   updated_at: string;
-  clients?: { name: string; email: string };
+  clients?: { name:string; email: string };
 }
 
 export interface ClientFile {

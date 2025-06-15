@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { MeetingSlot, Client } from '@/types';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, Users, X, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
     .from('meeting_slots')
     .select(`
       *,
+      meeting_link,
       clients:client_id (
         name,
         email
@@ -45,8 +46,18 @@ const createMeetingSlot = async ({ dateTime, duration, clientId }: { dateTime: D
       duration_minutes: duration,
       status: 'booked', 
       client_id: clientId,
-      meeting_type: 'kickoff'
+      meeting_type: 'kickoff',
+      meeting_link: 'https://meet.google.com/brv-sida-fuy'
     });
+  
+  if (error) throw new Error(error.message);
+};
+
+const deleteMeetingSlot = async (slotId: string) => {
+  const { error } = await supabase
+    .from('meeting_slots')
+    .delete()
+    .eq('id', slotId);
   
   if (error) throw new Error(error.message);
 };
@@ -123,6 +134,17 @@ const SchedulingPage = () => {
     },
     onError: (error) => {
       toast.error(`Failed to book slot: ${error.message}`);
+    },
+  });
+
+  const deleteSlotMutation = useMutation({
+    mutationFn: deleteMeetingSlot,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meeting-slots'] });
+      toast.success('Meeting cancelled successfully!');
+    },
+    onError: (error) => {
+      toast.error(`Failed to cancel meeting: ${error.message}`);
     },
   });
 
@@ -272,11 +294,35 @@ const SchedulingPage = () => {
                             Client: {slot.clients.name}
                           </div>
                         )}
+                        {slot.meeting_link && (
+                          <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                            <LinkIcon className="h-4 w-4" />
+                            <a href={slot.meeting_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                              {slot.meeting_link}
+                            </a>
+                          </div>
+                        )}
                         {slot.notes && (
                           <div className="text-sm text-muted-foreground mt-1">
                             Notes: {slot.notes}
                           </div>
                         )}
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="mt-4 w-full"
+                          onClick={() => deleteSlotMutation.mutate(slot.id)}
+                          disabled={deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id}
+                        >
+                          {deleteSlotMutation.isPending && deleteSlotMutation.variables === slot.id ? (
+                            'Cancelling...'
+                          ) : (
+                            <>
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel Meeting
+                            </>
+                          )}
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
