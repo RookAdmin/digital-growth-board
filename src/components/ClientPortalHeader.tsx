@@ -21,7 +21,7 @@ export const ClientPortalHeader = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Rocket className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">StellarGrowth</span>
+          <span className="text-xl font-bold text-primary">Rook Client</span>
           <span className="text-sm text-muted-foreground ml-2">Client Portal</span>
         </div>
         
