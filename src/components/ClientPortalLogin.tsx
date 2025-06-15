@@ -10,26 +10,22 @@ import { Rocket } from 'lucide-react';
 
 export const ClientPortalLogin = () => {
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useClientAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !phone) {
-      toast.error('Please enter your email and phone number');
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
     try {
-      const { error } = await signIn(email, phone);
+      const { error } = await signIn(email, password);
       if (error) {
-        if (error.message === 'Invalid login credentials') {
-          toast.error('Invalid email or phone number. Please check your credentials and try again.');
-        } else {
-          toast.error(error.message);
-        }
+        toast.error(error.message);
       } else {
         toast.success('Logged in successfully');
       }
@@ -46,7 +42,7 @@ export const ClientPortalLogin = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Rocket className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">Rook Client</span>
+            <span className="text-2xl font-bold text-primary">StellarGrowth</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
           <p className="text-gray-600 mt-2">Access your projects and updates</p>
@@ -73,13 +69,13 @@ export const ClientPortalLogin = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
-                  id="phone"
-                  type="text"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>

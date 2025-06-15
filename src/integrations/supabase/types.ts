@@ -141,6 +141,38 @@ export type Database = {
           },
         ]
       }
+      client_sessions: {
+        Row: {
+          client_user_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          session_token: string
+        }
+        Insert: {
+          client_user_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          session_token: string
+        }
+        Update: {
+          client_user_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_sessions_client_user_id_fkey"
+            columns: ["client_user_id"]
+            isOneToOne: false
+            referencedRelation: "client_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_users: {
         Row: {
           client_id: string
@@ -149,6 +181,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_login: string | null
+          password_hash: string
           updated_at: string
         }
         Insert: {
@@ -158,6 +191,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_login?: string | null
+          password_hash: string
           updated_at?: string
         }
         Update: {
@@ -167,6 +201,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_login?: string | null
+          password_hash?: string
           updated_at?: string
         }
         Relationships: [
