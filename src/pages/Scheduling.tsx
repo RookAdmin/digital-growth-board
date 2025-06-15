@@ -53,7 +53,7 @@ const createMeetingSlot = async ({ dateTime, duration, clientId }: { dateTime: D
 
 const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
     const potentialSlots: MeetingSlot[] = [];
-    const meetingDuration = 60;
+    const slotInterval = 30; // Use 30-minute intervals for generating potential start times
 
     for (let i = 0; i < 7; i++) { // For the next 7 days
         const day = addDays(new Date(), i);
@@ -65,7 +65,7 @@ const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
             potentialSlots.push({
                 id: `virtual-${currentTime.toISOString()}`,
                 date_time: currentTime.toISOString(),
-                duration_minutes: meetingDuration,
+                duration_minutes: slotInterval, // This is just a base for the available slot, actual duration is set on booking
                 status: 'available',
                 client_id: null,
                 meeting_type: 'kickoff',
@@ -73,7 +73,7 @@ const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             });
-            currentTime = addMinutes(currentTime, meetingDuration);
+            currentTime = addMinutes(currentTime, slotInterval);
         }
     }
     
@@ -147,11 +147,11 @@ const SchedulingPage = () => {
     return generateAvailableSlots(bSlots);
   }, [meetingSlots]);
 
-  const handleCreateSlot = (clientId: string) => {
+  const handleCreateSlot = (clientId: string, duration: number) => {
     if (selectedSlot) {
       createSlotMutation.mutate({
         dateTime: parseISO(selectedSlot.date_time),
-        duration: selectedSlot.duration_minutes,
+        duration: duration,
         clientId,
       });
     }
@@ -290,6 +290,7 @@ const SchedulingPage = () => {
         <BookingDialog
           slot={selectedSlot}
           clients={clients || []}
+          bookedSlots={bookedSlots}
           isOpen={!!selectedSlot}
           onOpenChange={(open) => {
             if (!open) {
