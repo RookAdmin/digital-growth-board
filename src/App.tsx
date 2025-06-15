@@ -15,6 +15,7 @@ import FilesPage from "./pages/Files";
 import ClientPortalPage from "./pages/ClientPortal";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TeamPage from "./pages/Team";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/dashboard/projects" element={<ProjectsPage />} />
             <Route path="/dashboard/scheduling" element={<SchedulingPage />} />
             <Route path="/dashboard/files" element={<FilesPage />} />
+            <Route path="/dashboard/team" element={<TeamPage />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
