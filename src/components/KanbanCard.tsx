@@ -18,7 +18,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useNavigate } from 'react-router-dom';
 
 interface KanbanCardProps {
   lead: Lead;
@@ -37,7 +36,6 @@ const statusColors: { [key in Lead['status']]: string } = {
 
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const convertToClientMutation = useMutation({
@@ -114,8 +112,6 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      
-      navigate(`/clients?onboarding=${client.id}`);
     },
     onError: (error: Error) => {
       toast.error(`Conversion failed: ${error.message}`);
