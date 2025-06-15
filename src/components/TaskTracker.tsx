@@ -10,8 +10,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskStatus, TaskPriority } from '@/types';
 import { TaskComments } from './TaskComments';
 import { format } from 'date-fns';
-import { Calendar, Users, AlertTriangle, CheckCircle, Clock, Milestone, MessageSquare, ChevronDown } from 'lucide-react';
+import { Calendar, Users, AlertTriangle, CheckCircle, Clock, Milestone, MessageSquare, ChevronDown, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { AddTaskForm } from './AddTaskForm';
 
 interface TaskTrackerProps {
   projectId: string;
@@ -66,6 +67,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
   const queryClient = useQueryClient();
   const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null);
   const [openComments, setOpenComments] = useState<string | null>(null);
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks', projectId],
@@ -234,19 +236,35 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
       {/* Tasks Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Project Tasks</CardTitle>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Total: {regularTasks.length}</span>
-            <span>Completed: {regularTasks.filter(t => t.status === 'Completed').length}</span>
-            <span>In Progress: {regularTasks.filter(t => t.status === 'In Progress').length}</span>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Project Tasks</CardTitle>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                <span>Total: {regularTasks.length}</span>
+                <span>Completed: {regularTasks.filter(t => t.status === 'Completed').length}</span>
+                <span>In Progress: {regularTasks.filter(t => t.status === 'In Progress').length}</span>
+              </div>
+            </div>
+            {!isAddingTask && (
+              <Button onClick={() => setIsAddingTask(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Task
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
-          {regularTasks.length === 0 ? (
+          {isAddingTask && (
+            <div className="mb-6">
+              <AddTaskForm projectId={projectId} onCancel={() => setIsAddingTask(false)} />
+            </div>
+          )}
+          {regularTasks.length === 0 && !isAddingTask ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No tasks found for this project.</p>
+              <p className="text-sm text-muted-foreground mt-2">Click "Add Task" to get started.</p>
             </div>
-          ) : (
+          ) : regularTasks.length > 0 ? (
             <div className="space-y-3">
               {regularTasks.map((task) => (
                 <div key={task.id} className="space-y-2">
@@ -315,7 +333,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </div>
