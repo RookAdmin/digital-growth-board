@@ -75,6 +75,30 @@ export interface Proposal {
   proposal_items?: ProposalItem[];
 }
 
+export interface MeetingSlot {
+  id: string;
+  date_time: string;
+  duration_minutes: number;
+  status: 'available' | 'booked' | 'cancelled';
+  client_id: string | null;
+  meeting_type: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  clients?: { name: string; email: string };
+}
+
+export interface ClientFile {
+  id: string;
+  client_id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number | null;
+  file_type: string | null;
+  uploaded_at: string;
+  uploaded_by: string | null;
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;

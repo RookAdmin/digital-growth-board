@@ -40,6 +40,12 @@ export const Header = ({ isAuthenticated: _ }: HeaderProps = {}) => {
               <Button variant="ghost" asChild>
                 <Link to="/dashboard/clients">Clients</Link>
               </Button>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard/scheduling">Scheduling</Link>
+              </Button>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard/files">Files</Link>
+              </Button>
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
