@@ -1,4 +1,3 @@
-
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,33 +42,6 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
-      // Check if a client with this email already exists to prevent duplicates.
-      const { data: existingClient, error: checkError } = await supabase
-        .from('clients')
-        .select('id, name')
-        .eq('email', leadToConvert.email)
-        .maybeSingle();
-
-      if (checkError) {
-        throw new Error(`Failed to check for existing client: ${checkError.message}`);
-      }
-
-      if (existingClient) {
-        toast.info(`A client with this email already exists: ${existingClient.name}.`);
-        
-        // Just update the lead's status to Converted if it's not already.
-        if (leadToConvert.status !== 'Converted') {
-            const { error: leadError } = await supabase
-            .from('leads')
-            .update({ status: 'Converted' })
-            .eq('id', leadToConvert.id);
-
-            if (leadError) throw leadError;
-        }
-        
-        return { existing: true, client: existingClient };
-      }
-
       // 1. Create a client
       const { data: clientData, error: clientError } = await supabase.from('clients').insert({
         name: leadToConvert.name,
@@ -109,20 +81,15 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         console.error('Failed to update lead status, but client and project were created:', clientData);
         throw leadError;
       }
-      return { existing: false, client: clientData };
+      return clientData;
     },
-    onSuccess: (result) => {
-      if (result.existing) {
-        toast.success(`Lead status updated for existing client: ${result.client.name}`);
-        queryClient.invalidateQueries({ queryKey: ['leads'] });
-      } else {
-        toast.success("Lead converted to client and initial project created!");
-        queryClient.invalidateQueries({ queryKey: ['leads'] });
-        queryClient.invalidateQueries({ queryKey: ['clients'] });
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
-        if (result.client) {
-          navigate(`/clients?onboarding=${result.client.id}`);
-        }
+    onSuccess: (newClient) => {
+      toast.success("Lead converted to client and initial project created!");
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      if (newClient) {
+        navigate(`/clients?onboarding=${newClient.id}`);
       }
     },
     onError: (error: Error) => {
