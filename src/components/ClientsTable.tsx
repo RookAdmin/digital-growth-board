@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
@@ -46,7 +45,7 @@ export const ClientsTable = () => {
     onSuccess: () => {
       toast({
         title: "Client Deleted",
-        description: "The client has been successfully deleted.",
+        description: "The client and all associated data have been successfully deleted.",
       });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setClientToDelete(null);
@@ -54,7 +53,7 @@ export const ClientsTable = () => {
     onError: (error: Error) => {
       toast({
         title: "Error Deleting Client",
-        description: `Failed to delete client. This may be because the client is still linked to projects or other data. ${error.message}`,
+        description: `An unexpected error occurred: ${error.message}`,
         variant: "destructive",
       });
       setClientToDelete(null);
@@ -146,8 +145,7 @@ export const ClientsTable = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the client "{clientToDelete.name}".
-                If the client is associated with projects, this action may fail.
+                This action cannot be undone. This will permanently delete the client "{clientToDelete.name}" and all associated data (projects, invoices, files, etc.).
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
