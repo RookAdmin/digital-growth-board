@@ -55,7 +55,21 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
       if (clientError) throw clientError;
 
-      // 2. Update lead status
+      // 2. Create a project for the new client
+      const { error: projectError } = await supabase.from('projects').insert({
+        client_id: clientData.id,
+        name: `${clientData.business_name || clientData.name}'s Initial Project`,
+        description: `Project created from lead conversion. Services of interest: ${leadToConvert.services_interested?.join(', ') || 'Not specified'}.`,
+        status: 'Not Started',
+      });
+
+      if (projectError) {
+        console.error('Failed to create project for new client:', projectError);
+        toast.error(`Client created, but failed to create project: ${projectError.message}`);
+        throw projectError;
+      }
+
+      // 3. Update lead status
       const { error: leadError } = await supabase
         .from('leads')
         .update({ status: 'Converted' })
@@ -64,15 +78,16 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
       if (leadError) {
         // This is not a true transaction, so we'll just log an error if the second step fails.
         // A robust solution could use a database function (RPC) to ensure atomicity.
-        console.error('Failed to update lead status, but client was created:', clientData);
+        console.error('Failed to update lead status, but client and project were created:', clientData);
         throw leadError;
       }
       return clientData;
     },
     onSuccess: (newClient) => {
-      toast.success("Lead converted to client!");
+      toast.success("Lead converted to client and initial project created!");
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       if (newClient) {
         navigate(`/clients?onboarding=${newClient.id}`);
       }
