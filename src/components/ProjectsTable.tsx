@@ -1,13 +1,25 @@
-
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, DollarSign, Users, Eye, CheckSquare } from 'lucide-react';
+import { Calendar, DollarSign, Users, Eye, CheckSquare, Trash2 } from 'lucide-react';
 import { Project, ProjectStatus, TaskStatus } from '@/types';
 import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -46,6 +58,10 @@ const getStatusIcon = (status: ProjectStatus) => {
 export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const handleViewProject = (project: Project) => {
     setSelectedProject(project);
@@ -55,6 +71,37 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedProject(null);
+  };
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      const { error } = await supabase.from('projects').delete().eq('id', projectId);
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Project Deleted",
+        description: "The project and all its associated data have been deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setProjectToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete project: ${error.message}`,
+        variant: "destructive",
+      });
+      setProjectToDelete(null);
+    },
+  });
+
+  const handleDeleteProject = () => {
+    if (projectToDelete) {
+      deleteProjectMutation.mutate(projectToDelete.id);
+    }
   };
 
   if (projects.length === 0) {
@@ -167,15 +214,26 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewProject(project)}
-                        className="hover-scale"
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Tasks
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewProject(project)}
+                          className="hover-scale"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Tasks
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => setProjectToDelete(project)}
+                          className="hover-scale h-9 w-9"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete project</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -190,6 +248,30 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
+
+      {projectToDelete && (
+        <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the project
+                "{projectToDelete.name}" and all of its associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setProjectToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteProject}
+                disabled={deleteProjectMutation.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 };
