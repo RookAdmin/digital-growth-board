@@ -155,6 +155,30 @@ export interface ProjectFile {
   uploaded_at: string;
 }
 
+export interface ProjectMessage {
+  id: string;
+  project_id: string;
+  user_name: string;
+  user_email: string;
+  message: string;
+  message_type: 'text' | 'file' | 'system';
+  created_at: string;
+  updated_at: string;
+}
+
+export type ActivityType = 'task_created' | 'task_updated' | 'task_completed' | 'file_uploaded' | 'file_deleted' | 'message_sent' | 'project_updated' | 'comment_added';
+
+export interface ActivityLog {
+  id: string;
+  project_id: string;
+  activity_type: ActivityType;
+  user_name: string;
+  user_email: string;
+  description: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;

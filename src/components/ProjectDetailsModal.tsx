@@ -5,8 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Project } from '@/types';
 import { TaskTracker } from './TaskTracker';
 import { ProjectFileManager } from './ProjectFileManager';
+import { ProjectMessaging } from './ProjectMessaging';
+import { ProjectActivityLog } from './ProjectActivityLog';
 import { format } from 'date-fns';
-import { Calendar, DollarSign, Users, CheckSquare, Upload } from 'lucide-react';
+import { Calendar, DollarSign, Users, CheckSquare, Upload, MessageSquare, Activity } from 'lucide-react';
 
 interface ProjectDetailsModalProps {
   project: Project | null;
@@ -78,14 +80,22 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
         
         <div className="mt-6">
           <Tabs defaultValue="tasks" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="tasks" className="flex items-center gap-2">
                 <CheckSquare className="h-4 w-4" />
-                Tasks & Comments
+                Tasks
               </TabsTrigger>
               <TabsTrigger value="files" className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                Project Files
+                Files
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Messages
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Activity
               </TabsTrigger>
             </TabsList>
             
@@ -98,6 +108,20 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
                 projectId={project.id} 
                 projectName={project.name}
               />
+            </TabsContent>
+            
+            <TabsContent value="messages" className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Project Chat</h3>
+                <ProjectMessaging projectId={project.id} />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="activity" className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Activity Log</h3>
+                <ProjectActivityLog projectId={project.id} />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
