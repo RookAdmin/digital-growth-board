@@ -265,6 +265,50 @@ export type Database = {
           },
         ]
       }
+      project_files: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          project_id: string
+          uploaded_at: string
+          uploaded_by_email: string
+          uploaded_by_name: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          project_id: string
+          uploaded_at?: string
+          uploaded_by_email: string
+          uploaded_by_name: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          project_id?: string
+          uploaded_at?: string
+          uploaded_by_email?: string
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           assigned_team_members: string[] | null
@@ -390,6 +434,44 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          task_id: string
+          updated_at: string
+          user_email: string
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          task_id: string
+          updated_at?: string
+          user_email: string
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          updated_at?: string
+          user_email?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]

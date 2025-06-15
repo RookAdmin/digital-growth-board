@@ -133,6 +133,28 @@ export interface Task {
   updated_at: string;
 }
 
+export interface TaskComment {
+  id: string;
+  task_id: string;
+  user_name: string;
+  user_email: string;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectFile {
+  id: string;
+  project_id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number | null;
+  file_type: string | null;
+  uploaded_by_name: string;
+  uploaded_by_email: string;
+  uploaded_at: string;
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;

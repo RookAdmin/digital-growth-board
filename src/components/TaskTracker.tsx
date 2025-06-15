@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskStatus, TaskPriority } from '@/types';
+import { TaskComments } from './TaskComments';
 import { format } from 'date-fns';
-import { Calendar, Users, AlertTriangle, CheckCircle, Clock, Milestone } from 'lucide-react';
+import { Calendar, Users, AlertTriangle, CheckCircle, Clock, Milestone, MessageSquare, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TaskTrackerProps {
@@ -63,6 +65,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
 export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
   const queryClient = useQueryClient();
   const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null);
+  const [openComments, setOpenComments] = useState<string | null>(null);
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks', projectId],
@@ -133,6 +136,10 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     updateTaskStatus.mutate({ taskId, status: newStatus });
   };
 
+  const toggleComments = (taskId: string) => {
+    setOpenComments(openComments === taskId ? null : taskId);
+  };
+
   const milestones = tasks.filter(task => task.type === 'milestone');
   const regularTasks = tasks.filter(task => task.type === 'task');
 
@@ -162,48 +169,62 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             {milestones.map((milestone) => (
-              <div
-                key={milestone.id}
-                className="flex items-start gap-4 p-4 bg-gradient-to-r from-primary/5 to-transparent rounded-lg border animate-fade-in hover-scale"
-              >
-                <Checkbox
-                  checked={milestone.status === 'Completed'}
-                  onCheckedChange={(checked) => handleTaskStatusChange(milestone.id, Boolean(checked))}
-                  disabled={loadingTaskId === milestone.id}
-                  className="mt-1"
-                />
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">{milestone.title}</h4>
-                    <div className="flex items-center gap-2">
-                      <div className={`flex items-center gap-1 ${getPriorityColor(milestone.priority)}`}>
-                        {getPriorityIcon(milestone.priority)}
-                        <span className="text-xs font-medium">{milestone.priority}</span>
+              <div key={milestone.id} className="space-y-2">
+                <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-primary/5 to-transparent rounded-lg border animate-fade-in hover-scale">
+                  <Checkbox
+                    checked={milestone.status === 'Completed'}
+                    onCheckedChange={(checked) => handleTaskStatusChange(milestone.id, Boolean(checked))}
+                    disabled={loadingTaskId === milestone.id}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">{milestone.title}</h4>
+                      <div className="flex items-center gap-2">
+                        <div className={`flex items-center gap-1 ${getPriorityColor(milestone.priority)}`}>
+                          {getPriorityIcon(milestone.priority)}
+                          <span className="text-xs font-medium">{milestone.priority}</span>
+                        </div>
+                        <Badge className={getStatusColor(milestone.status)} variant="secondary">
+                          {milestone.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
+                          {milestone.status}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleComments(milestone.id)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Badge className={getStatusColor(milestone.status)} variant="secondary">
-                        {milestone.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
-                        {milestone.status}
-                      </Badge>
+                    </div>
+                    {milestone.description && (
+                      <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      {milestone.due_date && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(milestone.due_date), 'MMM dd, yyyy')}
+                        </div>
+                      )}
+                      {milestone.assigned_team_members && milestone.assigned_team_members.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {milestone.assigned_team_members.length} member{milestone.assigned_team_members.length !== 1 ? 's' : ''}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {milestone.description && (
-                    <p className="text-sm text-muted-foreground">{milestone.description}</p>
-                  )}
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    {milestone.due_date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(milestone.due_date), 'MMM dd, yyyy')}
-                      </div>
-                    )}
-                    {milestone.assigned_team_members && milestone.assigned_team_members.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {milestone.assigned_team_members.length} member{milestone.assigned_team_members.length !== 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
                 </div>
+                
+                <Collapsible open={openComments === milestone.id}>
+                  <CollapsibleContent>
+                    <div className="mt-2 ml-4">
+                      <TaskComments taskId={milestone.id} taskTitle={milestone.title} />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             ))}
           </CardContent>
@@ -228,55 +249,69 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
           ) : (
             <div className="space-y-3">
               {regularTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-start gap-4 p-3 border rounded-lg hover:bg-muted/30 transition-colors animate-fade-in"
-                >
-                  <Checkbox
-                    checked={task.status === 'Completed'}
-                    onCheckedChange={(checked) => handleTaskStatusChange(task.id, Boolean(checked))}
-                    disabled={loadingTaskId === task.id}
-                    className="mt-1"
-                  />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className={`font-medium ${task.status === 'Completed' ? 'line-through text-muted-foreground' : ''}`}>
-                        {task.title}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
-                          {getPriorityIcon(task.priority)}
-                          <span className="text-xs font-medium">{task.priority}</span>
+                <div key={task.id} className="space-y-2">
+                  <div className="flex items-start gap-4 p-3 border rounded-lg hover:bg-muted/30 transition-colors animate-fade-in">
+                    <Checkbox
+                      checked={task.status === 'Completed'}
+                      onCheckedChange={(checked) => handleTaskStatusChange(task.id, Boolean(checked))}
+                      disabled={loadingTaskId === task.id}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className={`font-medium ${task.status === 'Completed' ? 'line-through text-muted-foreground' : ''}`}>
+                          {task.title}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
+                            {getPriorityIcon(task.priority)}
+                            <span className="text-xs font-medium">{task.priority}</span>
+                          </div>
+                          <Badge className={getStatusColor(task.status)} variant="secondary">
+                            {task.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
+                            {task.status}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleComments(task.id)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Badge className={getStatusColor(task.status)} variant="secondary">
-                          {task.status === 'Completed' ? <CheckCircle className="mr-1 h-3 w-3" /> : null}
-                          {task.status}
-                        </Badge>
+                      </div>
+                      {task.description && (
+                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        {task.due_date && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(task.due_date), 'MMM dd, yyyy')}
+                          </div>
+                        )}
+                        {task.assigned_team_members && task.assigned_team_members.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {task.assigned_team_members.length} member{task.assigned_team_members.length !== 1 ? 's' : ''}
+                          </div>
+                        )}
+                        {task.completed_at && (
+                          <div className="text-green-600">
+                            Completed {format(new Date(task.completed_at), 'MMM dd, yyyy')}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground">{task.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      {task.due_date && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(task.due_date), 'MMM dd, yyyy')}
-                        </div>
-                      )}
-                      {task.assigned_team_members && task.assigned_team_members.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {task.assigned_team_members.length} member{task.assigned_team_members.length !== 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {task.completed_at && (
-                        <div className="text-green-600">
-                          Completed {format(new Date(task.completed_at), 'MMM dd, yyyy')}
-                        </div>
-                      )}
-                    </div>
                   </div>
+                  
+                  <Collapsible open={openComments === task.id}>
+                    <CollapsibleContent>
+                      <div className="mt-2 ml-4">
+                        <TaskComments taskId={task.id} taskTitle={task.title} />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               ))}
             </div>

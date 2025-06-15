@@ -1,10 +1,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Project } from '@/types';
 import { TaskTracker } from './TaskTracker';
+import { ProjectFileManager } from './ProjectFileManager';
 import { format } from 'date-fns';
-import { Calendar, DollarSign, Users } from 'lucide-react';
+import { Calendar, DollarSign, Users, CheckSquare, Upload } from 'lucide-react';
 
 interface ProjectDetailsModalProps {
   project: Project | null;
@@ -32,7 +34,7 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto animate-scale-in">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto animate-scale-in">
         <DialogHeader>
           <div className="space-y-4">
             <div className="flex items-start justify-between">
@@ -75,7 +77,29 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
         </DialogHeader>
         
         <div className="mt-6">
-          <TaskTracker projectId={project.id} />
+          <Tabs defaultValue="tasks" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tasks" className="flex items-center gap-2">
+                <CheckSquare className="h-4 w-4" />
+                Tasks & Comments
+              </TabsTrigger>
+              <TabsTrigger value="files" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Project Files
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="tasks" className="space-y-4">
+              <TaskTracker projectId={project.id} />
+            </TabsContent>
+            
+            <TabsContent value="files" className="space-y-4">
+              <ProjectFileManager 
+                projectId={project.id} 
+                projectName={project.name}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>
