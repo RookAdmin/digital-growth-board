@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 interface ClientUser {
   id: string;
@@ -15,52 +16,47 @@ export const useClientAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const checkSession = async () => {
+    const handleAuthChange = async (session: Session | null) => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          // Check if this is a client user
-          const { data: clientUserData } = await supabase
+          const { data: clientUserData, error } = await supabase
             .from('client_users')
             .select('*')
             .eq('id', session.user.id)
             .single();
-          
-          if (clientUserData) {
-            setClientUser(clientUserData);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    checkSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const { data: clientUserData } = await supabase
-            .from('client_users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (clientUserData) {
+          if (error) {
+            console.error('Error fetching client user:', error.message);
+            setClientUser(null);
+          } else {
             setClientUser(clientUserData);
           }
         } else {
           setClientUser(null);
         }
+      } catch (e) {
+        const error = e as Error;
+        console.error('Error in handleAuthChange:', error.message);
+        setClientUser(null);
+      } finally {
         setLoading(false);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthChange(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setLoading(true);
+        await handleAuthChange(session);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
