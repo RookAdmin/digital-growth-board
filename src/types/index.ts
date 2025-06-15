@@ -99,6 +99,22 @@ export interface ClientFile {
   uploaded_by: string | null;
 }
 
+export type ProjectStatus = "Not Started" | "In Progress" | "Review" | "Completed";
+
+export interface Project {
+  id: string;
+  client_id: string;
+  name: string;
+  description: string | null;
+  status: ProjectStatus;
+  deadline: string | null;
+  assigned_team_members: string[] | null;
+  budget: number | null;
+  created_at: string;
+  updated_at: string;
+  clients?: { name: string; email: string; business_name: string | null };
+}
+
 export interface Column {
   id: LeadStatus;
   title: LeadStatus;

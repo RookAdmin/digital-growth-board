@@ -41,6 +41,9 @@ export const Header = ({ isAuthenticated: _ }: HeaderProps = {}) => {
                 <Link to="/dashboard/clients">Clients</Link>
               </Button>
               <Button variant="ghost" asChild>
+                <Link to="/dashboard/projects">Projects</Link>
+              </Button>
+              <Button variant="ghost" asChild>
                 <Link to="/dashboard/scheduling">Scheduling</Link>
               </Button>
               <Button variant="ghost" asChild>

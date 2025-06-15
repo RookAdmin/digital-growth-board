@@ -265,6 +265,53 @@ export type Database = {
           },
         ]
       }
+      projects: {
+        Row: {
+          assigned_team_members: string[] | null
+          budget: number | null
+          client_id: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_team_members?: string[] | null
+          budget?: number | null
+          client_id: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_team_members?: string[] | null
+          budget?: number | null
+          client_id?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proposal_items: {
         Row: {
           created_at: string
