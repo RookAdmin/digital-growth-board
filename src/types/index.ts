@@ -190,3 +190,59 @@ export interface KanbanData {
   columns: { [key: string]: Column };
   columnOrder: LeadStatus[];
 }
+
+// Invoice and Payment types
+export type InvoiceStatus = "Draft" | "Sent" | "Pending" | "Paid" | "Overdue" | "Cancelled";
+export type PaymentStatus = "Pending" | "Processing" | "Completed" | "Failed" | "Refunded";
+export type PaymentMethod = "Stripe" | "Razorpay" | "Bank Transfer" | "Cash" | "Check";
+
+export interface Invoice {
+  id: string;
+  client_id: string;
+  project_id: string | null;
+  invoice_number: string;
+  title: string;
+  description: string | null;
+  amount: number;
+  tax_amount: number;
+  total_amount: number;
+  currency: string;
+  status: InvoiceStatus;
+  due_date: string;
+  issued_date: string;
+  payment_terms: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  clients?: { name: string; email: string; business_name: string | null };
+  projects?: { name: string };
+  invoice_items?: InvoiceItem[];
+  payments?: Payment[];
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+}
+
+export interface Payment {
+  id: string;
+  invoice_id: string;
+  payment_method: PaymentMethod;
+  payment_gateway_id: string | null;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  transaction_fee: number;
+  payment_date: string | null;
+  gateway_response: Record<string, any> | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  invoices?: { invoice_number: string; title: string };
+}
