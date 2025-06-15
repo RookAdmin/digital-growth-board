@@ -20,6 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
   const { data, error } = await supabase
@@ -63,10 +71,18 @@ const createMeetingSlot = async ({ dateTime, duration, clientId }: { dateTime: D
   if (error) throw new Error(error.message);
 };
 
-const updateMeetingSlot = async ({ slotId, dateTime }: { slotId: string, dateTime: Date }) => {
+const updateMeetingSlot = async ({ slotId, dateTime, duration }: { slotId: string, dateTime: Date, duration?: number }) => {
+  const updatePayload: { date_time: string; duration_minutes?: number } = {
+    date_time: dateTime.toISOString(),
+  };
+
+  if (duration) {
+    updatePayload.duration_minutes = duration;
+  }
+  
   const { error } = await supabase
     .from('meeting_slots')
-    .update({ date_time: dateTime.toISOString() })
+    .update(updatePayload)
     .eq('id', slotId);
 
   if (error) {
@@ -139,6 +155,7 @@ const SchedulingPage = () => {
   const [slotToReschedule, setSlotToReschedule] = useState<MeetingSlot | null>(null);
   const [rescheduleConfirmationOpen, setRescheduleConfirmationOpen] = useState(false);
   const [newSlotForReschedule, setNewSlotForReschedule] = useState<MeetingSlot | null>(null);
+  const [newDurationForReschedule, setNewDurationForReschedule] = useState<number | null>(null);
 
   const { data: meetingSlots, isLoading } = useQuery({
     queryKey: ['meeting-slots'],
@@ -169,11 +186,13 @@ const SchedulingPage = () => {
       toast.success('Meeting rescheduled successfully!');
       setSlotToReschedule(null);
       setNewSlotForReschedule(null);
+      setNewDurationForReschedule(null);
     },
     onError: (error) => {
       toast.error(`Failed to reschedule meeting: ${error.message}`);
       setSlotToReschedule(null);
       setNewSlotForReschedule(null);
+      setNewDurationForReschedule(null);
     },
   });
 
@@ -227,6 +246,7 @@ const SchedulingPage = () => {
   const handleAvailableSlotClick = (availableSlot: MeetingSlot) => {
     if (slotToReschedule) {
       setNewSlotForReschedule(availableSlot);
+      setNewDurationForReschedule(slotToReschedule.duration_minutes);
       setRescheduleConfirmationOpen(true);
     } else {
       setSelectedSlot(availableSlot);
@@ -234,9 +254,9 @@ const SchedulingPage = () => {
   };
 
   const confirmReschedule = () => {
-    if (slotToReschedule && newSlotForReschedule) {
+    if (slotToReschedule && newSlotForReschedule && newDurationForReschedule) {
       const newStartTime = parseISO(newSlotForReschedule.date_time);
-      const newEndTime = addMinutes(newStartTime, slotToReschedule.duration_minutes);
+      const newEndTime = addMinutes(newStartTime, newDurationForReschedule);
 
       const otherBookedSlots = bookedSlots.filter(s => s.id !== slotToReschedule.id);
       const bookedIntervals = otherBookedSlots.map(s => ({
@@ -249,7 +269,7 @@ const SchedulingPage = () => {
       );
 
       if (overlaps) {
-        toast.error("The new time slot overlaps with another scheduled meeting.");
+        toast.error("The new time slot with this duration overlaps with another scheduled meeting.");
         setRescheduleConfirmationOpen(false);
         return;
       }
@@ -257,10 +277,18 @@ const SchedulingPage = () => {
       updateSlotMutation.mutate({
         slotId: slotToReschedule.id,
         dateTime: parseISO(newSlotForReschedule.date_time),
+        duration: newDurationForReschedule,
       });
     }
     setRescheduleConfirmationOpen(false);
   };
+
+  const durationOptions = [
+    { value: "30", label: "30 minutes" },
+    { value: "60", label: "1 hour" },
+    { value: "90", label: "1 hour 30 minutes" },
+    { value: "120", label: "2 hours" },
+  ];
 
   if (isLoading || isLoadingClients) {
     return (
@@ -459,11 +487,29 @@ const SchedulingPage = () => {
                     Are you sure you want to move this meeting from{' '}
                     <strong>{slotToReschedule && format(parseISO(slotToReschedule.date_time), 'PPP p')}</strong> to {' '}
                     <strong>{newSlotForReschedule && format(parseISO(newSlotForReschedule.date_time), 'PPP p')}</strong>?
-                    The duration will remain {slotToReschedule?.duration_minutes} minutes.
+                    You can also adjust the meeting duration.
                 </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="py-4 space-y-2">
+                <Label htmlFor="duration">Duration</Label>
+                <Select
+                    value={newDurationForReschedule?.toString()}
+                    onValueChange={(value) => setNewDurationForReschedule(parseInt(value, 10))}
+                >
+                    <SelectTrigger id="duration">
+                        <SelectValue placeholder="Select a duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {durationOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => { setSlotToReschedule(null); setNewSlotForReschedule(null); }}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => { setSlotToReschedule(null); setNewSlotForReschedule(null); setNewDurationForReschedule(null); }}>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={confirmReschedule} disabled={updateSlotMutation.isPending}>
                   {updateSlotMutation.isPending ? 'Rescheduling...' : 'Confirm'}
                 </AlertDialogAction>
