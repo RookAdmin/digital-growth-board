@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,8 +29,8 @@ export const LeadConversionChart = () => {
   const conversionRate = data?.leadCount ? ((data.clientCount ?? 0) / data.leadCount * 100).toFixed(1) : 0;
 
   const chartConfig = {
-    leads: { label: 'Leads', color: 'hsl(var(--chart-2))' },
-    clients: { label: 'Clients', color: 'hsl(var(--chart-1))' },
+    leads: { label: 'Leads', color: 'hsl(var(--chart-1))' },
+    clients: { label: 'Clients', color: 'hsl(var(--chart-2))' },
   };
 
   if (isLoading) {

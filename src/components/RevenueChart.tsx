@@ -36,7 +36,7 @@ export const RevenueChart = () => {
   });
 
   const chartConfig = {
-    revenue: { label: 'Revenue', color: 'hsl(var(--chart-1))' },
+    revenue: { label: 'Revenue', color: 'hsl(var(--chart-5))' },
   };
 
   if (isLoading) {
