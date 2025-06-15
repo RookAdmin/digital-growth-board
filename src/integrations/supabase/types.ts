@@ -188,119 +188,6 @@ export type Database = {
           },
         ]
       }
-      invoice_items: {
-        Row: {
-          created_at: string
-          description: string
-          id: string
-          invoice_id: string
-          quantity: number
-          total_price: number
-          unit_price: number
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          id?: string
-          invoice_id: string
-          quantity?: number
-          total_price: number
-          unit_price: number
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          id?: string
-          invoice_id?: string
-          quantity?: number
-          total_price?: number
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoice_items_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invoices: {
-        Row: {
-          amount: number
-          client_id: string
-          created_at: string
-          currency: string
-          description: string | null
-          due_date: string
-          id: string
-          invoice_number: string
-          issued_date: string
-          notes: string | null
-          payment_terms: string | null
-          project_id: string | null
-          status: string
-          tax_amount: number | null
-          title: string
-          total_amount: number
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          client_id: string
-          created_at?: string
-          currency?: string
-          description?: string | null
-          due_date: string
-          id?: string
-          invoice_number: string
-          issued_date?: string
-          notes?: string | null
-          payment_terms?: string | null
-          project_id?: string | null
-          status?: string
-          tax_amount?: number | null
-          title: string
-          total_amount: number
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          client_id?: string
-          created_at?: string
-          currency?: string
-          description?: string | null
-          due_date?: string
-          id?: string
-          invoice_number?: string
-          issued_date?: string
-          notes?: string | null
-          payment_terms?: string | null
-          project_id?: string | null
-          status?: string
-          tax_amount?: number | null
-          title?: string
-          total_amount?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoices_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lead_notes: {
         Row: {
           created_at: string
@@ -415,62 +302,6 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments: {
-        Row: {
-          amount: number
-          created_at: string
-          currency: string
-          gateway_response: Json | null
-          id: string
-          invoice_id: string
-          notes: string | null
-          payment_date: string | null
-          payment_gateway_id: string | null
-          payment_method: string
-          status: string
-          transaction_fee: number | null
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          currency?: string
-          gateway_response?: Json | null
-          id?: string
-          invoice_id: string
-          notes?: string | null
-          payment_date?: string | null
-          payment_gateway_id?: string | null
-          payment_method: string
-          status?: string
-          transaction_fee?: number | null
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          currency?: string
-          gateway_response?: Json | null
-          id?: string
-          invoice_id?: string
-          notes?: string | null
-          payment_date?: string | null
-          payment_gateway_id?: string | null
-          payment_method?: string
-          status?: string
-          transaction_fee?: number | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -785,10 +616,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
