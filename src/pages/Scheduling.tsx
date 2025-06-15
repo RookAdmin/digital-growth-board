@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +82,7 @@ const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
                 client_id: null,
                 meeting_type: 'kickoff',
                 notes: null,
+                meeting_link: null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             });
