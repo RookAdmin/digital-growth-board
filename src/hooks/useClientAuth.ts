@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 interface ClientUser {
   id: string;
@@ -15,57 +16,49 @@ export const useClientAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const checkSession = async () => {
+    const getClientUser = async (session: Session | null) => {
+      setLoading(true);
+      if (!session?.user) {
+        setClientUser(null);
+        setLoading(false);
+        return;
+      }
+
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          // Check if this is a client user
-          const { data: clientUserData } = await supabase
-            .from('client_users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (clientUserData) {
-            setClientUser(clientUserData);
-          } else {
-            setClientUser(null);
-          }
+        const { data: clientUserData, error } = await supabase
+          .from('client_users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') { // Ignore "No rows found" error
+          console.error("Error fetching client user:", error);
+          setClientUser(null);
+        } else {
+          setClientUser(clientUserData as ClientUser | null);
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error("Error in getClientUser:", error);
         setClientUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      getClientUser(session);
+    });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const { data: clientUserData } = await supabase
-            .from('client_users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (clientUserData) {
-            setClientUser(clientUserData);
-          } else {
-            setClientUser(null);
-          }
-        } else {
-          setClientUser(null);
-        }
-        setLoading(false);
+      (event, session) => {
+        // Use setTimeout to defer async call, per Supabase best practices
+        setTimeout(() => getClientUser(session), 0);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, phone: string) => {
