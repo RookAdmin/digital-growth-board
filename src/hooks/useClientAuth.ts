@@ -26,7 +26,9 @@ export const useClientAuth = () => {
             .single();
 
           if (error) {
-            console.error('Error fetching client user:', error.message);
+            // This is expected if a non-client user is logged in.
+            // We can log it for debugging but it's not a critical error.
+            console.log('Could not fetch client user:', error.message);
             setClientUser(null);
           } else {
             setClientUser(clientUserData);
@@ -49,7 +51,6 @@ export const useClientAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        setLoading(true);
         await handleAuthChange(session);
       }
     );
