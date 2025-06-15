@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
@@ -52,7 +51,6 @@ export const ClientsTable = () => {
       setClientToDelete(null);
     },
     onError: (error: Error) => {
-      console.error("Error deleting client:", error);
       toast({
         title: "Error Deleting Client",
         description: `An unexpected error occurred: ${error.message}`,
