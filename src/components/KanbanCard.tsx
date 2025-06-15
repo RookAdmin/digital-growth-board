@@ -42,7 +42,28 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
-      // 1. Create a client
+      // 1. Check if a client with this email already exists
+      const { data: existingClient, error: checkError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('email', leadToConvert.email)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingClient) {
+        // Client already exists. Just update the lead status.
+        const { error: leadError } = await supabase
+          .from('leads')
+          .update({ status: 'Converted' })
+          .eq('id', leadToConvert.id);
+
+        if (leadError) throw leadError;
+        
+        return { ...existingClient, wasExisting: true };
+      }
+
+      // 2. If client does not exist, create a new one.
       const { data: clientData, error: clientError } = await supabase.from('clients').insert({
         name: leadToConvert.name,
         email: leadToConvert.email,
@@ -55,7 +76,7 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
       if (clientError) throw clientError;
 
-      // 2. Create a project for the new client
+      // 3. Create a project for the new client
       const { error: projectError } = await supabase.from('projects').insert({
         client_id: clientData.id,
         name: `${clientData.business_name || clientData.name}'s Initial Project`,
@@ -66,31 +87,35 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
       if (projectError) {
         console.error('Failed to create project for new client:', projectError);
         toast.error(`Client created, but failed to create project: ${projectError.message}`);
-        throw projectError;
+        // We still proceed even if project creation fails.
       }
 
-      // 3. Update lead status
+      // 4. Update lead status
       const { error: leadError } = await supabase
         .from('leads')
         .update({ status: 'Converted' })
         .eq('id', leadToConvert.id);
 
       if (leadError) {
-        // This is not a true transaction, so we'll just log an error if the second step fails.
-        // A robust solution could use a database function (RPC) to ensure atomicity.
         console.error('Failed to update lead status, but client and project were created:', clientData);
         throw leadError;
       }
-      return clientData;
+      return { ...clientData, wasExisting: false };
     },
-    onSuccess: (newClient) => {
-      toast.success("Lead converted to client and initial project created!");
+    onSuccess: (data) => {
+      const { wasExisting, ...client } = data;
+
+      if (wasExisting) {
+        toast.info(`Client with email ${client.email} already exists. Lead status updated.`);
+      } else {
+        toast.success("Lead converted to client and initial project created!");
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      }
+
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      if (newClient) {
-        navigate(`/clients?onboarding=${newClient.id}`);
-      }
+      
+      navigate(`/clients?onboarding=${client.id}`);
     },
     onError: (error: Error) => {
       toast.error(`Conversion failed: ${error.message}`);
