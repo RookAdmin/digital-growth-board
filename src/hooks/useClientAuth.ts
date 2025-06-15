@@ -29,10 +29,13 @@ export const useClientAuth = () => {
           
           if (clientUserData) {
             setClientUser(clientUserData);
+          } else {
+            setClientUser(null);
           }
         }
       } catch (error) {
         console.error('Error checking session:', error);
+        setClientUser(null);
       } finally {
         setLoading(false);
       }
@@ -52,6 +55,8 @@ export const useClientAuth = () => {
           
           if (clientUserData) {
             setClientUser(clientUserData);
+          } else {
+            setClientUser(null);
           }
         } else {
           setClientUser(null);
@@ -63,10 +68,10 @@ export const useClientAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, phone: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password,
+      password: phone,
     });
     return { data, error };
   };
