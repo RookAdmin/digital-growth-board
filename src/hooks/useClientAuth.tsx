@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+import { Session, AuthError, AuthResponse } from '@supabase/supabase-js';
 
 interface ClientUser {
   id: string;
@@ -11,7 +11,16 @@ interface ClientUser {
   last_login: string | null;
 }
 
-export const useClientAuth = () => {
+interface ClientAuthContextType {
+  clientUser: ClientUser | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signOut: () => Promise<{ error: AuthError | null }>;
+}
+
+const ClientAuthContext = createContext<ClientAuthContextType | undefined>(undefined);
+
+export const ClientAuthProvider = ({ children }: { children: ReactNode }) => {
   const [clientUser, setClientUser] = useState<ClientUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +36,6 @@ export const useClientAuth = () => {
 
           if (error) {
             // This is expected if a non-client user is logged in.
-            // We can log it for debugging but it's not a critical error.
             console.log('Could not fetch client user:', error.message);
             setClientUser(null);
           } else {
@@ -61,25 +69,31 @@ export const useClientAuth = () => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    return supabase.auth.signInWithPassword({
       email,
       password,
     });
-    return { data, error };
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (!error) {
-      setClientUser(null);
-    }
     return { error };
   };
 
-  return {
+  const value = {
     clientUser,
     loading,
     signIn,
     signOut,
   };
+
+  return <ClientAuthContext.Provider value={value}>{children}</ClientAuthContext.Provider>;
+};
+
+export const useClientAuth = () => {
+  const context = useContext(ClientAuthContext);
+  if (context === undefined) {
+    throw new Error('useClientAuth must be used within a ClientAuthProvider');
+  }
+  return context;
 };
