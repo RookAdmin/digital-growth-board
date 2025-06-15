@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { MeetingSlot, Client } from '@/types';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addDays, startOfDay, endOfDay, setHours, isWithinInterval, addMinutes, isBefore } from 'date-fns';
 import { BookingDialog } from '@/components/BookingDialog';
 
 const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
@@ -37,18 +37,67 @@ const fetchClients = async (): Promise<Client[]> => {
   return data as Client[];
 };
 
-const bookMeetingSlot = async ({ slotId, clientId }: { slotId: string; clientId: string }) => {
+const createMeetingSlot = async ({ dateTime, duration, clientId }: { dateTime: Date; duration: number; clientId: string }) => {
   const { error } = await supabase
     .from('meeting_slots')
-    .update({ 
+    .insert({ 
+      date_time: dateTime.toISOString(),
+      duration_minutes: duration,
       status: 'booked', 
       client_id: clientId,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', slotId)
-    .eq('status', 'available');
+      meeting_type: 'kickoff'
+    });
   
   if (error) throw new Error(error.message);
+};
+
+const generateAvailableSlots = (bookedSlots: MeetingSlot[]): MeetingSlot[] => {
+    const potentialSlots: MeetingSlot[] = [];
+    const meetingDuration = 60;
+
+    for (let i = 0; i < 7; i++) { // For the next 7 days
+        const day = addDays(new Date(), i);
+        const dayStart = setHours(startOfDay(day), 9);
+        const dayEnd = setHours(startOfDay(day), 22);
+
+        let currentTime = dayStart;
+        while (isBefore(currentTime, dayEnd)) {
+            potentialSlots.push({
+                id: `virtual-${currentTime.toISOString()}`,
+                date_time: currentTime.toISOString(),
+                duration_minutes: meetingDuration,
+                status: 'available',
+                client_id: null,
+                meeting_type: 'kickoff',
+                notes: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            });
+            currentTime = addMinutes(currentTime, meetingDuration);
+        }
+    }
+    
+    const bookedIntervals = bookedSlots.map(slot => ({
+        start: parseISO(slot.date_time),
+        end: addMinutes(parseISO(slot.date_time), slot.duration_minutes),
+    }));
+
+    const availableSlots = potentialSlots.filter(potentialSlot => {
+        const slotStart = parseISO(potentialSlot.date_time);
+        const slotEnd = addMinutes(slotStart, potentialSlot.duration_minutes);
+
+        if (isBefore(slotStart, new Date())) {
+            return false;
+        }
+
+        const overlaps = bookedIntervals.some(bookedInterval => 
+            isBefore(slotStart, bookedInterval.end) && isBefore(bookedInterval.start, slotEnd)
+        );
+
+        return !overlaps;
+    });
+    
+    return availableSlots;
 };
 
 const SchedulingPage = () => {
@@ -65,8 +114,8 @@ const SchedulingPage = () => {
     queryFn: fetchClients,
   });
 
-  const bookSlotMutation = useMutation({
-    mutationFn: bookMeetingSlot,
+  const createSlotMutation = useMutation({
+    mutationFn: createMeetingSlot,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meeting-slots'] });
       toast.success('Meeting slot booked successfully!');
@@ -91,11 +140,21 @@ const SchedulingPage = () => {
     };
   }, [queryClient]);
 
-  const availableSlots = meetingSlots?.filter(slot => slot.status === 'available') || [];
-  const bookedSlots = meetingSlots?.filter(slot => slot.status === 'booked') || [];
+  const bookedSlots = useMemo(() => meetingSlots?.filter(slot => slot.status === 'booked') || [], [meetingSlots]);
+  const availableSlots = useMemo(() => {
+    if (!meetingSlots) return [];
+    const bSlots = meetingSlots.filter(slot => slot.status === 'booked');
+    return generateAvailableSlots(bSlots);
+  }, [meetingSlots]);
 
-  const handleBookSlot = (slotId: string, clientId: string) => {
-    bookSlotMutation.mutate({ slotId, clientId });
+  const handleCreateSlot = (clientId: string) => {
+    if (selectedSlot) {
+      createSlotMutation.mutate({
+        dateTime: parseISO(selectedSlot.date_time),
+        duration: selectedSlot.duration_minutes,
+        clientId,
+      });
+    }
   };
 
   if (isLoading || isLoadingClients) {
@@ -237,12 +296,8 @@ const SchedulingPage = () => {
               setSelectedSlot(null);
             }
           }}
-          onBook={(clientId) => {
-            if (selectedSlot) {
-              handleBookSlot(selectedSlot.id, clientId);
-            }
-          }}
-          isBooking={bookSlotMutation.isPending}
+          onBook={handleCreateSlot}
+          isBooking={createSlotMutation.isPending}
         />
       )}
     </div>
