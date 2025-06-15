@@ -1,15 +1,15 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
-import { MeetingSlot } from '@/types';
+import { MeetingSlot, Client } from '@/types';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
+import { BookingDialog } from '@/components/BookingDialog';
 
 const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
   const { data, error } = await supabase
@@ -25,6 +25,16 @@ const fetchMeetingSlots = async (): Promise<MeetingSlot[]> => {
   
   if (error) throw new Error(error.message);
   return data as MeetingSlot[];
+};
+
+const fetchClients = async (): Promise<Client[]> => {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id, name, email')
+    .order('name', { ascending: true });
+  
+  if (error) throw new Error(error.message);
+  return data as Client[];
 };
 
 const bookMeetingSlot = async ({ slotId, clientId }: { slotId: string; clientId: string }) => {
@@ -48,6 +58,11 @@ const SchedulingPage = () => {
   const { data: meetingSlots, isLoading } = useQuery({
     queryKey: ['meeting-slots'],
     queryFn: fetchMeetingSlots,
+  });
+
+  const { data: clients, isLoading: isLoadingClients } = useQuery({
+    queryKey: ['clients'],
+    queryFn: fetchClients,
   });
 
   const bookSlotMutation = useMutation({
@@ -83,14 +98,14 @@ const SchedulingPage = () => {
     bookSlotMutation.mutate({ slotId, clientId });
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingClients) {
     return (
       <div className="flex flex-col h-screen bg-background">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading meeting slots...</p>
+            <p className="mt-4 text-muted-foreground">Loading data...</p>
           </div>
         </main>
       </div>
@@ -212,6 +227,24 @@ const SchedulingPage = () => {
           </div>
         </div>
       </main>
+      {selectedSlot && (
+        <BookingDialog
+          slot={selectedSlot}
+          clients={clients || []}
+          isOpen={!!selectedSlot}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedSlot(null);
+            }
+          }}
+          onBook={(clientId) => {
+            if (selectedSlot) {
+              handleBookSlot(selectedSlot.id, clientId);
+            }
+          }}
+          isBooking={bookSlotMutation.isPending}
+        />
+      )}
     </div>
   );
 };
