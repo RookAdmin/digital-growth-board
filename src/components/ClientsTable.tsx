@@ -1,10 +1,24 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import { Trash2 } from 'lucide-react';
 
 const fetchClients = async (): Promise<Client[]> => {
   const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
@@ -17,6 +31,41 @@ export const ClientsTable = () => {
     queryKey: ['clients'],
     queryFn: fetchClients,
   });
+
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      const { error } = await supabase.from('clients').delete().eq('id', clientId);
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Client Deleted",
+        description: "The client has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      setClientToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Deleting Client",
+        description: `Failed to delete client. This may be because the client is still linked to projects or other data. ${error.message}`,
+        variant: "destructive",
+      });
+      setClientToDelete(null);
+    },
+  });
+
+  const handleDeleteClient = () => {
+    if (clientToDelete) {
+      deleteClientMutation.mutate(clientToDelete.id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -53,29 +102,67 @@ export const ClientsTable = () => {
   }
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="font-bold">Name</TableHead>
-              <TableHead className="font-bold">Email</TableHead>
-              <TableHead className="font-bold">Phone</TableHead>
-              <TableHead className="font-bold">Business Name</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clients?.map((client) => (
-              <TableRow key={client.id}>
-                <TableCell>{client.name}</TableCell>
-                <TableCell>{client.email}</TableCell>
-                <TableCell>{client.phone || '-'}</TableCell>
-                <TableCell>{client.business_name || '-'}</TableCell>
+    <>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="font-bold">Name</TableHead>
+                <TableHead className="font-bold">Email</TableHead>
+                <TableHead className="font-bold">Phone</TableHead>
+                <TableHead className="font-bold">Business Name</TableHead>
+                <TableHead className="font-bold text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {clients?.map((client) => (
+                <TableRow key={client.id}>
+                  <TableCell>{client.name}</TableCell>
+                  <TableCell>{client.email}</TableCell>
+                  <TableCell>{client.phone || '-'}</TableCell>
+                  <TableCell>{client.business_name || '-'}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => setClientToDelete(client)}
+                      className="h-8 w-8"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete client</span>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {clientToDelete && (
+        <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the client "{clientToDelete.name}".
+                If the client is associated with projects, this action may fail.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setClientToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteClient}
+                disabled={deleteClientMutation.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteClientMutation.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </>
   );
 };
