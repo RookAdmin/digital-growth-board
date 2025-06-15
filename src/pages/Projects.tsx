@@ -62,7 +62,7 @@ const ProjectsPage = () => {
   if (isLoading) {
     return (
       <div className="flex flex-col h-screen bg-background">
-        <Header isAuthenticated={true} />
+        <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-2xl">Loading projects...</div>
         </main>
@@ -72,7 +72,7 @@ const ProjectsPage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <Header isAuthenticated={true} />
+      <Header />
       <main className="flex-1 overflow-hidden">
         <div className="p-6 h-full flex flex-col">
           <div className="mb-6">
