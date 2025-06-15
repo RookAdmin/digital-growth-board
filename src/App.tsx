@@ -12,6 +12,7 @@ import ClientsPage from "./pages/Clients";
 import ProjectsPage from "./pages/Projects";
 import SchedulingPage from "./pages/Scheduling";
 import FilesPage from "./pages/Files";
+import ClientPortalPage from "./pages/ClientPortal";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/client-portal" element={<ClientPortalPage />} />
           
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard/leads" element={<DashboardPage />} />
