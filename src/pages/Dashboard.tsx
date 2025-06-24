@@ -2,6 +2,7 @@
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { Header } from '@/components/Header';
 import { AddLeadDialog } from '@/components/AddLeadDialog';
+import { DateRangeFilter } from '@/components/DateRangeFilter';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,26 @@ import { format } from 'date-fns';
 const DashboardPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(undefined);
+  const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(undefined);
+
+  const handleDateRangeChange = (startDate?: Date, endDate?: Date) => {
+    setStartDateFilter(startDate);
+    setEndDateFilter(endDate);
+    // Clear single date filter when using range
+    if (startDate || endDate) {
+      setDateFilter(undefined);
+    }
+  };
+
+  const handleSingleDateChange = (date: Date | undefined) => {
+    setDateFilter(date);
+    // Clear range filters when using single date
+    if (date) {
+      setStartDateFilter(undefined);
+      setEndDateFilter(undefined);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -43,7 +64,7 @@ const DashboardPage = () => {
                   <CalendarComponent
                     mode="single"
                     selected={dateFilter}
-                    onSelect={setDateFilter}
+                    onSelect={handleSingleDateChange}
                     initialFocus
                   />
                   {dateFilter && (
@@ -51,7 +72,7 @@ const DashboardPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setDateFilter(undefined)}
+                        onClick={() => handleSingleDateChange(undefined)}
                         className="w-full"
                       >
                         <X className="mr-2 h-4 w-4" />
@@ -62,6 +83,12 @@ const DashboardPage = () => {
                 </PopoverContent>
               </Popover>
 
+              <DateRangeFilter
+                startDate={startDateFilter}
+                endDate={endDateFilter}
+                onDateRangeChange={handleDateRangeChange}
+              />
+
               <Link to="/dashboard/reporting">
                 <Button variant="outline">
                   <ChartBarIncreasing className="mr-2 h-4 w-4" />
@@ -71,7 +98,12 @@ const DashboardPage = () => {
               <AddLeadDialog />
             </div>
           </div>
-          <KanbanBoard searchTerm={searchTerm} dateFilter={dateFilter} />
+          <KanbanBoard 
+            searchTerm={searchTerm} 
+            dateFilter={dateFilter}
+            startDateFilter={startDateFilter}
+            endDateFilter={endDateFilter}
+          />
       </main>
     </div>
   );

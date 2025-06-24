@@ -14,6 +14,19 @@ const fetchLeads = async (): Promise<Lead[]> => {
   return data as Lead[];
 };
 
+const fetchLeadsWithStatusHistory = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('leads')
+    .select(`
+      *,
+      lead_status_history(changed_at, new_status, old_status)
+    `)
+    .order('created_at', { ascending: true });
+  
+  if (error) throw new Error(error.message);
+  return data;
+};
+
 const updateLeadStatus = async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
   // First get the current lead to track old status
   const { data: currentLead } = await supabase
@@ -59,29 +72,33 @@ const initialData: KanbanData = {
 interface KanbanBoardProps {
   searchTerm?: string;
   dateFilter?: Date;
+  startDateFilter?: Date;
+  endDateFilter?: Date;
 }
 
-export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) => {
+export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endDateFilter }: KanbanBoardProps) => {
   const queryClient = useQueryClient();
   const [data, setData] = useState<KanbanData>(initialData);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const { data: leadsData, isLoading } = useQuery({
-    queryKey: ['leads'],
-    queryFn: fetchLeads,
+    queryKey: ['leads-with-history'],
+    queryFn: fetchLeadsWithStatusHistory,
   });
 
   const updateLeadMutation = useMutation({
     mutationFn: updateLeadStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
       queryClient.invalidateQueries({ queryKey: ['lead-status-history'] });
     },
   });
 
   useEffect(() => {
     if (leadsData) {
-      let filteredLeadsData = leadsData.filter(lead => {
+      let filteredLeadsData = leadsData.filter(leadData => {
+        const lead = leadData as Lead & { lead_status_history: any[] };
         const term = searchTerm.toLowerCase();
         const matchesSearch = !term || (
           lead.name.toLowerCase().includes(term) ||
@@ -89,13 +106,59 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
           (lead.phone && lead.phone.toLowerCase().includes(term))
         );
 
+        // Single date filter (creation date)
         const matchesDate = !dateFilter || 
           new Date(lead.created_at).toDateString() === dateFilter.toDateString();
 
-        return matchesSearch && matchesDate;
+        // Date range filter (status change timestamps)
+        let matchesDateRange = true;
+        if (startDateFilter || endDateFilter) {
+          matchesDateRange = false;
+          
+          // Check lead creation date
+          const createdDate = new Date(lead.created_at);
+          let createdMatches = true;
+          if (startDateFilter) {
+            createdMatches = createdMatches && createdDate >= startDateFilter;
+          }
+          if (endDateFilter) {
+            const endOfDay = new Date(endDateFilter);
+            endOfDay.setHours(23, 59, 59, 999);
+            createdMatches = createdMatches && createdDate <= endOfDay;
+          }
+          
+          if (createdMatches) {
+            matchesDateRange = true;
+          }
+
+          // Check status change dates
+          if (!matchesDateRange && lead.lead_status_history) {
+            for (const history of lead.lead_status_history) {
+              const statusChangeDate = new Date(history.changed_at);
+              let statusMatches = true;
+              
+              if (startDateFilter) {
+                statusMatches = statusMatches && statusChangeDate >= startDateFilter;
+              }
+              if (endDateFilter) {
+                const endOfDay = new Date(endDateFilter);
+                endOfDay.setHours(23, 59, 59, 999);
+                statusMatches = statusMatches && statusChangeDate <= endOfDay;
+              }
+              
+              if (statusMatches) {
+                matchesDateRange = true;
+                break;
+              }
+            }
+          }
+        }
+
+        return matchesSearch && matchesDate && matchesDateRange;
       });
 
-      const leads = filteredLeadsData.reduce((acc, lead) => {
+      const leads = filteredLeadsData.reduce((acc, leadData) => {
+        const lead = leadData as Lead;
         acc[lead.id] = lead;
         return acc;
       }, {} as { [key: string]: Lead });
@@ -103,7 +166,8 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
       const columns: { [key: string]: Column } = JSON.parse(JSON.stringify(initialData.columns));
       Object.values(columns).forEach(c => (c.leadIds = []));
       
-      filteredLeadsData.forEach(lead => {
+      filteredLeadsData.forEach(leadData => {
+        const lead = leadData as Lead;
         if (columns[lead.status]) {
           columns[lead.status].leadIds.push(lead.id);
         }
@@ -115,13 +179,14 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
         columnOrder: initialData.columnOrder,
       });
     }
-  }, [leadsData, searchTerm, dateFilter]);
+  }, [leadsData, searchTerm, dateFilter, startDateFilter, endDateFilter]);
 
   useEffect(() => {
     const channel = supabase.channel('realtime-leads')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['leads'] });
+          queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
         }
       )
       .subscribe();
