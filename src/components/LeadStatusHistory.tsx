@@ -20,7 +20,7 @@ const fetchLeadStatusHistory = async (leadId: string): Promise<LeadStatusHistory
   return data as LeadStatusHistory[];
 };
 
-export const LeadStatusHistory = ({ leadId }: LeadStatusHistoryProps) => {
+export const LeadStatusHistoryComponent = ({ leadId }: LeadStatusHistoryProps) => {
   const { data: statusHistory, isLoading } = useQuery({
     queryKey: ['lead-status-history', leadId],
     queryFn: () => fetchLeadStatusHistory(leadId),
