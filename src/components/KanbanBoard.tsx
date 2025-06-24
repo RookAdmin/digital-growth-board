@@ -26,15 +26,20 @@ const updateLeadStatus = async ({ leadId, status }: { leadId: string; status: Le
   const { error } = await supabase.from('leads').update({ status }).eq('id', leadId);
   if (error) throw new Error(error.message);
 
-  // Record the status change in history
+  // Record the status change in history with current timestamp
   if (currentLead && currentLead.status !== status) {
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from('lead_status_history').insert({
+    const { error: historyError } = await supabase.from('lead_status_history').insert({
       lead_id: leadId,
       old_status: currentLead.status,
       new_status: status,
-      changed_by: user?.id
+      changed_by: user?.id,
+      changed_at: new Date().toISOString()
     });
+    
+    if (historyError) {
+      console.error('Failed to record status change:', historyError);
+    }
   }
 };
 
@@ -163,7 +168,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
 
     setData(newData);
 
-    // Update backend
+    // Update backend with timestamp tracking
     updateLeadMutation.mutate({ leadId: draggableId, status: newStatus });
   };
   

@@ -158,36 +158,39 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
   return (
     <Draggable draggableId={lead.id} index={index}>
-      {(provided) => (
+      {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="mb-4"
+          className={`transition-all duration-200 ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-lg' : ''}`}
           onClick={() => onCardClick(lead)}
         >
-          <Card className="hover:bg-accent transition-colors cursor-pointer">
-            <CardHeader className="p-4">
+          <Card className="hover:bg-accent transition-colors cursor-pointer shadow-sm hover:shadow-md border-l-4 border-l-primary/20">
+            <CardHeader className="p-3 pb-2">
               <div className="flex justify-between items-start">
                 <div className="flex-1 mr-2">
-                  <CardTitle className="text-base font-bold">{lead.name}</CardTitle>
+                  <CardTitle className="text-sm font-semibold leading-tight">{lead.name}</CardTitle>
                   {lead.business_name && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                      <Briefcase size={14} /> <span>{lead.business_name}</span>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                      <Briefcase size={12} /> 
+                      <span className="truncate">{lead.business_name}</span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge className={`${statusColors[lead.status]} text-white`}>{lead.status}</Badge>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Badge className={`${statusColors[lead.status]} text-white text-xs px-2 py-0.5`}>
+                    {lead.status}
+                  </Badge>
                   <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={handleOpenDeleteDialog}
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       disabled={deleteLeadMutation.isPending}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={12} />
                     </Button>
                     <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                       <AlertDialogHeader>
@@ -211,21 +214,27 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2 mb-2">
-                <Mail size={14} /> <span>{lead.email}</span>
+            <CardContent className="p-3 pt-0 text-xs text-muted-foreground space-y-1">
+              <div className="flex items-center gap-1">
+                <Mail size={12} /> 
+                <span className="truncate">{lead.email}</span>
               </div>
               {lead.phone && (
-                <div className="flex items-center gap-2 mb-2">
-                  <Phone size={14} /> <span>{lead.phone}</span>
+                <div className="flex items-center gap-1">
+                  <Phone size={12} /> 
+                  <span className="truncate">{lead.phone}</span>
                 </div>
               )}
-              {lead.lead_source && <p className="mb-2"><strong>Source:</strong> {lead.lead_source}</p>}
-              {lead.budget_range && <p className="mb-4"><strong>Budget:</strong> {lead.budget_range}</p>}
+              {lead.lead_source && (
+                <p className="text-xs"><strong>Source:</strong> {lead.lead_source}</p>
+              )}
+              {lead.budget_range && (
+                <p className="text-xs"><strong>Budget:</strong> {lead.budget_range}</p>
+              )}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
                  <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                     <Button
-                      className="w-full"
+                      className="w-full mt-2"
                       size="sm"
                       onClick={handleOpenDialog}
                       disabled={convertToClientMutation.isPending}

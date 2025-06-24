@@ -21,13 +21,15 @@ export const KanbanColumn = ({ columnId, title, leads, onCardClick }: KanbanColu
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`flex-1 rounded-b-lg transition-colors p-2 ${snapshot.isDraggingOver ? 'bg-muted/20' : ''}`}
-              style={{ minHeight: '500px' }}
+              className={`flex-1 rounded-b-lg transition-colors p-2 overflow-y-auto ${snapshot.isDraggingOver ? 'bg-muted/20' : ''}`}
+              style={{ minHeight: '500px', maxHeight: 'calc(100vh - 280px)' }}
             >
-              {leads.map((lead, index) => (
-                <KanbanCard key={lead.id} lead={lead} index={index} onCardClick={onCardClick} />
-              ))}
-              {provided.placeholder}
+              <div className="space-y-3">
+                {leads.map((lead, index) => (
+                  <KanbanCard key={lead.id} lead={lead} index={index} onCardClick={onCardClick} />
+                ))}
+                {provided.placeholder}
+              </div>
             </div>
           )}
         </Droppable>
