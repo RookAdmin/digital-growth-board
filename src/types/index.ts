@@ -1,4 +1,3 @@
-
 export type LeadStatus = "New" | "Contacted" | "Qualified" | "Proposal Sent" | "Converted" | "Dropped";
 
 export interface Lead {
@@ -12,6 +11,17 @@ export interface Lead {
   lead_source: string | null;
   notes: string | null;
   status: LeadStatus;
+  created_at: string;
+}
+
+export interface LeadStatusHistory {
+  id: string;
+  lead_id: string;
+  old_status: string | null;
+  new_status: string;
+  changed_at: string;
+  changed_by: string | null;
+  notes: string | null;
   created_at: string;
 }
 

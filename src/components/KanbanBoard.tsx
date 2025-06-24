@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
@@ -6,6 +7,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeadDetailsModal } from './LeadDetailsModal';
+import { Button } from '@/components/ui/button';
+import { Calendar, CalendarDays } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 const fetchLeads = async (): Promise<Lead[]> => {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
@@ -14,8 +20,27 @@ const fetchLeads = async (): Promise<Lead[]> => {
 };
 
 const updateLeadStatus = async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
+  // First get the current lead to track old status
+  const { data: currentLead } = await supabase
+    .from('leads')
+    .select('status')
+    .eq('id', leadId)
+    .single();
+
+  // Update the lead status
   const { error } = await supabase.from('leads').update({ status }).eq('id', leadId);
   if (error) throw new Error(error.message);
+
+  // Record the status change in history
+  if (currentLead && currentLead.status !== status) {
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('lead_status_history').insert({
+      lead_id: leadId,
+      old_status: currentLead.status,
+      new_status: status,
+      changed_by: user?.id
+    });
+  }
 };
 
 const initialData: KanbanData = {
@@ -33,9 +58,10 @@ const initialData: KanbanData = {
 
 interface KanbanBoardProps {
   searchTerm?: string;
+  dateFilter?: Date;
 }
 
-export const KanbanBoard = ({ searchTerm = '' }: KanbanBoardProps) => {
+export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) => {
   const queryClient = useQueryClient();
   const [data, setData] = useState<KanbanData>(initialData);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -54,14 +80,18 @@ export const KanbanBoard = ({ searchTerm = '' }: KanbanBoardProps) => {
 
   useEffect(() => {
     if (leadsData) {
-      const filteredLeadsData = leadsData.filter(lead => {
+      let filteredLeadsData = leadsData.filter(lead => {
         const term = searchTerm.toLowerCase();
-        if (!term) return true;
-        return (
+        const matchesSearch = !term || (
           lead.name.toLowerCase().includes(term) ||
           lead.email.toLowerCase().includes(term) ||
           (lead.phone && lead.phone.toLowerCase().includes(term))
         );
+
+        const matchesDate = !dateFilter || 
+          new Date(lead.created_at).toDateString() === dateFilter.toDateString();
+
+        return matchesSearch && matchesDate;
       });
 
       const leads = filteredLeadsData.reduce((acc, lead) => {
@@ -84,7 +114,7 @@ export const KanbanBoard = ({ searchTerm = '' }: KanbanBoardProps) => {
         columnOrder: initialData.columnOrder,
       });
     }
-  }, [leadsData, searchTerm]);
+  }, [leadsData, searchTerm, dateFilter]);
 
   useEffect(() => {
     const channel = supabase.channel('realtime-leads')

@@ -6,10 +6,14 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ChartBarIncreasing } from 'lucide-react';
+import { ChartBarIncreasing, Calendar, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 const DashboardPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -27,6 +31,37 @@ const DashboardPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
               />
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateFilter}
+                    onSelect={setDateFilter}
+                    initialFocus
+                  />
+                  {dateFilter && (
+                    <div className="p-3 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDateFilter(undefined)}
+                        className="w-full"
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Clear filter
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+
               <Link to="/dashboard/reporting">
                 <Button variant="outline">
                   <ChartBarIncreasing className="mr-2 h-4 w-4" />
@@ -36,7 +71,7 @@ const DashboardPage = () => {
               <AddLeadDialog />
             </div>
           </div>
-          <KanbanBoard searchTerm={searchTerm} />
+          <KanbanBoard searchTerm={searchTerm} dateFilter={dateFilter} />
       </main>
     </div>
   );
