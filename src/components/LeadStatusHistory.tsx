@@ -58,12 +58,12 @@ export const LeadStatusHistoryComponent = ({ leadId }: LeadStatusHistoryProps) =
                 <div className="flex items-center gap-2 font-medium">
                   {history.old_status ? (
                     <>
-                      <span className="px-2 py-1 bg-gray-100 rounded text-xs">{history.old_status}</span>
+                      <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs">{history.old_status}</span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <span className="px-2 py-1 bg-blue-100 rounded text-xs">{history.new_status}</span>
+                      <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs">{history.new_status}</span>
                     </>
                   ) : (
-                    <span className="px-2 py-1 bg-blue-100 rounded text-xs">Set to {history.new_status}</span>
+                    <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs">Set to {history.new_status}</span>
                   )}
                 </div>
                 <div className="text-muted-foreground text-xs">

@@ -2,15 +2,12 @@
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { Header } from '@/components/Header';
 import { AddLeadDialog } from '@/components/AddLeadDialog';
-import { DateRangeFilter } from '@/components/DateRangeFilter';
+import { UnifiedDateFilter } from '@/components/UnifiedDateFilter';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ChartBarIncreasing, Calendar, X } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { ChartBarIncreasing } from 'lucide-react';
 
 const DashboardPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,19 +18,10 @@ const DashboardPage = () => {
   const handleDateRangeChange = (startDate?: Date, endDate?: Date) => {
     setStartDateFilter(startDate);
     setEndDateFilter(endDate);
-    // Clear single date filter when using range
-    if (startDate || endDate) {
-      setDateFilter(undefined);
-    }
   };
 
   const handleSingleDateChange = (date: Date | undefined) => {
     setDateFilter(date);
-    // Clear range filters when using single date
-    if (date) {
-      setStartDateFilter(undefined);
-      setEndDateFilter(undefined);
-    }
   };
 
   return (
@@ -53,40 +41,12 @@ const DashboardPage = () => {
                 className="w-64"
               />
               
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={dateFilter}
-                    onSelect={handleSingleDateChange}
-                    initialFocus
-                  />
-                  {dateFilter && (
-                    <div className="p-3 border-t">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSingleDateChange(undefined)}
-                        className="w-full"
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Clear filter
-                      </Button>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
-
-              <DateRangeFilter
+              <UnifiedDateFilter
                 startDate={startDateFilter}
                 endDate={endDateFilter}
+                singleDate={dateFilter}
                 onDateRangeChange={handleDateRangeChange}
+                onSingleDateChange={handleSingleDateChange}
               />
 
               <Link to="/dashboard/reporting">
