@@ -1,6 +1,6 @@
 
 import { useClientAuth } from '@/hooks/useClientAuth';
-import { ClientPortalLogin } from '@/components/ClientPortalLogin';
+import { Navigate } from 'react-router-dom';
 import { ClientPortalDashboard } from '@/components/ClientPortalDashboard';
 
 const ClientPortalPage = () => {
@@ -15,7 +15,7 @@ const ClientPortalPage = () => {
   }
 
   if (!clientUser) {
-    return <ClientPortalLogin />;
+    return <Navigate to="/login" replace />;
   }
 
   return <ClientPortalDashboard />;

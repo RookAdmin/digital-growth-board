@@ -27,7 +27,7 @@ const Index = () => {
                 invoices, shared files, and communicate with our team.
               </p>
               <Button asChild size="lg">
-                <Link to="/client-portal">
+                <Link to="/login">
                   Access Client Portal
                 </Link>
               </Button>
