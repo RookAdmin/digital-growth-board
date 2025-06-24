@@ -7,11 +7,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeadDetailsModal } from './LeadDetailsModal';
-import { Button } from '@/components/ui/button';
-import { Calendar, CalendarDays } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
 
 const fetchLeads = async (): Promise<Lead[]> => {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
@@ -75,6 +70,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
     mutationFn: updateLeadStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-status-history'] });
     },
   });
 
@@ -188,7 +184,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter }: KanbanBoardProps) =
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto p-4 h-full">
+        <div className="flex gap-4 overflow-x-auto p-4" style={{ height: 'calc(100vh - 200px)' }}>
           {data.columnOrder.map(columnId => {
             const column = data.columns[columnId];
             if (!column) return null;

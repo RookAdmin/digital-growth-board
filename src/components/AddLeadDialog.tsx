@@ -76,18 +76,31 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (newLead: LeadFormValues) => {
-      const { error } = await supabase.from("leads").insert({
+      const leadData = {
         name: newLead.name,
         email: newLead.email,
-        phone: newLead.phone,
-        business_name: newLead.business_name,
-        services_interested: newLead.services_interested,
-        budget_range: newLead.budget_range,
-        lead_source: newLead.lead_source,
-        notes: newLead.notes,
+        phone: newLead.phone || null,
+        business_name: newLead.business_name || null,
+        services_interested: newLead.services_interested || [],
+        budget_range: newLead.budget_range || null,
+        lead_source: newLead.lead_source || null,
+        notes: newLead.notes || null,
         status: 'New'
-      }).select();
+      };
+      
+      const { data, error } = await supabase.from("leads").insert(leadData).select().single();
       if (error) throw new Error(error.message);
+      
+      // Record initial status in history
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('lead_status_history').insert({
+        lead_id: data.id,
+        old_status: null,
+        new_status: 'New',
+        changed_by: user?.id
+      });
+      
+      return data;
     },
     onSuccess: () => {
       toast.success("Lead added successfully!");

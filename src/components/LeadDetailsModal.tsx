@@ -1,3 +1,4 @@
+
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { LeadStatusHistoryComponent } from './LeadStatusHistory';
 
 interface LeadDetailsModalProps {
   lead: Lead | null;
@@ -155,7 +157,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); }}}>
-            <DialogContent className="max-w-3xl h-[90vh]">
+            <DialogContent className="max-w-4xl h-[90vh]">
                 <DialogHeader>
                     <div className="flex justify-between items-start">
                         {isEditing ? (
@@ -197,7 +199,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         ) : null}
                     </div>
                 </DialogHeader>
-                <div className="grid md:grid-cols-2 gap-6 mt-4 overflow-hidden h-full">
+                <div className="grid md:grid-cols-3 gap-6 mt-4 overflow-hidden h-full">
                     <ScrollArea className="pr-4">
                         <h3 className="font-semibold mb-4 text-lg">Lead Information</h3>
                         {isEditing ? (
@@ -262,7 +264,6 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                             <FormMessage />
                                         </FormItem>
                                     )} />
-
                                 </form>
                             </Form>
                         ) : (
@@ -273,6 +274,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                {lead.lead_source && <div className="flex items-center gap-3"><Edit size={16} className="text-muted-foreground" /> <span>Source: {lead.lead_source}</span></div>}
                                {lead.budget_range && <div className="flex items-center gap-3"><DollarSign size={16} className="text-muted-foreground" /> <span>Budget: {lead.budget_range}</span></div>}
                                {lead.services_interested && lead.services_interested.length > 0 && <div className="flex items-start gap-3"><List size={16} className="text-muted-foreground mt-1" /> <div>Services: {lead.services_interested.join(', ')}</div></div>}
+                               {lead.notes && <div className="flex items-start gap-3"><Edit size={16} className="text-muted-foreground mt-1" /> <div>Initial Notes: {lead.notes}</div></div>}
                             </div>
                         )}
 
@@ -300,6 +302,11 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             </div>
                         )}
                     </ScrollArea>
+                    
+                    <div className="flex flex-col h-full overflow-hidden">
+                        <LeadStatusHistoryComponent leadId={lead.id} />
+                    </div>
+                    
                     <div className="flex flex-col h-full overflow-hidden">
                         <h3 className="font-semibold mb-4 text-lg shrink-0">Follow-up Notes</h3>
                         <Form {...noteForm}>
