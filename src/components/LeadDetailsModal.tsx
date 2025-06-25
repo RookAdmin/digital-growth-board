@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { LeadStatusHistory } from './LeadStatusHistory';
+import { LeadStatusHistoryComponent } from './LeadStatusHistory';
 import { PhoneInput } from './PhoneInput';
 
 interface LeadDetailsModalProps {
@@ -139,7 +138,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                 />
               </div>
               <div>
-                <Label htmlFor="edit-status">Status</Label>
+                <Label htmlFor="edit-status">Status *</Label>
                 <Select value={editData.status} onValueChange={(value: LeadStatus) => setEditData({ ...editData, status: value })}>
                   <SelectTrigger>
                     <SelectValue />
@@ -186,7 +185,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
             </div>
           )}
           
-          <LeadStatusHistory leadId={lead.id} />
+          <LeadStatusHistoryComponent leadId={lead.id} />
           
           {!isEditing && (
             <div className="flex justify-end">
