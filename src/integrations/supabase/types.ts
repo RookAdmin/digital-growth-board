@@ -183,6 +183,8 @@ export type Database = {
         Row: {
           budget_range: string | null
           business_name: string | null
+          city: string | null
+          country: string | null
           created_at: string
           email: string
           id: string
@@ -190,11 +192,15 @@ export type Database = {
           name: string
           onboarding_status: string
           phone: string | null
+          pincode: string | null
           services_interested: string[] | null
+          state: string | null
         }
         Insert: {
           budget_range?: string | null
           business_name?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           email: string
           id?: string
@@ -202,11 +208,15 @@ export type Database = {
           name: string
           onboarding_status?: string
           phone?: string | null
+          pincode?: string | null
           services_interested?: string[] | null
+          state?: string | null
         }
         Update: {
           budget_range?: string | null
           business_name?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -214,7 +224,9 @@ export type Database = {
           name?: string
           onboarding_status?: string
           phone?: string | null
+          pincode?: string | null
           services_interested?: string[] | null
+          state?: string | null
         }
         Relationships: [
           {

@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
@@ -19,6 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
 import { EditClientDialog } from './EditClientDialog';
+import { Country, State } from 'country-state-city';
 
 const fetchClients = async (): Promise<Client[]> => {
   const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
@@ -67,6 +69,22 @@ export const ClientsTable = () => {
     }
   };
 
+  const getLocationDisplay = (client: any) => {
+    const parts = [];
+    
+    if (client.city) parts.push(client.city);
+    if (client.state) {
+      const state = State.getStateByCodeAndCountry(client.state, client.country);
+      parts.push(state?.name || client.state);
+    }
+    if (client.country) {
+      const country = Country.getCountryByCode(client.country);
+      parts.push(country?.name || client.country);
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : '-';
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -112,6 +130,7 @@ export const ClientsTable = () => {
                 <TableHead className="font-bold">Email</TableHead>
                 <TableHead className="font-bold">Phone</TableHead>
                 <TableHead className="font-bold">Business Name</TableHead>
+                <TableHead className="font-bold">Location</TableHead>
                 <TableHead className="font-bold text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -122,6 +141,7 @@ export const ClientsTable = () => {
                   <TableCell>{client.email}</TableCell>
                   <TableCell>{client.phone || '-'}</TableCell>
                   <TableCell>{client.business_name || '-'}</TableCell>
+                  <TableCell>{getLocationDisplay(client)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <EditClientDialog client={client} />

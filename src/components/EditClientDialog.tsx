@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -31,10 +30,10 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
     facebook_url: '',
     instagram_url: '',
     linkedin_url: '',
-    country: '',
-    state: '',
-    city: '',
-    pincode: '',
+    country: (client as any).country || '',
+    state: (client as any).state || '',
+    city: (client as any).city || '',
+    pincode: (client as any).pincode || '',
   });
 
   const { toast } = useToast();
@@ -54,6 +53,10 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           email: data.email,
           phone: data.phone,
           business_name: data.business_name,
+          country: data.country,
+          state: data.state,
+          city: data.city,
+          pincode: data.pincode,
         })
         .eq('id', client.id);
 
