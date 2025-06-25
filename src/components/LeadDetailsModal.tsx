@@ -1,4 +1,3 @@
-
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -72,6 +71,7 @@ const updateLead = async ({ leadId, values }: { leadId: string; values: LeadUpda
 export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: LeadDetailsModalProps) => {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
 
     const { data: notes, isLoading: isLoadingNotes } = useQuery({
         queryKey: ['lead_notes', lead?.id],
@@ -123,6 +123,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                 budget_range: lead.budget_range || '',
                 services_interested: lead.services_interested || [],
             });
+            setPendingStatus(null);
         }
     }, [lead, leadForm, isOpen]);
 
@@ -151,12 +152,29 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
         }
     };
 
+    const handleStatusChange = (newStatus: LeadStatus) => {
+        setPendingStatus(newStatus);
+    };
+
+    const handleSaveStatus = () => {
+        if (pendingStatus && lead) {
+            onUpdateLeadStatus(lead.id, pendingStatus);
+            setPendingStatus(null);
+            toast.success('Status updated successfully');
+        }
+    };
+
+    const handleCancelStatus = () => {
+        setPendingStatus(null);
+    };
+
     if (!lead) return null;
     
     const statusOptions: LeadStatus[] = ["New", "Contacted", "Qualified", "Proposal Sent", "Converted", "Dropped"];
+    const currentDisplayStatus = pendingStatus || lead.status;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); }}}>
+        <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); setPendingStatus(null); }}}>
             <DialogContent className="max-w-4xl h-[90vh]">
                 <DialogHeader>
                     <div className="flex justify-between items-start">
@@ -280,8 +298,8 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
                         <h3 className="font-semibold mb-4 mt-6 text-lg">Change Status</h3>
                          <Select
-                            defaultValue={lead.status}
-                            onValueChange={(value) => onUpdateLeadStatus(lead.id, value as LeadStatus)}
+                            value={currentDisplayStatus}
+                            onValueChange={handleStatusChange}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select status" />
@@ -292,6 +310,17 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        {pendingStatus && pendingStatus !== lead.status && (
+                            <div className="flex gap-2 mt-4">
+                                <Button onClick={handleSaveStatus} size="sm" className="bg-green-600 hover:bg-green-700">
+                                    Save Status
+                                </Button>
+                                <Button onClick={handleCancelStatus} variant="outline" size="sm">
+                                    Cancel
+                                </Button>
+                            </div>
+                        )}
 
                         {isEditing && (
                             <div className="flex justify-end gap-2 mt-6">

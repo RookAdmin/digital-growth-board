@@ -58,7 +58,29 @@ const DashboardPage = () => {
               <AddLeadDialog />
             </div>
           </div>
-          <div className="flex-1 px-6 pb-6">
+          <div className="flex-1 px-6 pb-6 overflow-x-auto kanban-container">
+            <style>{`
+              .kanban-container::-webkit-scrollbar {
+                height: 8px;
+              }
+              .kanban-container::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 4px;
+                margin: 0 20px;
+              }
+              .kanban-container::-webkit-scrollbar-thumb {
+                background: linear-gradient(90deg, #10b981, #059669);
+                border-radius: 4px;
+                transition: all 0.2s ease;
+              }
+              .kanban-container::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(90deg, #059669, #047857);
+              }
+              .kanban-container {
+                scrollbar-width: thin;
+                scrollbar-color: #10b981 #f1f5f9;
+              }
+            `}</style>
             <KanbanBoard 
               searchTerm={searchTerm} 
               dateFilter={dateFilter}

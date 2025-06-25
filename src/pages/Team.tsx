@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamMembersTable } from '@/components/TeamMembersTable';
 import { InviteMemberDialog } from '@/components/InviteMemberDialog';
+import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,33 +29,36 @@ const TeamPage = () => {
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Team Management</h1>
-          <p className="text-muted-foreground">Invite and manage your team members.</p>
+    <div className="min-h-screen bg-background">
+      <Header isAuthenticated={true} />
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Team Management</h1>
+            <p className="text-muted-foreground">Invite and manage your team members.</p>
+          </div>
+          <Button onClick={() => setInviteDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Invite Member
+          </Button>
         </div>
-        <Button onClick={() => setInviteDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Invite Member
-        </Button>
+
+        {isLoading && (
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        )}
+        {error && <div className="text-red-500">Error fetching team members: {error.message}</div>}
+        {teamMembers && <TeamMembersTable teamMembers={teamMembers} />}
+
+        <InviteMemberDialog
+          isOpen={isInviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          onInviteSuccess={refetch}
+        />
       </div>
-
-      {isLoading && (
-        <div className="space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      )}
-      {error && <div className="text-red-500">Error fetching team members: {error.message}</div>}
-      {teamMembers && <TeamMembersTable teamMembers={teamMembers} />}
-
-      <InviteMemberDialog
-        isOpen={isInviteDialogOpen}
-        onOpenChange={setInviteDialogOpen}
-        onInviteSuccess={refetch}
-      />
     </div>
   );
 };
