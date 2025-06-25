@@ -11,7 +11,7 @@ export const ContactPrompt = () => {
             Have questions before registering?
           </h2>
           <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto mb-10"></div>
-          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 font-light rounded-full px-10 py-4 text-base shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" asChild>
+          <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50 font-light rounded-full px-10 py-4 text-base shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" asChild>
             <Link to="/contact">
               Contact our team
             </Link>

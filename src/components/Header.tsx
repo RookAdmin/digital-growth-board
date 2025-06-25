@@ -56,7 +56,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
               <Button 
                 variant="outline" 
                 onClick={handleLogout} 
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 font-light rounded-full px-6 py-2"
+                className="border-green-300 text-green-700 hover:bg-green-50 font-light rounded-full px-6 py-2"
               >
                 <LogOut className="mr-2 h-4 w-4" strokeWidth={1.5} />
                 Logout
@@ -67,13 +67,13 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
               <Button 
                 variant="outline" 
                 asChild 
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 font-light rounded-full px-6 py-2"
+                className="border-green-300 text-green-700 hover:bg-green-50 font-light rounded-full px-6 py-2"
               >
                 <Link to="/login">Login</Link>
               </Button>
               <Button 
                 asChild 
-                className="bg-gray-900 hover:bg-gray-800 text-white font-light rounded-full px-6 py-2"
+                className="bg-green-600 hover:bg-green-700 text-white font-light rounded-full px-6 py-2"
               >
                 <Link to="/signup">Register</Link>
               </Button>
