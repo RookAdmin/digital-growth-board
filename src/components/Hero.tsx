@@ -53,7 +53,7 @@ export const Hero = () => {
                 className="border-2 border-green-300 text-green-700 bg-white rounded-full px-8 py-6 text-lg font-medium shadow-sm transition-all duration-300 w-full sm:w-auto" 
                 asChild
               >
-                <Link to="/signup" className="flex items-center gap-3">
+                <Link to="/register" className="flex items-center gap-3">
                   📝 Start New Project
                 </Link>
               </Button>

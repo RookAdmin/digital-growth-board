@@ -31,6 +31,14 @@ export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
     }
   };
 
+  if (!teamMembers || teamMembers.length === 0) {
+    return (
+      <div className="border rounded-lg p-8 text-center">
+        <p className="text-gray-500">No team members found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="border rounded-lg">
       <Table>

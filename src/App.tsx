@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import LoginPage from "./pages/Login";
 import SignupPage from "./pages/Signup";
+import RegisterPage from "./pages/Register";
 import DashboardPage from "./pages/Dashboard";
 import ClientsPage from "./pages/Clients";
 import ProjectsPage from "./pages/Projects";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           {/* Redirect old client portal route to login */}
           <Route path="/client-portal" element={<ClientPortalPage />} />
           
