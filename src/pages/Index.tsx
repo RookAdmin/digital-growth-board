@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { About } from "@/components/About";
 import { Header } from "@/components/Header";
 import { ContactPrompt } from "@/components/ContactPrompt";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
