@@ -93,8 +93,8 @@ export const UnifiedDateFilter = ({
             <TabsContent value="range" className="space-y-3">
               <div className="text-sm font-medium">Select Date Range</div>
               
-              <div className="space-y-3">
-                <div>
+              <div className="flex gap-4">
+                <div className="flex-1">
                   <label className="text-xs text-muted-foreground">Start Date</label>
                   <CalendarComponent
                     mode="single"
@@ -104,7 +104,7 @@ export const UnifiedDateFilter = ({
                   />
                 </div>
                 
-                <div>
+                <div className="flex-1">
                   <label className="text-xs text-muted-foreground">End Date</label>
                   <CalendarComponent
                     mode="single"

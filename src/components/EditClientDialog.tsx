@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +21,8 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
     last_name: client.name.split(' ').slice(1).join(' ') || '',
     email: client.email,
     phone: client.phone || '',
-    legal_name: client.business_name || '',
+    business_name: client.business_name || '',
+    legal_name: '',
     gst_no: '',
     industry: '',
     facebook_url: '',
@@ -42,7 +42,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           name: fullName,
           email: data.email,
           phone: data.phone,
-          business_name: data.legal_name,
+          business_name: data.business_name,
         })
         .eq('id', client.id);
 
@@ -124,6 +124,15 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               id="phone"
               value={formData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="business_name">Business Name</Label>
+            <Input
+              id="business_name"
+              value={formData.business_name}
+              onChange={(e) => handleInputChange('business_name', e.target.value)}
             />
           </div>
 
