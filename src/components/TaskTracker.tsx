@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,7 +151,6 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
-      // Also invalidate projects query to update the projects table
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success("Task deleted");
       setTaskToDelete(null);
@@ -172,12 +172,31 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
         .single();
 
       if (error) throw error;
+
+      // Log activity for task update
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('activity_logs').insert({
+          project_id: projectId,
+          activity_type: 'task_updated',
+          user_name: user.user_metadata?.full_name || user.email || 'Unknown User',
+          user_email: user.email || '',
+          description: `Task "${data.title}" updated`,
+          metadata: {
+            task_id: data.id,
+            task_title: data.title,
+            status: data.status,
+            priority: data.priority
+          }
+        });
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
-      // Also invalidate projects query to update the projects table
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       toast.success('Task updated successfully');
       setTaskToEdit(null);
     },
@@ -248,6 +267,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
       description: task.description || '',
       priority: task.priority,
       due_date: task.due_date,
+      status: task.status,
     });
   };
 
@@ -505,30 +525,46 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                   </Select>
                 </div>
                 <div>
-                  <Label>Due Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal mt-1",
-                          !editedTask.due_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {editedTask.due_date ? format(new Date(editedTask.due_date), "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={editedTask.due_date ? new Date(editedTask.due_date) : undefined}
-                        onSelect={(date) => setEditedTask({ ...editedTask, due_date: date ? date.toISOString().split('T')[0] : null })}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={editedTask.status || 'Not Started'}
+                    onValueChange={(value) => setEditedTask({ ...editedTask, status: value as TaskStatus })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Not Started">Not Started</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div>
+                <Label>Due Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal mt-1",
+                        !editedTask.due_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editedTask.due_date ? format(new Date(editedTask.due_date), "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={editedTask.due_date ? new Date(editedTask.due_date) : undefined}
+                      onSelect={(date) => setEditedTask({ ...editedTask, due_date: date ? date.toISOString().split('T')[0] : null })}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <DialogFooter>
                 <DialogClose asChild>

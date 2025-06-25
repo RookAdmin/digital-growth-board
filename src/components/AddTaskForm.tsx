@@ -43,7 +43,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
 
   const addTaskMutation = useMutation({
     mutationFn: async (data: AddTaskFormValues) => {
-      const { error } = await supabase.from('tasks').insert({
+      const { data: taskData, error } = await supabase.from('tasks').insert({
         project_id: projectId,
         title: data.title,
         description: data.description || null,
@@ -52,13 +52,34 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
         status: 'Not Started',
         type: 'task',
         assigned_team_members: [],
-      });
+      }).select().single();
+      
       if (error) throw error;
+
+      // Log activity for task creation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && taskData) {
+        await supabase.from('activity_logs').insert({
+          project_id: projectId,
+          activity_type: 'task_created',
+          user_name: user.user_metadata?.full_name || user.email || 'Unknown User',
+          user_email: user.email || '',
+          description: `Task "${taskData.title}" created`,
+          metadata: {
+            task_id: taskData.id,
+            task_title: taskData.title,
+            priority: taskData.priority
+          }
+        });
+      }
+
+      return taskData;
     },
     onSuccess: () => {
       toast.success("Task added successfully!");
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       form.reset();
       onCancel();
     },
