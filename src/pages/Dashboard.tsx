@@ -1,4 +1,3 @@
-
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { Header } from '@/components/Header';
 import { AddLeadDialog } from '@/components/AddLeadDialog';
@@ -25,9 +24,9 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <Header isAuthenticated={true} />
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col overflow-hidden">
           <div className="px-6 pt-6 pb-2 flex justify-between items-center flex-shrink-0">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Leads Dashboard</h1>
@@ -58,27 +57,39 @@ const DashboardPage = () => {
               <AddLeadDialog />
             </div>
           </div>
-          <div className="flex-1 px-6 pb-6 overflow-x-auto kanban-container">
+          <div className="flex-1 px-6 pb-6 overflow-x-auto kanban-container relative">
             <style>{`
+              .kanban-container {
+                position: relative;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scrollbar-width: thin;
+                scrollbar-color: #10b981 #f1f5f9;
+              }
               .kanban-container::-webkit-scrollbar {
-                height: 8px;
+                height: 10px;
+                position: sticky;
+                bottom: 0;
               }
               .kanban-container::-webkit-scrollbar-track {
                 background: #f1f5f9;
-                border-radius: 4px;
+                border-radius: 6px;
                 margin: 0 20px;
+                position: sticky;
+                bottom: 0;
               }
               .kanban-container::-webkit-scrollbar-thumb {
                 background: linear-gradient(90deg, #10b981, #059669);
-                border-radius: 4px;
+                border-radius: 6px;
                 transition: all 0.2s ease;
+                position: sticky;
+                bottom: 0;
               }
               .kanban-container::-webkit-scrollbar-thumb:hover {
                 background: linear-gradient(90deg, #059669, #047857);
               }
-              .kanban-container {
-                scrollbar-width: thin;
-                scrollbar-color: #10b981 #f1f5f9;
+              .kanban-container::-webkit-scrollbar-corner {
+                background: transparent;
               }
             `}</style>
             <KanbanBoard 

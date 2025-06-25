@@ -1,4 +1,3 @@
-
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,10 +42,10 @@ const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const
 const leadUpdateSchema = z.object({
   name: z.string().min(2, "Full Name must be at least 2 characters.").max(18, "Full Name must be at most 18 characters."),
   email: z.string().email("Invalid email address."),
-  phone: z.string().optional(),
-  business_name: z.string().optional(),
+  phone: z.string().max(18, "Phone number must be at most 18 characters.").optional(),
+  business_name: z.string().max(18, "Business name must be at most 18 characters.").optional(),
   lead_source: z.enum(leadSources).optional(),
-  budget_range: z.string().optional(),
+  budget_range: z.string().max(18, "Budget range must be at most 18 characters.").optional(),
   services_interested: z.array(z.string()).optional(),
 });
 
@@ -192,7 +191,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                         <FormItem>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Briefcase size={14} />
-                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" /></FormControl>
+                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" maxLength={18} /></FormControl>
                                             </div>
                                             <FormMessage />
                                         </FormItem>
@@ -234,7 +233,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                     <FormField control={leadForm.control} name="phone" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /> Phone</FormLabel>
-                                            <FormControl><Input {...field} /></FormControl>
+                                            <FormControl><Input {...field} maxLength={18} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -255,7 +254,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                     <FormField control={leadForm.control} name="budget_range" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-3"><DollarSign size={16} className="text-muted-foreground" /> Budget</FormLabel>
-                                            <FormControl><Input {...field} /></FormControl>
+                                            <FormControl><Input {...field} maxLength={18} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />

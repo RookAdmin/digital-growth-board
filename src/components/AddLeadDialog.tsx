@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,10 +48,10 @@ const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const
 const leadFormSchema = z.object({
   name: z.string().min(2, "Full Name must be at least 2 characters.").max(18, "Full Name must be at most 18 characters."),
   email: z.string().email("Invalid email address."),
-  phone: z.string().optional(),
-  business_name: z.string().optional(),
+  phone: z.string().max(18, "Phone number must be at most 18 characters.").optional(),
+  business_name: z.string().max(18, "Business name must be at most 18 characters.").optional(),
   services_interested: z.array(z.string()).optional(),
-  budget_range: z.string().optional(),
+  budget_range: z.string().max(18, "Budget range must be at most 18 characters.").optional(),
   lead_source: z.enum(leadSources).optional(),
   notes: z.string().optional(),
 });
@@ -137,14 +136,14 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         <FormField control={form.control} name="phone" render={({ field }) => (
           <FormItem>
             <FormLabel>Phone Number</FormLabel>
-            <FormControl><Input placeholder="+1 234 567 890" {...field} /></FormControl>
+            <FormControl><Input placeholder="+1 234 567 890" {...field} maxLength={18} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />
         <FormField control={form.control} name="business_name" render={({ field }) => (
           <FormItem>
             <FormLabel>Business Name</FormLabel>
-            <FormControl><Input placeholder="Doe's Digital" {...field} /></FormControl>
+            <FormControl><Input placeholder="Doe's Digital" {...field} maxLength={18} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />
@@ -175,7 +174,7 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         <FormField control={form.control} name="budget_range" render={({ field }) => (
             <FormItem>
               <FormLabel>Budget Range</FormLabel>
-              <FormControl><Input placeholder="$5,000 - $10,000" {...field} /></FormControl>
+              <FormControl><Input placeholder="$5,000 - $10,000" {...field} maxLength={18} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />

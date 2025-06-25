@@ -169,12 +169,12 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
           <Card className="hover:bg-accent transition-colors cursor-pointer shadow-sm hover:shadow-md border-l-4 border-l-primary/20">
             <CardHeader className="p-3 pb-2">
               <div className="flex justify-between items-start">
-                <div className="flex-1 mr-2">
-                  <CardTitle className="text-sm font-semibold leading-tight">{lead.name}</CardTitle>
+                <div className="flex-1 mr-2 min-w-0">
+                  <CardTitle className="text-sm font-semibold leading-tight break-words">{lead.name}</CardTitle>
                   {lead.business_name && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                      <Briefcase size={12} /> 
-                      <span className="truncate">{lead.business_name}</span>
+                      <Briefcase size={12} className="shrink-0" /> 
+                      <span className="break-words">{lead.business_name}</span>
                     </div>
                   )}
                 </div>
@@ -215,21 +215,21 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
               </div>
             </CardHeader>
             <CardContent className="p-3 pt-0 text-xs text-muted-foreground space-y-1">
-              <div className="flex items-center gap-1">
-                <Mail size={12} /> 
-                <span className="truncate">{lead.email}</span>
+              <div className="flex items-center gap-1 min-w-0">
+                <Mail size={12} className="shrink-0" /> 
+                <span className="break-all">{lead.email}</span>
               </div>
               {lead.phone && (
-                <div className="flex items-center gap-1">
-                  <Phone size={12} /> 
-                  <span className="truncate">{lead.phone}</span>
+                <div className="flex items-center gap-1 min-w-0">
+                  <Phone size={12} className="shrink-0" /> 
+                  <span className="break-words">{lead.phone}</span>
                 </div>
               )}
               {lead.lead_source && (
-                <p className="text-xs"><strong>Source:</strong> {lead.lead_source}</p>
+                <p className="text-xs break-words"><strong>Source:</strong> {lead.lead_source}</p>
               )}
               {lead.budget_range && (
-                <p className="text-xs"><strong>Budget:</strong> {lead.budget_range}</p>
+                <p className="text-xs break-words"><strong>Budget:</strong> {lead.budget_range}</p>
               )}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
                  <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>

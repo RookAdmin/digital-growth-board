@@ -96,40 +96,69 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 mt-6 pt-6 bg-white/95 backdrop-blur-sm">
-          <nav className="flex flex-col gap-6">
-            {session ? (
-              <>
-                <Link to="/dashboard/leads" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Dashboard
-                </Link>
-                <Link to="/dashboard/clients" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Clients
-                </Link>
-                <Link to="/dashboard/projects" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Projects
-                </Link>
-                <Link to="/dashboard/team" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Team
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-left text-gray-600 hover:text-gray-900 font-light py-2 text-lg"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Login
-                </Link>
-                <Link to="/signup" className="text-gray-600 hover:text-gray-900 font-light py-2 text-lg">
-                  Register
-                </Link>
-              </>
-            )}
-          </nav>
+        <div className="md:hidden absolute top-full left-0 right-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm shadow-lg z-50">
+          <div className="container mx-auto px-4">
+            <nav className="flex flex-col gap-2 py-4">
+              {session ? (
+                <>
+                  <Link 
+                    to="/dashboard/leads" 
+                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/dashboard/clients" 
+                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Clients
+                  </Link>
+                  <Link 
+                    to="/dashboard/projects" 
+                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Projects
+                  </Link>
+                  <Link 
+                    to="/dashboard/team" 
+                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Team
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/login" 
+                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/signup" 
+                    className="bg-green-600 hover:bg-green-700 text-white font-light py-3 px-4 rounded-lg transition-colors text-lg text-center"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
         </div>
       )}
     </header>
