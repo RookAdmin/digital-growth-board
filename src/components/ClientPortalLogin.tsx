@@ -66,7 +66,6 @@ export const ClientPortalLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  maxLength={18}
                 />
               </div>
               <div className="space-y-2">

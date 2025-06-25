@@ -118,7 +118,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
-              maxLength={18}
             />
           </div>
 

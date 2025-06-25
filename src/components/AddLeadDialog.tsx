@@ -123,14 +123,14 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>
-            <FormLabel>Full Name</FormLabel>
+            <FormLabel>Full Name *</FormLabel>
             <FormControl><Input placeholder="John Doe" {...field} maxLength={18} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />
         <FormField control={form.control} name="email" render={({ field }) => (
           <FormItem>
-            <FormLabel>Email ID</FormLabel>
+            <FormLabel>Email ID *</FormLabel>
             <FormControl><Input placeholder="john.doe@example.com" {...field} /></FormControl>
             <FormMessage />
           </FormItem>

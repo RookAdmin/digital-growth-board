@@ -103,7 +103,6 @@ const LoginPage = () => {
                     required 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)}
-                    maxLength={18}
                   />
                 </div>
                 <div className="grid gap-2">
