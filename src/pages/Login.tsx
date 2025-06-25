@@ -14,6 +14,7 @@ import { useClientAuth } from "@/hooks/useClientAuth";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { session, loading } = useAuth();
@@ -102,7 +103,8 @@ const LoginPage = () => {
                     placeholder="m@example.com" 
                     required 
                     value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={18}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -112,7 +114,16 @@ const LoginPage = () => {
                     type="password" 
                     required 
                     value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
+                    onChange={(e) => setPassword(e.target.value)}
+                    maxLength={18}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <PhoneInput
+                    value={phone}
+                    onChange={setPhone}
+                    placeholder="Enter phone number"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>

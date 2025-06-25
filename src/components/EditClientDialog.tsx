@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
 import { Edit } from 'lucide-react';
+import { PhoneInput } from '@/components/PhoneInput';
 
 interface EditClientDialogProps {
   client: Client;
@@ -95,6 +96,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                 value={formData.first_name}
                 onChange={(e) => handleInputChange('first_name', e.target.value)}
                 required
+                maxLength={18}
               />
             </div>
             <div>
@@ -103,6 +105,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                 id="last_name"
                 value={formData.last_name}
                 onChange={(e) => handleInputChange('last_name', e.target.value)}
+                maxLength={18}
               />
             </div>
           </div>
@@ -115,15 +118,16 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
+              maxLength={18}
             />
           </div>
 
           <div>
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
+            <Label htmlFor="phone">Phone Number</Label>
+            <PhoneInput
               value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              onChange={(value) => handleInputChange('phone', value)}
+              placeholder="Enter phone number"
             />
           </div>
 
@@ -133,6 +137,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               id="business_name"
               value={formData.business_name}
               onChange={(e) => handleInputChange('business_name', e.target.value)}
+              maxLength={18}
             />
           </div>
 
@@ -142,6 +147,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               id="legal_name"
               value={formData.legal_name}
               onChange={(e) => handleInputChange('legal_name', e.target.value)}
+              maxLength={18}
             />
           </div>
 
@@ -151,6 +157,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               id="gst_no"
               value={formData.gst_no}
               onChange={(e) => handleInputChange('gst_no', e.target.value)}
+              maxLength={18}
             />
           </div>
 
@@ -160,6 +167,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               id="industry"
               value={formData.industry}
               onChange={(e) => handleInputChange('industry', e.target.value)}
+              maxLength={18}
             />
           </div>
 
@@ -171,6 +179,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.facebook_url}
               onChange={(e) => handleInputChange('facebook_url', e.target.value)}
               placeholder="https://facebook.com/..."
+              maxLength={18}
             />
           </div>
 
@@ -182,6 +191,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.instagram_url}
               onChange={(e) => handleInputChange('instagram_url', e.target.value)}
               placeholder="https://instagram.com/..."
+              maxLength={18}
             />
           </div>
 
@@ -193,6 +203,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.linkedin_url}
               onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
               placeholder="https://linkedin.com/..."
+              maxLength={18}
             />
           </div>
 

@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useClientAuth } from '@/hooks/useClientAuth';
+import { PhoneInput } from '@/components/PhoneInput';
 import { Rocket } from 'lucide-react';
 
 export const ClientPortalLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useClientAuth();
 
@@ -66,6 +68,7 @@ export const ClientPortalLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={18}
                 />
               </div>
               <div className="space-y-2">
@@ -77,6 +80,15 @@ export const ClientPortalLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  maxLength={18}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  placeholder="Enter phone number"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
