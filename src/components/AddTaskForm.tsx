@@ -18,7 +18,7 @@ import { format } from 'date-fns';
 
 const addTaskSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(18, { message: "Title must be at most 18 characters." }),
-  description: z.string().optional(),
+  description: z.string().max(150, { message: "Description must be at most 150 characters." }).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   due_date: z.date().optional(),
 });
@@ -95,8 +95,18 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
             <FormItem>
               <FormLabel>Description (Optional)</FormLabel>
               <FormControl>
-                <Textarea placeholder="Add more details about the task" {...field} value={field.value || ''} maxLength={18} />
+                <Textarea 
+                  placeholder="Add more details about the task" 
+                  {...field} 
+                  value={field.value || ''} 
+                  maxLength={150}
+                  className="resize-none"
+                  rows={3}
+                />
               </FormControl>
+              <div className="text-xs text-muted-foreground">
+                {(field.value || '').length}/150 characters
+              </div>
               <FormMessage />
             </FormItem>
           )}

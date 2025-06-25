@@ -233,6 +233,10 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
         toast.error("Title cannot be empty");
         return;
       }
+      if (editedTask.description && editedTask.description.length > 150) {
+        toast.error("Description must be at most 150 characters");
+        return;
+      }
       editTaskMutation.mutate({ ...editedTask, id: taskToEdit.id });
     }
   };
@@ -308,7 +312,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                       </div>
                     </div>
                     {milestone.description && (
-                      <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                      <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">{milestone.description}</p>
                     )}
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       {milestone.due_date && (
@@ -408,7 +412,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                         </div>
                       </div>
                       {task.description && (
-                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                        <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">{task.description}</p>
                       )}
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         {task.due_date && (
@@ -462,6 +466,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                   value={editedTask.title || ''}
                   onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
                   className="mt-1"
+                  maxLength={18}
                   required
                 />
               </div>
@@ -473,8 +478,13 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                   id="description"
                   value={editedTask.description || ''}
                   onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
-                  className="mt-1"
+                  className="mt-1 resize-none"
+                  maxLength={150}
+                  rows={3}
                 />
+                <div className="text-xs text-muted-foreground mt-1">
+                  {(editedTask.description || '').length}/150 characters
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
