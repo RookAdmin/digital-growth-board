@@ -2,6 +2,7 @@
 import { Hero } from "@/components/Hero";
 import { About } from "@/components/About";
 import { Header } from "@/components/Header";
+import { ContactPrompt } from "@/components/ContactPrompt";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -11,6 +12,7 @@ const Index = () => {
       <main>
         <Hero />
         <About />
+        <ContactPrompt />
         
         {/* Footer */}
         <footer className="py-16 bg-white border-t border-gray-100">
