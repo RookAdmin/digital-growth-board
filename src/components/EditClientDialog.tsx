@@ -4,12 +4,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
 import { Edit } from 'lucide-react';
 import { PhoneInput } from '@/components/PhoneInput';
+import { Country, State, City } from 'country-state-city';
 
 interface EditClientDialogProps {
   client: Client;
@@ -29,10 +31,18 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
     facebook_url: '',
     instagram_url: '',
     linkedin_url: '',
+    country: '',
+    state: '',
+    city: '',
+    pincode: '',
   });
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const countries = Country.getAllCountries();
+  const states = formData.country ? State.getStatesOfCountry(formData.country) : [];
+  const cities = formData.state ? City.getCitiesOfState(formData.country, formData.state) : [];
 
   const updateClientMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -72,7 +82,19 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Reset dependent fields when parent changes
+      if (field === 'country') {
+        newData.state = '';
+        newData.city = '';
+      } else if (field === 'state') {
+        newData.city = '';
+      }
+      
+      return newData;
+    });
   };
 
   return (
@@ -168,6 +190,67 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               onChange={(e) => handleInputChange('industry', e.target.value)}
               maxLength={18}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="country">Country</Label>
+              <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country.isoCode} value={country.isoCode}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)} disabled={!formData.country}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {states.map((state) => (
+                    <SelectItem key={state.isoCode} value={state.isoCode}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Select value={formData.city} onValueChange={(value) => handleInputChange('city', value)} disabled={!formData.state}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.name} value={city.name}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="pincode">Pincode</Label>
+              <Input
+                id="pincode"
+                value={formData.pincode}
+                onChange={(e) => handleInputChange('pincode', e.target.value)}
+                maxLength={10}
+                placeholder="Enter pincode"
+              />
+            </div>
           </div>
 
           <div>
