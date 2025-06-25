@@ -25,9 +25,9 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header isAuthenticated={true} />
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col">
           <div className="px-6 pt-6 pb-2 flex justify-between items-center flex-shrink-0">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Leads Dashboard</h1>
@@ -58,12 +58,14 @@ const DashboardPage = () => {
               <AddLeadDialog />
             </div>
           </div>
-          <KanbanBoard 
-            searchTerm={searchTerm} 
-            dateFilter={dateFilter}
-            startDateFilter={startDateFilter}
-            endDateFilter={endDateFilter}
-          />
+          <div className="flex-1 px-6 pb-6">
+            <KanbanBoard 
+              searchTerm={searchTerm} 
+              dateFilter={dateFilter}
+              startDateFilter={startDateFilter}
+              endDateFilter={endDateFilter}
+            />
+          </div>
       </main>
     </div>
   );

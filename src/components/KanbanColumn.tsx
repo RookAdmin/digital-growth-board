@@ -12,7 +12,7 @@ interface KanbanColumnProps {
 
 export const KanbanColumn = ({ columnId, title, leads, onCardClick }: KanbanColumnProps) => {
   return (
-    <div className="flex flex-col w-80 bg-background border border-border rounded-lg flex-shrink-0 h-full">
+    <div className="flex flex-col w-80 bg-background border border-border rounded-lg flex-shrink-0">
         <div className="px-4 py-3 border-b border-border flex-shrink-0">
             <h3 className="font-semibold text-foreground">{title} ({leads.length})</h3>
         </div>
@@ -21,8 +21,8 @@ export const KanbanColumn = ({ columnId, title, leads, onCardClick }: KanbanColu
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`flex-1 rounded-b-lg transition-colors p-2 overflow-y-auto ${snapshot.isDraggingOver ? 'bg-muted/20' : ''}`}
-              style={{ minHeight: '500px', maxHeight: 'calc(100vh - 280px)' }}
+              className={`flex-1 rounded-b-lg transition-colors p-2 ${snapshot.isDraggingOver ? 'bg-muted/20' : ''}`}
+              style={{ minHeight: '200px' }}
             >
               <div className="space-y-3">
                 {leads.map((lead, index) => (

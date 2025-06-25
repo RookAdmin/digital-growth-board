@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
+import { EditClientDialog } from './EditClientDialog';
 
 const fetchClients = async (): Promise<Client[]> => {
   const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
@@ -122,15 +123,17 @@ export const ClientsTable = () => {
                   <TableCell>{client.phone || '-'}</TableCell>
                   <TableCell>{client.business_name || '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => setClientToDelete(client)}
-                      className="h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete client</span>
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <EditClientDialog client={client} />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setClientToDelete(client)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

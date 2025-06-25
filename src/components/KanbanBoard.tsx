@@ -239,7 +239,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
   
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto p-4 h-full">
+      <div className="flex gap-4 overflow-x-auto min-h-[600px]">
         {initialData.columnOrder.map(columnId => (
           <div key={columnId} className="flex flex-col w-80 bg-secondary rounded-lg p-2 flex-shrink-0">
             <Skeleton className="h-8 w-3/4 mb-4" />
@@ -254,7 +254,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto p-4" style={{ height: 'calc(100vh - 200px)' }}>
+        <div className="flex gap-4 overflow-x-auto min-h-[600px]">
           {data.columnOrder.map(columnId => {
             const column = data.columns[columnId];
             if (!column) return null;
