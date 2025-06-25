@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -134,10 +135,29 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
         .single();
 
       if (error) throw error;
+
+      // Log activity for project status update
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('activity_logs').insert({
+          project_id: id,
+          activity_type: 'project_updated',
+          user_name: user.user_metadata?.full_name || user.email || 'Unknown User',
+          user_email: user.email || '',
+          description: `Project status updated to ${updateData.status}`,
+          metadata: {
+            old_status: projects.find(p => p.id === id)?.status,
+            new_status: updateData.status,
+            deadline: updateData.deadline
+          }
+        });
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       toast({
         title: "Project Updated",
         description: "The project details have been updated successfully.",
@@ -203,7 +223,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   <TableHead>Project</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Tasks</TableHead>
+                  <TableHead className="w-24">Tasks</TableHead>
                   <TableHead>Deadline</TableHead>
                   <TableHead>Team</TableHead>
                   <TableHead>Budget</TableHead>
@@ -238,7 +258,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                     </TableCell>
                     <TableCell>
                       {project.tasks && project.tasks.length > 0 ? (
-                        <div className="flex items-center gap-1 text-sm">
+                        <div className="flex items-center gap-1 text-sm whitespace-nowrap">
                           <CheckSquare className="h-4 w-4" />
                           <span>
                             {project.tasks.filter((t) => t.status === 'Completed').length} / {project.tasks.length}

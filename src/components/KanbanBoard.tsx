@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
@@ -7,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeadDetailsModal } from './LeadDetailsModal';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const fetchLeads = async (): Promise<Lead[]> => {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
@@ -254,14 +254,17 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto min-h-[600px]">
-          {data.columnOrder.map(columnId => {
-            const column = data.columns[columnId];
-            if (!column) return null;
-            const leads = column.leadIds.map(leadId => data.leads[leadId]).filter(Boolean);
-            return <KanbanColumn key={column.id} columnId={column.id} title={column.title} leads={leads} onCardClick={setSelectedLead} />;
-          })}
-        </div>
+        <ScrollArea className="w-full">
+          <div className="flex gap-4 min-h-[600px] pb-4">
+            {data.columnOrder.map(columnId => {
+              const column = data.columns[columnId];
+              if (!column) return null;
+              const leads = column.leadIds.map(leadId => data.leads[leadId]).filter(Boolean);
+              return <KanbanColumn key={column.id} columnId={column.id} title={column.title} leads={leads} onCardClick={setSelectedLead} />;
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" className="mt-2" />
+        </ScrollArea>
       </DragDropContext>
       <LeadDetailsModal
         lead={selectedLead}
