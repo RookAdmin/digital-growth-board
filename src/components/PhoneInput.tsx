@@ -58,7 +58,7 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
         value={phoneNumber}
         onChange={handlePhoneChange}
         placeholder={placeholder}
-        className="flex-1"
+        className="flex-1 text-black"
         pattern="[0-9\s\-\(\)]*"
       />
     </div>
