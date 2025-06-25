@@ -43,9 +43,9 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
         </SelectTrigger>
         <SelectContent className="max-h-[200px] overflow-y-auto bg-white z-50">
           {countries.map((country) => (
-            <SelectItem key={country.code} value={country.code}>
-              <div className="flex items-center gap-2 text-black">
-                <span className="text-xs text-gray-600">{country.code}</span>
+            <SelectItem key={country.code} value={country.code} className="text-black">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-black">{country.code}</span>
                 <span className="text-black">{country.dial_code}</span>
                 <span className="text-sm truncate text-black">{country.name}</span>
               </div>
