@@ -15,18 +15,21 @@ const Index = () => {
         <About />
         
         {/* Client Portal Section */}
-        <section className="py-20 md:py-32 bg-white border-t border-gray-100">
+        <section className="py-24 md:py-40 bg-white border-t border-gray-100">
           <div className="container mx-auto px-4 text-center">
-            <div className="max-w-2xl mx-auto">
-              <Users className="h-10 w-10 text-gray-400 mx-auto mb-8" strokeWidth={1} />
-              <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6">
+            <div className="max-w-3xl mx-auto">
+              <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-10">
+                <Users className="h-9 w-9 text-gray-400" strokeWidth={1} />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-extralight text-gray-900 mb-8 tracking-tight">
                 Client Portal
               </h2>
-              <p className="text-lg text-gray-600 mb-10 font-light leading-relaxed">
+              <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto mb-10"></div>
+              <p className="text-xl md:text-2xl text-gray-500 mb-12 font-light leading-relaxed tracking-wide">
                 Existing clients can access their dedicated portal to view project progress, 
                 invoices, shared files, and communicate with our team.
               </p>
-              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white font-light rounded-full px-8 py-4 text-lg">
+              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white font-light rounded-full px-12 py-6 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-500">
                 <Link to="/login">
                   Access Client Portal
                 </Link>
@@ -36,9 +39,10 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 bg-gray-50 border-t border-gray-100">
+        <footer className="py-16 bg-gray-50 border-t border-gray-100">
           <div className="container mx-auto text-center">
-            <p className="text-gray-500 font-light text-sm tracking-wide">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mx-auto mb-6"></div>
+            <p className="text-gray-400 font-light text-sm tracking-widest uppercase">
               Crafted with love by Rook.
             </p>
           </div>
