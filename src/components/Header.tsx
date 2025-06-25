@@ -3,7 +3,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Rocket } from "lucide-react";
 
-export const Header = () => {
+interface HeaderProps {
+  isAuthenticated?: boolean;
+  onLightBg?: boolean;
+}
+
+export const Header = ({ isAuthenticated, onLightBg }: HeaderProps) => {
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
