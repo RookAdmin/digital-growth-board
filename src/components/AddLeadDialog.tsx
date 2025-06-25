@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +35,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PlusCircle } from "lucide-react";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const services = [
   { id: "web-development", label: "Web Development" },
@@ -136,7 +138,13 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         <FormField control={form.control} name="phone" render={({ field }) => (
           <FormItem>
             <FormLabel>Phone Number</FormLabel>
-            <FormControl><Input placeholder="+1 234 567 890" {...field} maxLength={18} /></FormControl>
+            <FormControl>
+              <PhoneInput 
+                value={field.value} 
+                onChange={field.onChange}
+                placeholder="Enter phone number"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )} />

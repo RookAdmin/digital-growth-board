@@ -1,3 +1,4 @@
+
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +18,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LeadStatusHistoryComponent } from './LeadStatusHistory';
+import { PhoneInput } from '@/components/PhoneInput';
 
 interface LeadDetailsModalProps {
   lead: Lead | null;
@@ -233,7 +235,13 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                     <FormField control={leadForm.control} name="phone" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /> Phone</FormLabel>
-                                            <FormControl><Input {...field} maxLength={18} /></FormControl>
+                                            <FormControl>
+                                              <PhoneInput 
+                                                value={field.value} 
+                                                onChange={field.onChange}
+                                                placeholder="Enter phone number"
+                                              />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />

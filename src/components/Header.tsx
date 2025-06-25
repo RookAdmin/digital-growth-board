@@ -67,7 +67,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
               <Button 
                 variant="outline" 
                 asChild 
-                className="border-green-300 text-green-700 hover:bg-green-50 font-light rounded-full px-6 py-2"
+                className="border-green-300 text-white hover:bg-green-50 hover:text-green-700 font-light rounded-full px-6 py-2 bg-green-600"
               >
                 <Link to="/login">Login</Link>
               </Button>
@@ -143,7 +143,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
                 <>
                   <Link 
                     to="/login" 
-                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-lg"
+                    className="text-white bg-green-600 font-light py-3 px-4 rounded-lg transition-colors text-lg text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Login
