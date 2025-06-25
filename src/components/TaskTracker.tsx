@@ -125,6 +125,8 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      // Also invalidate projects query to update the projects table
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Task status updated');
     },
     onError: (error) => {
@@ -148,6 +150,8 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      // Also invalidate projects query to update the projects table
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success("Task deleted");
       setTaskToDelete(null);
     },
@@ -172,6 +176,8 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      // Also invalidate projects query to update the projects table
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Task updated successfully');
       setTaskToEdit(null);
     },
