@@ -90,6 +90,7 @@ const ProjectsPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
+              maxLength={18}
             />
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
