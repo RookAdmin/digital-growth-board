@@ -47,7 +47,7 @@ const services = [
 const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const;
 
 const leadFormSchema = z.object({
-  name: z.string().min(2, "Full Name must be at least 2 characters."),
+  name: z.string().min(2, "Full Name must be at least 2 characters.").max(18, "Full Name must be at most 18 characters."),
   email: z.string().email("Invalid email address."),
   phone: z.string().optional(),
   business_name: z.string().optional(),
@@ -123,7 +123,7 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>
             <FormLabel>Full Name</FormLabel>
-            <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+            <FormControl><Input placeholder="John Doe" {...field} maxLength={18} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />

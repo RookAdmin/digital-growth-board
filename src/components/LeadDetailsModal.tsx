@@ -1,3 +1,4 @@
+
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,7 +41,7 @@ const services = [
 const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const;
 
 const leadUpdateSchema = z.object({
-  name: z.string().min(2, "Full Name must be at least 2 characters."),
+  name: z.string().min(2, "Full Name must be at least 2 characters.").max(18, "Full Name must be at most 18 characters."),
   email: z.string().email("Invalid email address."),
   phone: z.string().optional(),
   business_name: z.string().optional(),
@@ -183,7 +184,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                 <div className="space-y-2 flex-grow pr-12">
                                     <FormField control={leadForm.control} name="name" render={({ field }) => (
                                         <FormItem>
-                                            <FormControl><Input {...field} className="text-2xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 bg-transparent" /></FormControl>
+                                            <FormControl><Input {...field} className="text-2xl font-bold h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" maxLength={18} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -191,7 +192,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                         <FormItem>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Briefcase size={14} />
-                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-0 border-0 shadow-none focus-visible:ring-0 bg-transparent" /></FormControl>
+                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" /></FormControl>
                                             </div>
                                             <FormMessage />
                                         </FormItem>
@@ -200,11 +201,11 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             </Form>
                         ) : (
                             <div>
-                                <DialogTitle className="text-2xl">{lead.name}</DialogTitle>
+                                <DialogTitle className="text-2xl break-words">{lead.name}</DialogTitle>
                                 {lead.business_name && (
                                 <DialogDescription>
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                        <Briefcase size={14} /> <span>{lead.business_name}</span>
+                                        <Briefcase size={14} /> <span className="break-words">{lead.business_name}</span>
                                     </div>
                                 </DialogDescription>
                                 )}
@@ -286,13 +287,13 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             </Form>
                         ) : (
                             <div className="space-y-4 text-sm">
-                               <div className="flex items-center gap-3"><Mail size={16} className="text-muted-foreground" /> <span>{lead.email}</span></div>
-                               {lead.phone && <div className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /> <span>{lead.phone}</span></div>}
+                               <div className="flex items-center gap-3"><Mail size={16} className="text-muted-foreground" /> <span className="break-words">{lead.email}</span></div>
+                               {lead.phone && <div className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /> <span className="break-words">{lead.phone}</span></div>}
                                {lead.created_at && <div className="flex items-center gap-3"><Calendar size={16} className="text-muted-foreground" /> <span>Added on {format(new Date(lead.created_at), 'MMM d, yyyy')}</span></div>}
                                {lead.lead_source && <div className="flex items-center gap-3"><Edit size={16} className="text-muted-foreground" /> <span>Source: {lead.lead_source}</span></div>}
-                               {lead.budget_range && <div className="flex items-center gap-3"><DollarSign size={16} className="text-muted-foreground" /> <span>Budget: {lead.budget_range}</span></div>}
-                               {lead.services_interested && lead.services_interested.length > 0 && <div className="flex items-start gap-3"><List size={16} className="text-muted-foreground mt-1" /> <div>Services: {lead.services_interested.join(', ')}</div></div>}
-                               {lead.notes && <div className="flex items-start gap-3"><Edit size={16} className="text-muted-foreground mt-1" /> <div>Initial Notes: {lead.notes}</div></div>}
+                               {lead.budget_range && <div className="flex items-center gap-3"><DollarSign size={16} className="text-muted-foreground" /> <span className="break-words">Budget: {lead.budget_range}</span></div>}
+                               {lead.services_interested && lead.services_interested.length > 0 && <div className="flex items-start gap-3"><List size={16} className="text-muted-foreground mt-1" /> <div className="break-words">Services: {lead.services_interested.join(', ')}</div></div>}
+                               {lead.notes && <div className="flex items-start gap-3"><Edit size={16} className="text-muted-foreground mt-1" /> <div className="break-words">Initial Notes: {lead.notes}</div></div>}
                             </div>
                         )}
 
@@ -363,7 +364,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                 {isLoadingNotes && <p>Loading notes...</p>}
                                 {notes?.map(note => (
                                     <div key={note.id} className="p-3 bg-secondary rounded-lg">
-                                        <p className="text-sm whitespace-pre-wrap">{note.note}</p>
+                                        <p className="text-sm whitespace-pre-wrap break-words">{note.note}</p>
                                         <p className="text-xs text-muted-foreground mt-2">{format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}</p>
                                     </div>
                                 ))}
