@@ -25,9 +25,11 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const number = e.target.value;
-    setPhoneNumber(number);
-    const fullNumber = number ? `${selectedCountry.dial_code} ${number}` : selectedCountry.dial_code;
+    const input = e.target.value;
+    // Allow only numbers, spaces, hyphens, and parentheses
+    const cleanedInput = input.replace(/[^\d\s\-\(\)]/g, '');
+    setPhoneNumber(cleanedInput);
+    const fullNumber = cleanedInput ? `${selectedCountry.dial_code} ${cleanedInput}` : selectedCountry.dial_code;
     onChange?.(fullNumber);
   };
 
@@ -36,16 +38,16 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
       <Select value={selectedCountry.code} onValueChange={handleCountryChange}>
         <SelectTrigger className="w-[120px]">
           <SelectValue>
-            <span className="text-sm">{selectedCountry.dial_code}</span>
+            <span className="text-sm text-black">{selectedCountry.dial_code}</span>
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[200px] overflow-y-auto bg-white z-50">
           {countries.map((country) => (
             <SelectItem key={country.code} value={country.code}>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{country.code}</span>
-                <span>{country.dial_code}</span>
-                <span className="text-sm truncate">{country.name}</span>
+              <div className="flex items-center gap-2 text-black">
+                <span className="text-xs text-gray-600">{country.code}</span>
+                <span className="text-black">{country.dial_code}</span>
+                <span className="text-sm truncate text-black">{country.name}</span>
               </div>
             </SelectItem>
           ))}
@@ -57,6 +59,7 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
         onChange={handlePhoneChange}
         placeholder={placeholder}
         className="flex-1"
+        pattern="[0-9\s\-\(\)]*"
       />
     </div>
   );

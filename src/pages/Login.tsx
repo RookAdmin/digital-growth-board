@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
-import { PhoneInput } from "@/components/PhoneInput";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +14,6 @@ import { useClientAuth } from "@/hooks/useClientAuth";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { session, loading } = useAuth();
@@ -117,14 +115,6 @@ const LoginPage = () => {
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)}
                     maxLength={18}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <PhoneInput
-                    value={phone}
-                    onChange={setPhone}
-                    placeholder="Enter phone number"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
