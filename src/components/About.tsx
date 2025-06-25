@@ -1,71 +1,80 @@
 
-import { Rocket, FileText, CalendarDays } from "lucide-react";
+import { Clock, MessageCircle, FolderOpen } from "lucide-react";
 
 export const About = () => {
-  const features = [
+  const benefits = [
     {
-      icon: Rocket,
-      title: "Seamless Onboarding",
-      description: "Welcome clients with clarity and structure from Day 1."
+      icon: Clock,
+      title: "Real-time Updates",
+      emoji: "🕒"
     },
     {
-      icon: FileText,
-      title: "Transparent Project Tracking", 
-      description: "Every deliverable and status update — visible in one clean view."
+      icon: MessageCircle,
+      title: "Direct Communication", 
+      emoji: "💬"
     },
     {
-      icon: CalendarDays,
-      title: "Effortless Scheduling",
-      description: "Integrated meeting flows with smart reminders and calendar sync."
+      icon: FolderOpen,
+      title: "Centralized Project Files",
+      emoji: "📁"
     }
   ];
 
   return (
     <div className="bg-white">
-      {/* Impact Section */}
-      <section className="py-24 md:py-40 bg-gradient-to-b from-white to-gray-50/50">
+      {/* About Portal Section */}
+      <section className="py-20 md:py-28 bg-gray-50/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-extralight text-gray-900 mb-6 tracking-tight">
-              Crafted for Excellence
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-extralight text-gray-900 mb-8 tracking-tight">
+              About This Portal
             </h2>
-            <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto"></div>
+            <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto mb-10"></div>
+            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed font-light tracking-wide mb-6">
+              Designed for ease, clarity, and transparency.
+            </p>
+            <p className="text-lg md:text-xl text-gray-500 leading-relaxed font-light tracking-wide">
+              We help you stay updated on every step of your project lifecycle.
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-20 max-w-7xl mx-auto">
-            {features.map((feature, index) => (
+        </div>
+      </section>
+
+      {/* Key Benefits Section */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 max-w-5xl mx-auto">
+            {benefits.map((benefit, index) => (
               <div key={index} className="text-center group">
-                <div className="mb-8 flex justify-center">
+                <div className="mb-6 flex justify-center">
                   <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-all duration-300">
-                    <feature.icon className="h-7 w-7 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" strokeWidth={1} />
+                    <span className="text-2xl">{benefit.emoji}</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-light text-gray-900 mb-6 tracking-wide">
-                  {feature.title}
+                <h3 className="text-lg font-light text-gray-900 tracking-wide">
+                  {benefit.title}
                 </h3>
-                <p className="text-gray-500 leading-relaxed font-light text-lg">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-24 md:py-40 bg-gray-50">
+      {/* Trust Statement Section */}
+      <section className="py-20 md:py-28 bg-gray-50/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-extralight text-gray-900 mb-10 tracking-tight leading-tight">
-              Built for Service.
-              <span className="block text-gray-600 mt-2">Designed with Intention.</span>
-            </h2>
-            <div className="w-20 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto mb-12"></div>
-            <p className="text-xl md:text-2xl text-gray-500 leading-relaxed font-light tracking-wide">
-              Realm by Rook Concierge is not just a tool — it's a statement of care. Crafted in-house by the Rook team, it brings together onboarding pipelines, scheduling, project views, and communication into one minimal yet powerful space. 
+          <div className="max-w-4xl mx-auto text-center">
+            <blockquote className="text-xl md:text-2xl text-gray-600 font-light italic leading-relaxed mb-8 tracking-wide">
+              "The portal keeps me in sync with the team at every stage — it's simple and efficient."
+            </blockquote>
+            <p className="text-sm text-gray-500 font-light tracking-widest uppercase">
+              — Happy Client
             </p>
-            <p className="text-xl md:text-2xl text-gray-500 leading-relaxed font-light tracking-wide mt-8">
-              Clients feel clarity. Teams move faster. Everyone feels elevated.
-            </p>
+            <div className="mt-12">
+              <p className="text-base text-gray-500 font-light tracking-wide">
+                Trusted by startups, agencies, and growing businesses.
+              </p>
+            </div>
           </div>
         </div>
       </section>
