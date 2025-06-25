@@ -35,14 +35,14 @@ export const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 group w-full sm:w-auto" asChild>
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-8 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 group w-full sm:w-auto" asChild>
                 <Link to="/login" className="flex items-center gap-3">
                   🔐 Access Your Projects
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               
-              <Button variant="outline" size="lg" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-full px-8 py-6 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 w-full sm:w-auto" asChild>
+              <Button variant="outline" size="lg" className="border-2 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400 rounded-full px-8 py-6 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 w-full sm:w-auto" asChild>
                 <Link to="/signup" className="flex items-center gap-3">
                   📝 Start New Project
                 </Link>
