@@ -15,17 +15,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { PhoneInput } from "@/components/PhoneInput";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle, Star, Users, Zap } from "lucide-react";
 
 const services = [
-  { id: "web-development", label: "Web Development" },
-  { id: "digital-marketing", label: "Digital Marketing" },
-  { id: "seo", label: "SEO" },
-  { id: "social-media-management", label: "Social Media Management" },
-  { id: "content-creation", label: "Content Creation" },
+  { id: "web-development", label: "Web Development", icon: "🌐" },
+  { id: "digital-marketing", label: "Digital Marketing", icon: "📱" },
+  { id: "seo", label: "SEO Optimization", icon: "🔍" },
+  { id: "social-media-management", label: "Social Media Management", icon: "📊" },
+  { id: "content-creation", label: "Content Creation", icon: "✨" },
 ] as const;
 
-const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const;
+const leadSources = ["Website", "Referral", "LinkedIn", "Google Ads", "Social Media", "Other"] as const;
 
 const registerFormSchema = z.object({
   name: z.string().min(2, "Full Name must be at least 2 characters.").max(50, "Full Name must be at most 50 characters."),
@@ -89,7 +89,6 @@ const RegisterPage = () => {
     onSuccess: () => {
       toast.success("Thank you for your interest! We'll be in touch soon.");
       form.reset();
-      // Redirect to home page after successful submission
       navigate('/');
     },
     onError: (error) => {
@@ -103,73 +102,129 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
       <Header onLightBg />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Hero Section */}
+          <div className="text-center mb-12">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="mb-4"
+              className="mb-6 text-green-600 hover:text-green-700"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
             
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Start Your Project</h1>
-            <p className="text-gray-600">Tell us about your project and we'll get back to you with a custom proposal.</p>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
+              <Star className="w-8 h-8 text-green-600" />
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Start Your Digital Journey
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+              Tell us about your vision and we'll craft a custom proposal that brings your business to the next level.
+            </p>
+            
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>Free Consultation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-green-500" />
+                <span>50+ Happy Clients</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-green-500" />
+                <span>24h Response Time</span>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name *</FormLabel>
-                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+          {/* Main Form */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 p-8 text-white">
+              <h2 className="text-2xl font-semibold mb-2">Project Details</h2>
+              <p className="text-green-100">Help us understand your needs better</p>
+            </div>
+            
+            <div className="p-8">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  {/* Personal Information */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Full Name *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="John Doe" 
+                            {...field} 
+                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address *</FormLabel>
-                    <FormControl><Input placeholder="john.doe@example.com" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Email Address *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="john.doe@example.com" 
+                            {...field} 
+                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
 
-                <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <PhoneInput 
-                        value={field.value} 
-                        onChange={field.onChange}
-                        placeholder="Enter phone number"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="phone" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Phone Number</FormLabel>
+                        <FormControl>
+                          <PhoneInput 
+                            value={field.value} 
+                            onChange={field.onChange}
+                            placeholder="Enter phone number"
+                            className="h-12"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                <FormField control={form.control} name="business_name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Business Name</FormLabel>
-                    <FormControl><Input placeholder="Your Company Name" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                    <FormField control={form.control} name="business_name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Business Name</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Your Company Name" 
+                            {...field} 
+                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
 
-                <FormField control={form.control} name="services_interested" render={() => (
-                  <FormItem>
-                    <FormLabel>Services You're Interested In</FormLabel>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Services Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Services You're Interested In</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
                       {services.map((service) => (
                         <FormField key={service.id} control={form.control} name="services_interested" render={({ field }) => (
-                          <FormItem key={service.id} className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormItem key={service.id} className="flex flex-row items-start space-x-3 space-y-0 p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50/50 transition-colors">
                             <FormControl>
                               <Checkbox
                                 checked={field.value?.includes(service.label)}
@@ -179,65 +234,92 @@ const RegisterPage = () => {
                                     ? field.onChange([...currentValue, service.label])
                                     : field.onChange(currentValue.filter(value => value !== service.label));
                                 }}
+                                className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                               />
                             </FormControl>
-                            <FormLabel className="font-normal">{service.label}</FormLabel>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{service.icon}</span>
+                              <FormLabel className="font-normal text-gray-700">{service.label}</FormLabel>
+                            </div>
                           </FormItem>
                         )} />
                       ))}
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                  </div>
 
-                <FormField control={form.control} name="budget_range" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estimated Budget Range</FormLabel>
-                    <FormControl><Input placeholder="e.g., $5,000 - $10,000" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                  {/* Project Details */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="budget_range" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Estimated Budget Range</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g., $5,000 - $10,000" 
+                            {...field} 
+                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                <FormField control={form.control} name="lead_source" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>How did you hear about us?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormField control={form.control} name="lead_source" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">How did you hear about us?</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500">
+                              <SelectValue placeholder="Select a source" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {leadSources.map(source => 
+                              <SelectItem key={source} value={source}>{source}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+
+                  <FormField control={form.control} name="notes" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Tell us about your project</FormLabel>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select a source" /></SelectTrigger>
+                        <Textarea 
+                          placeholder="Describe your project goals, timeline, specific requirements, or any questions you have..."
+                          className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {leadSources.map(source => <SelectItem key={source} value={source}>{source}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                <FormField control={form.control} name="notes" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Details</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Tell us more about your project, goals, timeline, or any specific requirements..."
-                        className="min-h-[120px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <div className="pt-4">
-                  <Button 
-                    type="submit" 
-                    disabled={isPending || isSubmitting}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg"
-                  >
-                    {isPending || isSubmitting ? "Submitting..." : "Submit Project Request"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                  {/* Submit Button */}
+                  <div className="pt-6">
+                    <Button 
+                      type="submit" 
+                      disabled={isPending || isSubmitting}
+                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      {isPending || isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Submitting...
+                        </div>
+                      ) : (
+                        "Get Your Free Proposal"
+                      )}
+                    </Button>
+                    <p className="text-center text-sm text-gray-500 mt-3">
+                      We'll review your request and get back to you within 24 hours
+                    </p>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </div>
         </div>
       </div>

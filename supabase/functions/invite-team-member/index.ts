@@ -55,37 +55,16 @@ serve(async (req) => {
 
     console.log('Sending invitation to:', email)
 
-    // Use the admin client to invite user
-    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: { 
-        name,
-        email_confirm: true
-      },
-      redirectTo: `${req.headers.get('origin') || Deno.env.get('SUPABASE_URL')}/dashboard/team`
-    })
+    // First, create the team member record with a temporary user_id
+    const tempUserId = crypto.randomUUID()
     
-    console.log('Invite result:', { inviteData, inviteError })
-    
-    if (inviteError) {
-      console.error('Invite error:', inviteError)
-      throw inviteError
-    }
-
-    const invitedUser = inviteData.user;
-    if (!invitedUser) {
-      console.error('No user returned from invite')
-      throw new Error("Could not get invited user.")
-    }
-
-    console.log('Creating team member record for user:', invitedUser.id)
-
     const { error: insertError } = await supabaseAdmin.from('team_members').insert({
-      user_id: invitedUser.id,
+      user_id: tempUserId,
       email,
       name,
       role,
       invited_by: inviter.id,
-      is_active: false, // User will be inactive until they accept the invitation
+      is_active: false,
     })
 
     console.log('Insert result:', { insertError })
@@ -95,9 +74,41 @@ serve(async (req) => {
       throw insertError
     }
 
-    console.log('Invitation sent successfully')
+    // Try to send the invitation
+    try {
+      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        data: { 
+          name,
+          role,
+          temp_user_id: tempUserId
+        },
+        redirectTo: `${req.headers.get('origin') || 'https://preview--digital-growth-board.lovable.app'}/dashboard/team`
+      })
+      
+      console.log('Invite result:', { inviteData, inviteError })
+      
+      if (inviteError) {
+        console.error('Invite error:', inviteError)
+        // Don't throw here, the team member record is still created
+        console.log('Invitation email failed, but team member record created')
+      } else if (inviteData.user) {
+        // Update the team member record with the real user ID
+        await supabaseAdmin.from('team_members')
+          .update({ user_id: inviteData.user.id })
+          .eq('user_id', tempUserId)
+        console.log('Updated team member record with real user ID')
+      }
+    } catch (emailError) {
+      console.error('Email invitation failed:', emailError)
+      // Continue - the team member record is still created
+    }
 
-    return new Response(JSON.stringify({ success: true, message: 'Invitation sent successfully' }), {
+    console.log('Team member added successfully')
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Team member added successfully. They will need to sign up using the provided email address.' 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
