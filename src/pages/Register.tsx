@@ -165,7 +165,7 @@ const RegisterPage = () => {
                           <Input 
                             placeholder="John Doe" 
                             {...field} 
-                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                            className="h-12 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
                           />
                         </FormControl>
                         <FormMessage />
@@ -179,7 +179,7 @@ const RegisterPage = () => {
                           <Input 
                             placeholder="john.doe@example.com" 
                             {...field} 
-                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                            className="h-12 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
                           />
                         </FormControl>
                         <FormMessage />
@@ -210,7 +210,7 @@ const RegisterPage = () => {
                           <Input 
                             placeholder="Your Company Name" 
                             {...field} 
-                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                            className="h-12 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
                           />
                         </FormControl>
                         <FormMessage />
@@ -256,7 +256,7 @@ const RegisterPage = () => {
                           <Input 
                             placeholder="e.g., $5,000 - $10,000" 
                             {...field} 
-                            className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                            className="h-12 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
                           />
                         </FormControl>
                         <FormMessage />
@@ -268,7 +268,7 @@ const RegisterPage = () => {
                         <FormLabel className="text-gray-700 font-medium">How did you hear about us?</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500">
+                            <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500">
                               <SelectValue placeholder="Select a source" />
                             </SelectTrigger>
                           </FormControl>
@@ -289,7 +289,7 @@ const RegisterPage = () => {
                       <FormControl>
                         <Textarea 
                           placeholder="Describe your project goals, timeline, specific requirements, or any questions you have..."
-                          className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500"
+                          className="min-h-[120px] bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
                           {...field}
                         />
                       </FormControl>

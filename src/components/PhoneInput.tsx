@@ -36,18 +36,20 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
   return (
     <div className={`flex gap-2 ${className}`}>
       <Select value={selectedCountry.code} onValueChange={handleCountryChange}>
-        <SelectTrigger className="w-[120px]">
+        <SelectTrigger className="w-[120px] bg-white">
           <SelectValue>
-            <span className="text-sm text-black">{selectedCountry.dial_code}</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-medium text-gray-900">{selectedCountry.dial_code}</span>
+            </div>
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[200px] overflow-y-auto bg-white z-50">
           {countries.map((country) => (
             <SelectItem key={country.code} value={country.code}>
-              <div className="flex items-center gap-2 text-black">
-                <span className="text-xs text-black">{country.code}</span>
-                <span className="text-black">{country.dial_code}</span>
-                <span className="text-sm truncate text-black">{country.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-700">{country.code}</span>
+                <span className="font-medium text-gray-900">{country.dial_code}</span>
+                <span className="text-sm text-gray-600 truncate">{country.name}</span>
               </div>
             </SelectItem>
           ))}
@@ -58,7 +60,7 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
         value={phoneNumber}
         onChange={handlePhoneChange}
         placeholder={placeholder}
-        className="flex-1"
+        className="flex-1 bg-white"
         pattern="[0-9\s\-\(\)]*"
       />
     </div>
