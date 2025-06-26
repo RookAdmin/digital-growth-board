@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from 'react-router-dom';
 import { Crown, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -75,7 +74,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
                 asChild 
                 className="bg-green-600 hover:bg-green-700 text-white font-light rounded-full px-6 py-2"
               >
-                <Link to="/signup">Register</Link>
+                <Link to="/register">Register</Link>
               </Button>
             </>
           )}
@@ -149,7 +148,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
                     Login
                   </Link>
                   <Link 
-                    to="/signup" 
+                    to="/register" 
                     className="bg-green-600 hover:bg-green-700 text-white font-light py-3 px-4 rounded-lg transition-colors text-lg text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
