@@ -29,7 +29,7 @@ const TeamPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header isAuthenticated={true} />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -40,24 +40,24 @@ const TeamPage = () => {
           </div>
           <Button 
             onClick={() => setInviteDialogOpen(true)} 
-            className="modern-button bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto h-10 sm:h-11 rounded-xl"
+            className="bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-sm h-10 sm:h-11 w-full sm:w-auto"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Invite Member
           </Button>
         </div>
 
-        <div className="modern-card overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
           {isLoading && (
             <div className="p-6 space-y-4">
-              <Skeleton className="h-12 w-full bg-white/40" />
-              <Skeleton className="h-12 w-full bg-white/40" />
-              <Skeleton className="h-12 w-full bg-white/40" />
+              <Skeleton className="h-12 w-full bg-gray-100" />
+              <Skeleton className="h-12 w-full bg-gray-100" />
+              <Skeleton className="h-12 w-full bg-gray-100" />
             </div>
           )}
           {error && (
             <div className="p-6">
-              <div className="text-red-600 bg-red-50/80 backdrop-blur-sm p-4 rounded-xl border border-red-200/50">
+              <div className="text-red-700 bg-red-50 p-4 rounded-xl border border-red-200">
                 Error fetching team members: {error.message}
               </div>
             </div>

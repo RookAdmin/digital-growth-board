@@ -19,9 +19,9 @@ export const ClientPortalHeader = () => {
   };
 
   return (
-    <header className="border-b border-white/20 bg-white/60 backdrop-blur-xl shadow-lg shadow-gray-100/20 sticky top-0 z-50">
+    <header className="border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-2xl bg-white/50 backdrop-blur-md border border-white/30 shadow-lg">
+        <div className="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-xl bg-gray-50 border border-gray-200">
           <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-gray-800" strokeWidth={1.5} />
           <span className="text-lg sm:text-xl font-light text-gray-900 tracking-wide hidden sm:block">Realm by Rook Concierge</span>
           <span className="text-lg font-light text-gray-900 tracking-wide sm:hidden">Realm</span>
@@ -29,14 +29,14 @@ export const ClientPortalHeader = () => {
         </div>
         
         {/* Desktop Navigation */}
-        <div className="hidden sm:flex items-center gap-4 bg-white/40 backdrop-blur-lg rounded-full p-2 shadow-lg border border-white/30">
+        <div className="hidden sm:flex items-center gap-4 bg-gray-50 rounded-xl p-2 border border-gray-200">
           <span className="text-sm text-gray-600 font-light px-3 truncate max-w-48">
             Welcome, {clientUser?.email}
           </span>
           <Button 
             variant="outline" 
             onClick={handleSignOut}
-            className="border border-green-300/50 bg-white/60 backdrop-blur-sm text-green-700 hover:bg-white/80 font-light rounded-full px-4 py-2 shadow-md transition-all duration-300"
+            className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 font-light rounded-xl px-4 py-2 shadow-sm"
           >
             <LogOut className="mr-2 h-4 w-4" strokeWidth={1.5} />
             Sign Out
@@ -45,7 +45,7 @@ export const ClientPortalHeader = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="sm:hidden p-2 bg-white/50 backdrop-blur-md rounded-full border border-white/30 shadow-lg"
+          className="sm:hidden p-2 bg-gray-50 rounded-xl border border-gray-200"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? (
@@ -58,10 +58,10 @@ export const ClientPortalHeader = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="sm:hidden absolute top-full left-0 right-0 border-t border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl z-50 mx-4 rounded-2xl mt-2">
+        <div className="sm:hidden absolute top-full left-0 right-0 border-t border-gray-200 bg-white shadow-lg z-50 mx-4 rounded-xl mt-2 border">
           <div className="container mx-auto px-4">
             <div className="flex flex-col gap-1 py-4">
-              <div className="text-gray-600 font-light py-3 px-4 text-sm border-b border-gray-200/50 mb-2">
+              <div className="text-gray-600 font-light py-3 px-4 text-sm border-b border-gray-200 mb-2">
                 Welcome, {clientUser?.email}
               </div>
               <button
@@ -69,7 +69,7 @@ export const ClientPortalHeader = () => {
                   handleSignOut();
                   setMobileMenuOpen(false);
                 }}
-                className="text-left text-green-700 bg-white/70 font-light py-3 px-4 rounded-xl transition-all duration-200 text-base shadow-sm"
+                className="text-left text-gray-700 bg-gray-50 font-light py-3 px-4 rounded-xl transition-all duration-200 text-base hover:bg-gray-100"
               >
                 <LogOut className="inline mr-2 h-4 w-4" strokeWidth={1.5} />
                 Sign Out

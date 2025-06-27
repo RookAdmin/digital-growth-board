@@ -66,12 +66,12 @@ const ProjectsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <Header isAuthenticated={true} />
         <main className="flex items-center justify-center min-h-[60vh] p-4">
-          <div className="modern-card p-6 sm:p-8 max-w-sm w-full mx-auto">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8 max-w-sm w-full mx-auto">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
               <div className="text-base sm:text-lg font-medium text-gray-700 text-center">Loading projects...</div>
             </div>
           </div>
@@ -81,7 +81,7 @@ const ProjectsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header isAuthenticated={true} />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -90,26 +90,26 @@ const ProjectsPage = () => {
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 font-light">Manage and track all client projects</p>
         </div>
 
-        <div className="modern-card p-4 sm:p-6 lg:p-8 mb-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
           <div className="flex flex-col gap-4 sm:gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="relative col-span-1 sm:col-span-2 lg:col-span-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
                 <Input
                   placeholder="Search projects, clients..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 modern-input border-0 bg-white/60 backdrop-blur-sm shadow-sm focus:shadow-md transition-all duration-300 h-10 sm:h-11"
+                  className="pl-10 bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-gray-200 focus:border-gray-300 rounded-xl h-10 sm:h-11"
                 />
               </div>
               
               <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600 z-10" />
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="pl-10 modern-input border-0 bg-white/60 backdrop-blur-sm shadow-sm h-10 sm:h-11">
+                  <SelectTrigger className="pl-10 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl h-10 sm:h-11">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
-                  <SelectContent className="modern-card border-0 shadow-xl">
+                  <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
                     <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="Not Started">Not Started</SelectItem>
                     <SelectItem value="In Progress">In Progress</SelectItem>
@@ -120,10 +120,10 @@ const ProjectsPage = () => {
               </div>
 
               <Select value={clientFilter} onValueChange={setClientFilter}>
-                <SelectTrigger className="modern-input border-0 bg-white/60 backdrop-blur-sm shadow-sm h-10 sm:h-11">
+                <SelectTrigger className="bg-gray-50 border border-gray-200 text-gray-900 rounded-xl h-10 sm:h-11">
                   <SelectValue placeholder="All Clients" />
                 </SelectTrigger>
-                <SelectContent className="modern-card border-0 shadow-xl">
+                <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
                   <SelectItem value="all">All Clients</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
@@ -136,7 +136,7 @@ const ProjectsPage = () => {
           </div>
         </div>
 
-        <div className="modern-card overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
           <ProjectsTable projects={filteredProjects} />
         </div>
       </main>

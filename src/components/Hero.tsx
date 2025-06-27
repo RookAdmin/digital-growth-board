@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Shield, Users, Clock, MessageSquare, FolderLock } from "lucide-react";
+import { ArrowRight, Shield, Users, Clock, MessageSquare, FolderLock, Briefcase } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -40,7 +40,7 @@ export const Hero = () => {
                 <Button 
                   variant="homepage" 
                   size="lg" 
-                  className="bg-green-600 hover:bg-green-700 text-white rounded-full px-8 py-6 text-lg font-medium shadow-lg backdrop-blur-sm border border-green-500/20 transition-all duration-300 group w-full sm:w-auto" 
+                  className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8 py-6 text-lg font-medium shadow-lg transition-all duration-300 group w-full sm:w-auto" 
                   asChild
                 >
                   <Link to="/login" className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export const Hero = () => {
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="border border-green-300/50 bg-white/80 backdrop-blur-sm text-green-700 hover:bg-white/90 rounded-full px-8 py-6 text-lg font-medium shadow-lg transition-all duration-300 w-full sm:w-auto" 
+                  className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded-full px-8 py-6 text-lg font-medium shadow-lg transition-all duration-300 w-full sm:w-auto" 
                   asChild
                 >
                   <Link to="/register" className="flex items-center gap-3">
@@ -75,36 +75,44 @@ export const Hero = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative w-80 h-80 lg:w-96 lg:h-96">
                     {/* Main Circle */}
-                    <div className="absolute inset-0 border-2 border-green-200/50 rounded-full animate-spin" style={{ animationDuration: '20s' }}></div>
+                    <div className="absolute inset-0 border-2 border-gray-200 rounded-full animate-spin" style={{ animationDuration: '20s' }}></div>
                     
                     {/* Floating Elements */}
-                    <div className="absolute top-8 left-8 w-16 h-16 bg-white/80 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '0s', animationDuration: '3s' }}>
-                      <div className="w-8 h-8 bg-green-100 rounded-lg"></div>
+                    <div className="absolute top-8 left-8 w-16 h-16 bg-white border border-gray-200 rounded-2xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '0s', animationDuration: '3s' }}>
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Briefcase className="w-4 h-4 text-gray-600" />
+                      </div>
                     </div>
                     
-                    <div className="absolute top-16 right-8 w-20 h-20 bg-white/80 backdrop-blur-md border border-white/30 rounded-full shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '1s', animationDuration: '2.5s' }}>
-                      <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
+                    <div className="absolute top-16 right-8 w-20 h-20 bg-white border border-gray-200 rounded-full shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '1s', animationDuration: '2.5s' }}>
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-gray-600" />
+                      </div>
                     </div>
                     
-                    <div className="absolute bottom-16 left-12 w-14 h-14 bg-white/80 backdrop-blur-md border border-white/30 rounded-xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>
-                      <div className="w-6 h-6 bg-purple-100 rounded-lg"></div>
+                    <div className="absolute bottom-16 left-12 w-14 h-14 bg-white border border-gray-200 rounded-xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>
+                      <div className="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Clock className="w-3 h-3 text-gray-600" />
+                      </div>
                     </div>
                     
-                    <div className="absolute bottom-8 right-16 w-18 h-18 bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '0.5s', animationDuration: '2.8s' }}>
-                      <div className="w-8 h-8 bg-yellow-100 rounded-2xl"></div>
+                    <div className="absolute bottom-8 right-16 w-18 h-18 bg-white border border-gray-200 rounded-3xl shadow-lg animate-bounce flex items-center justify-center" style={{ animationDelay: '0.5s', animationDuration: '2.8s' }}>
+                      <div className="w-8 h-8 bg-gray-100 rounded-2xl flex items-center justify-center">
+                        <MessageSquare className="w-4 h-4 text-gray-600" />
+                      </div>
                     </div>
                     
                     {/* Center Dashboard Mockup */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-48 h-32 bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/30 p-4 animate-pulse">
+                      <div className="w-48 h-32 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 animate-pulse">
                         <div className="space-y-2">
-                          <div className="h-2 bg-green-200 rounded-full w-3/4"></div>
-                          <div className="h-2 bg-gray-200 rounded-full w-1/2"></div>
-                          <div className="h-2 bg-blue-200 rounded-full w-5/6"></div>
+                          <div className="h-2 bg-gray-200 rounded-full w-3/4"></div>
+                          <div className="h-2 bg-gray-100 rounded-full w-1/2"></div>
+                          <div className="h-2 bg-gray-200 rounded-full w-5/6"></div>
                           <div className="flex gap-2 mt-3">
-                            <div className="w-6 h-6 bg-green-100 rounded-full"></div>
-                            <div className="w-6 h-6 bg-blue-100 rounded-full"></div>
-                            <div className="w-6 h-6 bg-purple-100 rounded-full"></div>
+                            <div className="w-6 h-6 bg-gray-100 rounded-full"></div>
+                            <div className="w-6 h-6 bg-gray-100 rounded-full"></div>
+                            <div className="w-6 h-6 bg-gray-100 rounded-full"></div>
                           </div>
                         </div>
                       </div>
@@ -113,32 +121,32 @@ export const Hero = () => {
                 </div>
                 
                 {/* Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-blue-50/50 rounded-full filter blur-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full filter blur-3xl"></div>
               </div>
             </div>
           </div>
 
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <Clock className="w-6 h-6 text-green-600" />
+            <div className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200">
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-gray-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Real-Time Updates</h3>
               <p className="text-gray-600">Stay informed with instant notifications and live project status updates.</p>
             </div>
             
-            <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <MessageSquare className="w-6 h-6 text-blue-600" />
+            <div className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200">
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                <MessageSquare className="w-6 h-6 text-gray-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Direct Communication</h3>
               <p className="text-gray-600">Connect directly with your team through integrated messaging and comments.</p>
             </div>
             
-            <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <FolderLock className="w-6 h-6 text-purple-600" />
+            <div className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200">
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                <FolderLock className="w-6 h-6 text-gray-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure File Management</h3>
               <p className="text-gray-600">Access all your project files and documents in one organized, secure location.</p>

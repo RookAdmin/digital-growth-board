@@ -25,7 +25,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header isAuthenticated={true} />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 sm:mb-8 gap-4">
@@ -35,12 +35,12 @@ const DashboardPage = () => {
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 z-10" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600 z-10" />
               <Input
                 placeholder="Search by name, email, phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 modern-input border-0 bg-white/60 backdrop-blur-sm shadow-sm focus:shadow-md transition-all duration-300 h-10 sm:h-11 w-full sm:w-64 text-gray-900 placeholder:text-gray-500"
+                className="pl-10 bg-white border border-gray-200 text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-gray-200 focus:border-gray-300 rounded-xl shadow-sm h-10 sm:h-11 w-full sm:w-64"
                 maxLength={18}
               />
             </div>
@@ -56,7 +56,7 @@ const DashboardPage = () => {
             <Link to="/dashboard/reporting">
               <Button 
                 variant="outline" 
-                className="modern-button border border-gray-300/50 bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80 shadow-sm hover:shadow-md transition-all duration-300 w-full sm:w-auto h-10 sm:h-11"
+                className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl shadow-sm h-10 sm:h-11 w-full sm:w-auto"
               >
                 <ChartBarIncreasing className="mr-2 h-4 w-4" />
                 View Reports
@@ -65,7 +65,7 @@ const DashboardPage = () => {
             <AddLeadDialog />
           </div>
         </div>
-        <div className="overflow-hidden bg-white/70 backdrop-blur-sm border border-gray-200/50 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
           <KanbanBoard 
             searchTerm={searchTerm} 
             dateFilter={dateFilter}

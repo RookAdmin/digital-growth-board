@@ -7,7 +7,7 @@ import { ClientFilesList } from './ClientFilesList';
 
 export const ClientPortalDashboard = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <ClientPortalHeader />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -20,19 +20,19 @@ export const ClientPortalDashboard = () => {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           <div className="space-y-6 sm:space-y-8">
-            <div className="modern-card overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
               <ClientOnboardingProgress />
             </div>
-            <div className="modern-card overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
               <ClientProjectsList />
             </div>
           </div>
           
           <div className="space-y-6 sm:space-y-8">
-            <div className="modern-card overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
               <ClientInvoicesList />
             </div>
-            <div className="modern-card overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
               <ClientFilesList />
             </div>
           </div>

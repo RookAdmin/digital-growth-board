@@ -14,7 +14,7 @@ const ClientsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -23,7 +23,7 @@ const ClientsPage = () => {
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">A list of all your converted clients.</p>
         </div>
         
-        <div className="modern-card overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
           <ClientsTable />
         </div>
       </main>
