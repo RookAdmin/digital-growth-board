@@ -65,7 +65,7 @@ const DashboardPage = () => {
             <AddLeadDialog />
           </div>
         </div>
-        <div className="modern-card overflow-hidden">
+        <div className="overflow-hidden bg-white/70 backdrop-blur-sm border border-gray-200/50 shadow-sm">
           <KanbanBoard 
             searchTerm={searchTerm} 
             dateFilter={dateFilter}
