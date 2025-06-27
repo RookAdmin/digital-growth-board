@@ -12,16 +12,16 @@ interface KanbanColumnProps {
 
 export const KanbanColumn = ({ columnId, title, leads, onCardClick }: KanbanColumnProps) => {
   return (
-    <div className="flex flex-col w-80 bg-background border border-border rounded-lg flex-shrink-0">
-        <div className="px-4 py-3 border-b border-border flex-shrink-0">
-            <h3 className="font-semibold text-foreground">{title} ({leads.length})</h3>
+    <div className="flex flex-col w-80 bg-white border border-gray-200 rounded-xl shadow-sm flex-shrink-0">
+        <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0 bg-gray-50 rounded-t-xl">
+            <h3 className="font-semibold text-gray-900">{title} ({leads.length})</h3>
         </div>
         <Droppable droppableId={columnId}>
           {(provided, snapshot) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`flex-1 rounded-b-lg transition-colors p-2 ${snapshot.isDraggingOver ? 'bg-muted/20' : ''}`}
+              className={`flex-1 rounded-b-xl transition-colors p-2 ${snapshot.isDraggingOver ? 'bg-gray-50' : 'bg-white'}`}
               style={{ minHeight: '200px' }}
             >
               <div className="space-y-3">

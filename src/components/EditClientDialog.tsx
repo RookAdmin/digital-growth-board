@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -103,51 +104,58 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl"
+        >
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
         <DialogHeader>
-          <DialogTitle>Edit Client</DialogTitle>
+          <DialogTitle className="text-gray-900">Edit Client</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="first_name">First Name *</Label>
+              <Label htmlFor="first_name" className="text-gray-700">First Name *</Label>
               <Input
                 id="first_name"
                 value={formData.first_name}
                 onChange={(e) => handleInputChange('first_name', e.target.value)}
                 required
                 maxLength={18}
+                className="bg-white border border-gray-300 text-gray-900 rounded-xl"
               />
             </div>
             <div>
-              <Label htmlFor="last_name">Last Name</Label>
+              <Label htmlFor="last_name" className="text-gray-700">Last Name</Label>
               <Input
                 id="last_name"
                 value={formData.last_name}
                 onChange={(e) => handleInputChange('last_name', e.target.value)}
                 maxLength={18}
+                className="bg-white border border-gray-300 text-gray-900 rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email" className="text-gray-700">Email *</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
+              className="bg-white border border-gray-300 text-gray-900 rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone" className="text-gray-700">Phone Number</Label>
             <PhoneInput
               value={formData.phone}
               onChange={(value) => handleInputChange('phone', value)}
@@ -293,10 +301,19 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setIsOpen(false)}
+              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={updateClientMutation.isPending}>
+            <Button 
+              type="submit" 
+              disabled={updateClientMutation.isPending}
+              className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
+            >
               {updateClientMutation.isPending ? 'Updating...' : 'Update Client'}
             </Button>
           </div>

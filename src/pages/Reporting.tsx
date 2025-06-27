@@ -7,7 +7,7 @@ import { RevenueChart } from '@/components/RevenueChart';
 
 const ReportingPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header isAuthenticated={true} />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -17,14 +17,22 @@ const ReportingPage = () => {
         </div>
         
         <div className="space-y-6 sm:space-y-8">
-          <AnalyticsSummary />
-          
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-            <LeadConversionChart />
-            <ProjectStatusChart />
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <AnalyticsSummary />
           </div>
           
-          <RevenueChart />
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+              <LeadConversionChart />
+            </div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+              <ProjectStatusChart />
+            </div>
+          </div>
+          
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <RevenueChart />
+          </div>
         </div>
       </main>
     </div>

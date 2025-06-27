@@ -88,9 +88,9 @@ export const ClientsTable = () => {
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
-        <Skeleton className="h-12 w-full bg-white/40" />
-        <Skeleton className="h-12 w-full bg-white/40" />
-        <Skeleton className="h-12 w-full bg-white/40" />
+        <Skeleton className="h-12 w-full bg-gray-100" />
+        <Skeleton className="h-12 w-full bg-gray-100" />
+        <Skeleton className="h-12 w-full bg-gray-100" />
       </div>
     );
   }
@@ -98,7 +98,7 @@ export const ClientsTable = () => {
   if (error instanceof Error) {
     return (
       <div className="p-6">
-        <div className="text-red-600 bg-red-50/80 backdrop-blur-sm p-4 rounded-xl border border-red-200/50">
+        <div className="text-red-600 bg-red-50 p-4 rounded-xl border border-red-200">
           Error fetching clients: {error.message}
         </div>
       </div>
@@ -107,7 +107,7 @@ export const ClientsTable = () => {
   
   if (!clients || clients.length === 0) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-8 text-center bg-white">
         <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
           <Users className="w-8 h-8 text-gray-400" />
         </div>
@@ -119,10 +119,10 @@ export const ClientsTable = () => {
 
   return (
     <>
-      <div className="overflow-hidden rounded-2xl">
+      <div className="overflow-hidden rounded-xl bg-white">
         <Table>
           <TableHeader>
-            <TableRow className="border-0 bg-gray-50/50">
+            <TableRow className="border-0 bg-gray-50">
               <TableHead className="font-semibold text-gray-900 py-4 px-6">Name</TableHead>
               <TableHead className="font-semibold text-gray-900 py-4 px-6">Email</TableHead>
               <TableHead className="font-semibold text-gray-900 py-4 px-6">Phone</TableHead>
@@ -135,8 +135,8 @@ export const ClientsTable = () => {
             {clients?.map((client, index) => (
               <TableRow 
                 key={client.id}
-                className={`border-0 hover:bg-gray-50/30 transition-colors ${
-                  index < clients.length - 1 ? 'border-b border-gray-100/50' : ''
+                className={`border-0 hover:bg-gray-50 transition-colors ${
+                  index < clients.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
               >
                 <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>
@@ -151,7 +151,7 @@ export const ClientsTable = () => {
                       variant="destructive"
                       size="sm"
                       onClick={() => setClientToDelete(client)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                      className="bg-red-600 hover:bg-red-700 hover:text-white text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
@@ -166,24 +166,24 @@ export const ClientsTable = () => {
 
       {clientToDelete && (
         <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
-          <AlertDialogContent className="modern-card border-0">
+          <AlertDialogContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-gray-900">Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-600">
                 This action cannot be undone. This will permanently delete the client "{clientToDelete.name}" and all associated data (projects, invoices, files, etc.).
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel 
                 onClick={() => setClientToDelete(null)}
-                className="modern-button border border-gray-300/50 bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80"
+                className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl"
               >
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteClient}
                 disabled={deleteClientMutation.isPending}
-                className="modern-button bg-red-500 hover:bg-red-600 text-white"
+                className="bg-red-600 text-white hover:bg-red-700 hover:text-white rounded-xl"
               >
                 {deleteClientMutation.isPending ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>

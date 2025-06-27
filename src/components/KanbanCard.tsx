@@ -1,4 +1,3 @@
-
 import { Lead } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,12 +26,12 @@ interface KanbanCardProps {
 }
 
 const statusColors: { [key in Lead['status']]: string } = {
-  New: "bg-gray-500 hover:bg-gray-500",
-  Contacted: "bg-blue-500 hover:bg-blue-500",
-  Qualified: "bg-yellow-500 hover:bg-yellow-500",
-  "Proposal Sent": "bg-purple-500 hover:bg-purple-500",
-  Converted: "bg-green-500 hover:bg-green-500",
-  Dropped: "bg-red-500 hover:bg-red-500",
+  New: "bg-gray-500 hover:bg-gray-600 text-white",
+  Contacted: "bg-blue-500 hover:bg-blue-600 text-white",
+  Qualified: "bg-yellow-500 hover:bg-yellow-600 text-white",
+  "Proposal Sent": "bg-purple-500 hover:bg-purple-600 text-white",
+  Converted: "bg-green-500 hover:bg-green-600 text-white",
+  Dropped: "bg-red-500 hover:bg-red-600 text-white",
 };
 
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
@@ -166,20 +165,20 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
           className={`transition-all duration-200 ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-lg' : ''}`}
           onClick={() => onCardClick(lead)}
         >
-          <Card className="hover:bg-accent transition-colors cursor-pointer shadow-sm hover:shadow-md border-l-4 border-l-primary/20">
+          <Card className="bg-white hover:bg-gray-50 transition-colors cursor-pointer shadow-sm hover:shadow-md border border-gray-200 rounded-xl">
             <CardHeader className="p-3 pb-2">
               <div className="flex justify-between items-start">
                 <div className="flex-1 mr-2 min-w-0">
-                  <CardTitle className="text-sm font-semibold leading-tight break-words">{lead.name}</CardTitle>
+                  <CardTitle className="text-sm font-semibold leading-tight break-words text-gray-900">{lead.name}</CardTitle>
                   {lead.business_name && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
                       <Briefcase size={12} className="shrink-0" /> 
                       <span className="break-words">{lead.business_name}</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Badge className={`${statusColors[lead.status]} text-white text-xs px-2 py-0.5`}>
+                  <Badge className={`${statusColors[lead.status]} text-xs px-2 py-0.5 rounded-lg`}>
                     {lead.status}
                   </Badge>
                   <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
@@ -187,23 +186,28 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                       variant="ghost"
                       size="icon"
                       onClick={handleOpenDeleteDialog}
-                      className="h-5 w-5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      className="h-5 w-5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
                       disabled={deleteLeadMutation.isPending}
                     >
                       <Trash2 size={12} />
                     </Button>
-                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogContent className="bg-white border border-gray-200 rounded-xl shadow-lg" onClick={(e) => e.stopPropagation()}>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="text-gray-900">Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
                           This will permanently delete the lead "{lead.name}". This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel 
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl"
+                        >
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={handleConfirmDeletion}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          className="bg-red-600 text-white hover:bg-red-700 hover:text-white rounded-xl"
                           disabled={deleteLeadMutation.isPending}
                         >
                           {deleteLeadMutation.isPending ? 'Deleting...' : 'Delete'}
@@ -214,43 +218,48 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-3 pt-0 text-xs text-muted-foreground space-y-1">
+            <CardContent className="p-3 pt-0 text-xs text-gray-600 space-y-1">
               <div className="flex items-center gap-1 min-w-0">
-                <Mail size={12} className="shrink-0" /> 
+                <Mail size={12} className="shrink-0 text-gray-500" /> 
                 <span className="break-all">{lead.email}</span>
               </div>
               {lead.phone && (
                 <div className="flex items-center gap-1 min-w-0">
-                  <Phone size={12} className="shrink-0" /> 
+                  <Phone size={12} className="shrink-0 text-gray-500" /> 
                   <span className="break-words">{lead.phone}</span>
                 </div>
               )}
               {lead.lead_source && (
-                <p className="text-xs break-words"><strong>Source:</strong> {lead.lead_source}</p>
+                <p className="text-xs break-words text-gray-600"><strong>Source:</strong> {lead.lead_source}</p>
               )}
               {lead.budget_range && (
-                <p className="text-xs break-words"><strong>Budget:</strong> {lead.budget_range}</p>
+                <p className="text-xs break-words text-gray-600"><strong>Budget:</strong> {lead.budget_range}</p>
               )}
               {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
                  <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                     <Button
-                      className="w-full mt-2"
+                      className="w-full mt-2 bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
                       size="sm"
                       onClick={handleOpenDialog}
                       disabled={convertToClientMutation.isPending}
                     >
                       {convertToClientMutation.isPending ? 'Converting...' : 'Convert to Client'}
                     </Button>
-                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                  <AlertDialogContent className="bg-white border border-gray-200 rounded-xl shadow-lg" onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogTitle className="text-gray-900">Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription className="text-gray-600">
                         This will convert "{lead.name}" into a client. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleConfirmConversion}>
+                      <AlertDialogCancel className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleConfirmConversion}
+                        className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
+                      >
                         Confirm
                       </AlertDialogAction>
                     </AlertDialogFooter>

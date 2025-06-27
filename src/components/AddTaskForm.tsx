@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -95,7 +94,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 border rounded-lg bg-muted/50 animate-fade-in">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 border border-gray-200 rounded-xl bg-white animate-fade-in">
         <FormField
           control={form.control}
           name="title"
@@ -197,8 +196,19 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           />
         </div>
         <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-            <Button type="submit" disabled={addTaskMutation.isPending}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={addTaskMutation.isPending}
+              className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
+            >
               {addTaskMutation.isPending ? 'Adding Task...' : 'Add Task'}
             </Button>
         </div>

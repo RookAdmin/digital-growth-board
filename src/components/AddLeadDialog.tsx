@@ -208,8 +208,19 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
             </FormItem>
           )} />
         <DialogFooter className="pt-4">
-          <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button type="submit" disabled={isPending}>
+          <Button 
+            type="button" 
+            variant="ghost" 
+            onClick={() => setOpen(false)}
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isPending}
+            className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white"
+          >
             {isPending ? "Adding Lead..." : "Add Lead"}
           </Button>
         </DialogFooter>
@@ -224,15 +235,15 @@ export const AddLeadDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl">
           <PlusCircle className="mr-2" />
           Add New Lead
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-white border border-gray-200 rounded-xl shadow-lg">
         <DialogHeader>
-          <DialogTitle>Add a New Lead</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900">Add a New Lead</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Fill in the lead's information below. Required fields are marked with an asterisk.
           </DialogDescription>
         </DialogHeader>
