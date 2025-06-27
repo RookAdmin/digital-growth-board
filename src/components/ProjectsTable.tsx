@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -49,30 +50,15 @@ interface ProjectsTableProps {
 const getStatusColor = (status: ProjectStatus) => {
   switch (status) {
     case 'Not Started':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      return 'bg-slate-100 text-slate-700 border-slate-200';
     case 'In Progress':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      return 'bg-blue-100 text-blue-700 border-blue-200';
     case 'Review':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'Completed':
-      return 'bg-green-100 text-green-800 hover:bg-green-200';
+      return 'bg-green-100 text-green-700 border-green-200';
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-  }
-};
-
-const getStatusIcon = (status: ProjectStatus) => {
-  switch (status) {
-    case 'Not Started':
-      return '⏸️';
-    case 'In Progress':
-      return '🚀';
-    case 'Review':
-      return '👀';
-    case 'Completed':
-      return '✅';
-    default:
-      return '⏸️';
+      return 'bg-slate-100 text-slate-700 border-slate-200';
   }
 };
 
@@ -81,7 +67,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
-  const [editedProject, setEditedProject] = useState<Partial<Pick<Project, 'status' | 'deadline'>>>({});
+  const [editedProject, setEditedProject] = useState<Partial<Pick<Project, 'status' | 'deadline' | 'budget'>>>({});
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -122,13 +108,14 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   });
 
   const editProjectMutation = useMutation({
-    mutationFn: async (projectData: { status: ProjectStatus; deadline: string | null; id: string }) => {
+    mutationFn: async (projectData: { status: ProjectStatus; deadline: string | null; budget: number | null; id: string }) => {
       const { id, ...updateData } = projectData;
       const { data, error } = await supabase
         .from('projects')
         .update({
           status: updateData.status,
           deadline: updateData.deadline,
+          budget: updateData.budget,
         })
         .eq('id', id)
         .select()
@@ -136,7 +123,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       if (error) throw error;
 
-      // Log activity for project status update
+      // Log activity for project update
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('activity_logs').insert({
@@ -144,11 +131,12 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
           activity_type: 'project_updated',
           user_name: user.user_metadata?.full_name || user.email || 'Unknown User',
           user_email: user.email || '',
-          description: `Project status updated to ${updateData.status}`,
+          description: `Project updated: status ${updateData.status}${updateData.budget ? `, budget $${updateData.budget}` : ''}`,
           metadata: {
             old_status: projects.find(p => p.id === id)?.status,
             new_status: updateData.status,
-            deadline: updateData.deadline
+            deadline: updateData.deadline,
+            budget: updateData.budget
           }
         });
       }
@@ -182,7 +170,12 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const handleEditProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (projectToEdit && editedProject.status) {
-      editProjectMutation.mutate({ id: projectToEdit.id, status: editedProject.status, deadline: editedProject.deadline || null });
+      editProjectMutation.mutate({ 
+        id: projectToEdit.id, 
+        status: editedProject.status, 
+        deadline: editedProject.deadline || null,
+        budget: editedProject.budget || null
+      });
     }
   };
 
@@ -191,16 +184,17 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
     setEditedProject({
       status: project.status,
       deadline: project.deadline,
+      budget: project.budget,
     });
   };
 
   if (projects.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
+      <Card className="border-0 shadow-sm">
+        <CardContent className="flex items-center justify-center py-16">
           <div className="text-center">
-            <p className="text-lg text-muted-foreground">No projects found</p>
-            <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters or search terms.</p>
+            <p className="text-xl text-muted-foreground mb-2">No projects found</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your filters or search terms</p>
           </div>
         </CardContent>
       </Card>
@@ -209,127 +203,128 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>Active Projects ({projects.length})</span>
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-semibold">
+            Active Projects ({projects.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-auto max-h-[600px]">
+        <CardContent className="p-0">
+          <div className="overflow-auto max-h-[calc(100vh-300px)]">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-24">Tasks</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Budget</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="border-b border-border/50">
+                  <TableHead className="w-[250px] font-medium">Project</TableHead>
+                  <TableHead className="w-[200px] font-medium">Client</TableHead>
+                  <TableHead className="w-[120px] font-medium">Status</TableHead>
+                  <TableHead className="w-[80px] font-medium">Tasks</TableHead>
+                  <TableHead className="w-[120px] font-medium">Deadline</TableHead>
+                  <TableHead className="w-[100px] font-medium">Team</TableHead>
+                  <TableHead className="w-[120px] font-medium">Budget</TableHead>
+                  <TableHead className="w-[100px] font-medium">Created</TableHead>
+                  <TableHead className="w-[200px] font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {projects.map((project) => (
-                  <TableRow key={project.id} className="hover:bg-muted/50 animate-fade-in">
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{project.name}</div>
+                  <TableRow key={project.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm leading-tight">{project.name}</div>
                         {project.description && (
-                          <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <div className="text-xs text-muted-foreground line-clamp-2 max-w-[230px]">
                             {project.description}
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{project.clients?.business_name || project.clients?.name}</div>
-                        <div className="text-sm text-muted-foreground">{project.clients?.email}</div>
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm">
+                          {project.clients?.business_name || project.clients?.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{project.clients?.email}</div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(project.status)} variant="secondary">
-                        <span className="mr-1">{getStatusIcon(project.status)}</span>
+                    <TableCell className="py-4">
+                      <Badge className={`${getStatusColor(project.status)} text-xs font-medium px-2 py-1`} variant="outline">
                         {project.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4">
                       {project.tasks && project.tasks.length > 0 ? (
-                        <div className="flex items-center gap-1 text-sm whitespace-nowrap">
-                          <CheckSquare className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-xs">
+                          <CheckSquare className="h-3 w-3" />
                           <span>
-                            {project.tasks.filter((t) => t.status === 'Completed').length} / {project.tasks.length}
+                            {project.tasks.filter((t) => t.status === 'Completed').length}/{project.tasks.length}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">No tasks</span>
+                        <span className="text-muted-foreground text-xs">None</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4">
                       {project.deadline ? (
-                        <div className="flex items-center gap-1 text-sm">
-                          <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(project.deadline), 'MMM dd, yyyy')}
+                        <div className="flex items-center gap-1 text-xs">
+                          <CalendarIcon className="h-3 w-3" />
+                          <span>{format(new Date(project.deadline), 'MMM dd, yyyy')}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">No deadline</span>
+                        <span className="text-muted-foreground text-xs">Not set</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4">
                       {project.assigned_team_members && project.assigned_team_members.length > 0 ? (
-                        <div className="flex items-center gap-1 text-sm">
-                          <Users className="h-4 w-4" />
-                          <span>{project.assigned_team_members.length} member{project.assigned_team_members.length !== 1 ? 's' : ''}</span>
+                        <div className="flex items-center gap-1 text-xs">
+                          <Users className="h-3 w-3" />
+                          <span>{project.assigned_team_members.length}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">Unassigned</span>
+                        <span className="text-muted-foreground text-xs">None</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4">
                       {project.budget ? (
-                        <div className="flex items-center gap-1 text-sm">
-                          <DollarSign className="h-4 w-4" />
-                          ${project.budget.toLocaleString()}
+                        <div className="flex items-center gap-1 text-xs font-medium">
+                          <DollarSign className="h-3 w-3" />
+                          <span>{project.budget.toLocaleString()}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">No budget</span>
+                        <span className="text-muted-foreground text-xs">Not set</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
+                    <TableCell className="py-4">
+                      <span className="text-xs text-muted-foreground">
                         {format(new Date(project.created_at), 'MMM dd, yyyy')}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewProject(project)}
-                          className="hover-scale"
+                          className="h-8 px-3 text-xs"
                         >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Tasks
+                          <Eye className="mr-1 h-3 w-3" />
+                          View
                         </Button>
                         <Button
                           variant="outline"
-                          size="icon"
+                          size="sm"
                           onClick={() => openEditModal(project)}
-                          className="hover-scale h-9 w-9"
+                          className="h-8 w-8 p-0"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="h-3 w-3" />
                           <span className="sr-only">Edit project</span>
                         </Button>
                         <Button
                           variant="destructive"
-                          size="icon"
+                          size="sm"
                           onClick={() => setProjectToDelete(project)}
-                          className="hover-scale h-9 w-9"
+                          className="h-8 w-8 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                           <span className="sr-only">Delete project</span>
                         </Button>
                       </div>
@@ -352,7 +347,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
         <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>Delete Project</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the project
                 "{projectToDelete.name}" and all of its associated data.
@@ -374,19 +369,21 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       {projectToEdit && (
         <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Edit Project: {projectToEdit.name}</DialogTitle>
-              <DialogDescription>Update the project's status and deadline.</DialogDescription>
+              <DialogTitle>Edit Project</DialogTitle>
+              <DialogDescription>
+                Update the project status, deadline, and budget for "{projectToEdit.name}".
+              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleEditProject} className="space-y-4 py-4">
-              <div>
+            <form onSubmit={handleEditProject} className="space-y-6 py-4">
+              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={editedProject.status}
                   onValueChange={(value) => setEditedProject({ ...editedProject, status: value as ProjectStatus })}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -397,14 +394,15 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              
+              <div className="space-y-2">
                 <Label>Deadline</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal mt-1",
+                        "w-full justify-start text-left font-normal",
                         !editedProject.deadline && "text-muted-foreground"
                       )}
                     >
@@ -422,9 +420,29 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   </PopoverContent>
                 </Popover>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="budget">Budget (USD)</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="budget"
+                    type="number"
+                    placeholder="Enter budget amount"
+                    value={editedProject.budget || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value ? parseFloat(e.target.value) : null })}
+                    className="pl-10"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+              
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="button" variant="ghost" onClick={() => setProjectToEdit(null)}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)}>
+                    Cancel
+                  </Button>
                 </DialogClose>
                 <Button type="submit" disabled={editProjectMutation.isPending}>
                   {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}

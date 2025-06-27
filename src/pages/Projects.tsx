@@ -68,7 +68,7 @@ const ProjectsPage = () => {
       <div className="flex flex-col h-screen bg-background">
         <Header isAuthenticated={true} />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-2xl">Loading projects...</div>
+          <div className="text-xl font-medium text-muted-foreground">Loading projects...</div>
         </main>
       </div>
     );
@@ -78,23 +78,22 @@ const ProjectsPage = () => {
     <div className="flex flex-col h-screen bg-background">
       <Header isAuthenticated={true} />
       <main className="flex-1 overflow-hidden">
-        <div className="p-6 h-full flex flex-col">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Projects Dashboard</h1>
-            <p className="text-muted-foreground">Manage and track all client projects.</p>
+        <div className="p-8 h-full flex flex-col max-w-full">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold tracking-tight mb-2">Projects Dashboard</h1>
+            <p className="text-lg text-muted-foreground">Manage and track all client projects</p>
           </div>
 
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-wrap gap-4 mb-8">
             <Input
               placeholder="Search projects, clients, or descriptions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-              maxLength={18}
+              className="min-w-[300px] max-w-md"
             />
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -107,7 +106,7 @@ const ProjectsPage = () => {
             </Select>
 
             <Select value={clientFilter} onValueChange={setClientFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by client" />
               </SelectTrigger>
               <SelectContent>
