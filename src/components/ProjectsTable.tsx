@@ -67,7 +67,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
-  const [editedProject, setEditedProject] = useState<Partial<Pick<Project, 'status' | 'deadline' | 'budget'>>>({});
+  const [editedProject, setEditedProject] = useState<Partial<Pick<Project, 'status' | 'deadline' | 'budget' | 'name' | 'description'>>>({});
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -84,8 +84,10 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   const deleteProjectMutation = useMutation({
     mutationFn: async (projectId: string) => {
+      console.log('Deleting project:', projectId);
       const { error } = await supabase.from('projects').delete().eq('id', projectId);
       if (error) {
+        console.error('Delete project error:', error);
         throw new Error(error.message);
       }
     },
@@ -98,6 +100,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
       setProjectToDelete(null);
     },
     onError: (error) => {
+      console.error('Delete project mutation error:', error);
       toast({
         title: "Error",
         description: `Failed to delete project: ${error.message}`,
@@ -108,11 +111,22 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   });
 
   const editProjectMutation = useMutation({
-    mutationFn: async (projectData: { status: ProjectStatus; deadline: string | null; budget: number | null; id: string }) => {
+    mutationFn: async (projectData: { 
+      status: ProjectStatus; 
+      deadline: string | null; 
+      budget: number | null; 
+      name: string;
+      description: string | null;
+      id: string 
+    }) => {
       const { id, ...updateData } = projectData;
+      console.log('Updating project:', id, updateData);
+      
       const { data, error } = await supabase
         .from('projects')
         .update({
+          name: updateData.name,
+          description: updateData.description,
           status: updateData.status,
           deadline: updateData.deadline,
           budget: updateData.budget,
@@ -121,7 +135,10 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update project error:', error);
+        throw error;
+      }
 
       // Log activity for project update
       const { data: { user } } = await supabase.auth.getUser();
@@ -131,12 +148,14 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
           activity_type: 'project_updated',
           user_name: user.user_metadata?.full_name || user.email || 'Unknown User',
           user_email: user.email || '',
-          description: `Project updated: status ${updateData.status}${updateData.budget ? `, budget $${updateData.budget}` : ''}`,
+          description: `Project updated: ${updateData.name}, status ${updateData.status}${updateData.budget ? `, budget $${updateData.budget.toLocaleString()}` : ''}`,
           metadata: {
             old_status: projects.find(p => p.id === id)?.status,
             new_status: updateData.status,
             deadline: updateData.deadline,
-            budget: updateData.budget
+            budget: updateData.budget,
+            name: updateData.name,
+            description: updateData.description
           }
         });
       }
@@ -153,6 +172,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
       setProjectToEdit(null);
     },
     onError: (error) => {
+      console.error('Edit project mutation error:', error);
       toast({
         title: "Error",
         description: `Failed to update project: ${error.message}`,
@@ -169,9 +189,11 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   const handleEditProject = (e: React.FormEvent) => {
     e.preventDefault();
-    if (projectToEdit && editedProject.status) {
+    if (projectToEdit && editedProject.status && editedProject.name) {
       editProjectMutation.mutate({ 
         id: projectToEdit.id, 
+        name: editedProject.name,
+        description: editedProject.description || null,
         status: editedProject.status, 
         deadline: editedProject.deadline || null,
         budget: editedProject.budget || null
@@ -182,6 +204,8 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const openEditModal = (project: Project) => {
     setProjectToEdit(project);
     setEditedProject({
+      name: project.name,
+      description: project.description,
       status: project.status,
       deadline: project.deadline,
       budget: project.budget,
@@ -287,7 +311,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                       {project.budget ? (
                         <div className="flex items-center gap-1 text-xs font-medium">
                           <DollarSign className="h-3 w-3" />
-                          <span>{project.budget.toLocaleString()}</span>
+                          <span>${project.budget.toLocaleString()}</span>
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-xs">Not set</span>
@@ -369,14 +393,35 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       {projectToEdit && (
         <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Edit Project</DialogTitle>
+              <DialogTitle>Edit Project Details</DialogTitle>
               <DialogDescription>
-                Update the project status, deadline, and budget for "{projectToEdit.name}".
+                Update all project information including name, description, status, deadline, and budget.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEditProject} className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="project-name">Project Name</Label>
+                <Input
+                  id="project-name"
+                  value={editedProject.name || ''}
+                  onChange={(e) => setEditedProject({ ...editedProject, name: e.target.value })}
+                  placeholder="Enter project name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project-description">Description</Label>
+                <Input
+                  id="project-description"
+                  value={editedProject.description || ''}
+                  onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
+                  placeholder="Enter project description"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
@@ -428,7 +473,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   <Input
                     id="budget"
                     type="number"
-                    placeholder="Enter budget amount"
+                    placeholder="0.00"
                     value={editedProject.budget || ''}
                     onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value ? parseFloat(e.target.value) : null })}
                     className="pl-10"
@@ -436,6 +481,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                     step="0.01"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">Enter the project budget in US dollars</p>
               </div>
               
               <DialogFooter>
