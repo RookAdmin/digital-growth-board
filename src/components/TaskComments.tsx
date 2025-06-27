@@ -97,19 +97,19 @@ export const TaskComments = ({ taskId, taskTitle }: TaskCommentsProps) => {
   };
 
   return (
-    <Card className="bg-white border-gray-200">
-      <CardHeader>
+    <Card className="bg-white border-gray-200 shadow-sm">
+      <CardHeader className="bg-white">
         <CardTitle className="flex items-center gap-2 text-lg text-black">
-          <MessageSquare className="h-5 w-5" />
+          <MessageSquare className="h-5 w-5 text-black" />
           Comments for "{taskTitle}"
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 bg-white">
         {/* Comments List */}
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {isLoading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black mx-auto"></div>
             </div>
           ) : comments.length === 0 ? (
             <p className="text-gray-600 text-center py-4">No comments yet. Be the first to add feedback!</p>
@@ -146,7 +146,7 @@ export const TaskComments = ({ taskId, taskTitle }: TaskCommentsProps) => {
           <Button 
             onClick={handleSubmitComment}
             disabled={!newComment.trim() || addComment.isPending}
-            className="w-full bg-gray-900 text-white hover:bg-gray-800 hover:text-white"
+            className="w-full bg-black text-white hover:bg-gray-800 hover:text-white border-0"
           >
             <Send className="h-4 w-4 mr-2" />
             {addComment.isPending ? 'Adding Comment...' : 'Add Comment'}

@@ -25,7 +25,7 @@ const getStatusColor = (status: string) => {
     case 'Review':
       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
     case 'Completed':
-      return 'bg-green-100 text-green-800 hover:bg-green-200';
+      return 'bg-black text-white hover:bg-gray-800';
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   }
@@ -36,8 +36,8 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto animate-scale-in bg-white border-gray-200">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto animate-scale-in bg-white border-gray-200 shadow-lg">
+        <DialogHeader className="bg-white">
           <div className="space-y-4">
             <div className="flex items-start justify-between">
               <div>
@@ -58,19 +58,19 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
             <div className="flex flex-wrap gap-4 text-sm">
               {project.deadline && (
                 <div className="flex items-center gap-1 text-gray-600">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-black" />
                   <span>Due: {format(new Date(project.deadline), 'MMM dd, yyyy')}</span>
                 </div>
               )}
               {project.budget && (
                 <div className="flex items-center gap-1 text-gray-600">
-                  <DollarSign className="h-4 w-4" />
+                  <DollarSign className="h-4 w-4 text-black" />
                   <span>Budget: ${project.budget.toLocaleString()}</span>
                 </div>
               )}
               {project.assigned_team_members && project.assigned_team_members.length > 0 && (
                 <div className="flex items-center gap-1 text-gray-600">
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 text-black" />
                   <span>{project.assigned_team_members.length} team member{project.assigned_team_members.length !== 1 ? 's' : ''}</span>
                 </div>
               )}
@@ -78,47 +78,47 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
           </div>
         </DialogHeader>
         
-        <div className="mt-6">
+        <div className="mt-6 bg-white">
           <Tabs defaultValue="tasks" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4 bg-gray-100">
-              <TabsTrigger value="tasks" className="flex items-center gap-2 text-black data-[state=active]:bg-white">
+              <TabsTrigger value="tasks" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
                 <CheckSquare className="h-4 w-4" />
                 Tasks
               </TabsTrigger>
-              <TabsTrigger value="files" className="flex items-center gap-2 text-black data-[state=active]:bg-white">
+              <TabsTrigger value="files" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
                 <Upload className="h-4 w-4" />
                 Files
               </TabsTrigger>
-              <TabsTrigger value="messages" className="flex items-center gap-2 text-black data-[state=active]:bg-white">
+              <TabsTrigger value="messages" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
                 <MessageSquare className="h-4 w-4" />
                 Messages
               </TabsTrigger>
-              <TabsTrigger value="activity" className="flex items-center gap-2 text-black data-[state=active]:bg-white">
+              <TabsTrigger value="activity" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
                 <Activity className="h-4 w-4" />
                 Activity
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="tasks" className="space-y-4">
+            <TabsContent value="tasks" className="space-y-4 bg-white">
               <TaskTracker projectId={project.id} />
             </TabsContent>
             
-            <TabsContent value="files" className="space-y-4">
+            <TabsContent value="files" className="space-y-4 bg-white">
               <ProjectFileManager 
                 projectId={project.id} 
                 projectName={project.name}
               />
             </TabsContent>
             
-            <TabsContent value="messages" className="space-y-4">
-              <div>
+            <TabsContent value="messages" className="space-y-4 bg-white">
+              <div className="bg-white">
                 <h3 className="text-lg font-semibold mb-4 text-black">Project Chat</h3>
                 <ProjectMessaging projectId={project.id} />
               </div>
             </TabsContent>
             
-            <TabsContent value="activity" className="space-y-4">
-              <div>
+            <TabsContent value="activity" className="space-y-4 bg-white">
+              <div className="bg-white">
                 <h3 className="text-lg font-semibold mb-4 text-black">Activity Log</h3>
                 <ProjectActivityLog projectId={project.id} />
               </div>

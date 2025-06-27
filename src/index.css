@@ -14,8 +14,8 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 144.9 80.4% 10%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -31,15 +31,15 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 142.1 76.2% 36.3%;
+    --ring: 0 0% 9%;
 
     --radius: 0.5rem;
 
-    --chart-1: 138 78% 46%;
-    --chart-2: 154 62% 45%;
-    --chart-3: 168 48% 46%;
-    --chart-4: 180 43% 48%;
-    --chart-5: 203 51% 51%;
+    --chart-1: 0 0% 20%;
+    --chart-2: 0 0% 30%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 0 0% 50%;
+    --chart-5: 0 0% 60%;
     
     --color-leads: hsl(var(--chart-1));
     --color-clients: hsl(var(--chart-2));
@@ -61,8 +61,8 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 144.9 80.4% 10%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -78,13 +78,13 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 142.1 76.2% 36.3%;
+    --ring: 0 0% 9%;
 
-    --chart-1: 138 78% 46%;
-    --chart-2: 154 62% 45%;
-    --chart-3: 168 48% 46%;
-    --chart-4: 180 43% 48%;
-    --chart-5: 203 51% 51%;
+    --chart-1: 0 0% 20%;
+    --chart-2: 0 0% 30%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 0 0% 50%;
+    --chart-5: 0 0% 60%;
     
     --color-leads: hsl(var(--chart-1));
     --color-clients: hsl(var(--chart-2));
@@ -117,15 +117,15 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.4));
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.6));
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   
   ::-webkit-scrollbar-corner {
@@ -135,7 +135,7 @@
   /* Firefox scrollbar */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(34, 197, 94, 0.3) rgba(255, 255, 255, 0.05);
+    scrollbar-color: rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.05);
   }
   
   /* Modern input number styling */
@@ -152,8 +152,8 @@
   /* Modern focus states */
   .modern-focus:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
-    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
+    border-color: rgba(0, 0, 0, 0.4);
   }
   
   /* Advanced Glassmorphism utilities */
@@ -178,7 +178,7 @@
 
   /* Enhanced selection styling */
   ::selection {
-    background: rgba(34, 197, 94, 0.2);
+    background: rgba(0, 0, 0, 0.2);
     color: inherit;
   }
 }
@@ -211,8 +211,8 @@
   }
 
   @keyframes glow {
-    from { box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
-    to { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+    from { box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); }
+    to { box-shadow: 0 0 20px rgba(0, 0, 0, 0.4); }
   }
 
   /* Responsive text scaling */
