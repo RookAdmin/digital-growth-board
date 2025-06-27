@@ -14,19 +14,20 @@ const ClientsPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <Header />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex justify-between items-start sm:items-center flex-shrink-0">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">A list of all your converted clients.</p>
-          </div>
+      
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">Clients</h1>
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">A list of all your converted clients.</p>
         </div>
-        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+        
+        <div className="modern-card overflow-hidden">
           <ClientsTable />
         </div>
       </main>
+      
       {onboardingClientId && (
         <OnboardingModal
           clientId={onboardingClientId}

@@ -105,32 +105,37 @@
     @apply bg-background text-foreground antialiased;
   }
   
-  /* Modern Scrollbar Styles */
+  /* Ultra Modern Scrollbar Styles */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(156, 163, 175, 0.3), rgba(156, 163, 175, 0.6));
-    border-radius: 12px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.4));
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(156, 163, 175, 0.5), rgba(156, 163, 175, 0.8));
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.6));
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+  }
+  
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
   
   /* Firefox scrollbar */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.4) rgba(255, 255, 255, 0.1);
+    scrollbar-color: rgba(34, 197, 94, 0.3) rgba(255, 255, 255, 0.05);
   }
   
   /* Modern input number styling */
@@ -147,34 +152,120 @@
   /* Modern focus states */
   .modern-focus:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
   }
   
-  /* Glassmorphism utilities */
+  /* Advanced Glassmorphism utilities */
   .glass {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
   
   .glass-strong {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Enhanced selection styling */
+  ::selection {
+    background: rgba(34, 197, 94, 0.2);
+    color: inherit;
   }
 }
 
 @layer components {
   .modern-card {
-    @apply bg-white/80 backdrop-blur-lg rounded-2xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply bg-white/70 backdrop-blur-xl rounded-3xl border border-white/30 shadow-lg hover:shadow-xl transition-all duration-500 hover:bg-white/80;
   }
   
   .modern-button {
-    @apply rounded-xl font-medium transition-all duration-300 backdrop-blur-sm;
+    @apply rounded-2xl font-medium transition-all duration-300 backdrop-blur-sm shadow-md hover:shadow-lg active:scale-95;
   }
   
   .modern-input {
-    @apply rounded-xl border-0 bg-white/60 backdrop-blur-sm shadow-sm focus:shadow-md transition-all duration-300;
+    @apply rounded-2xl border-0 bg-white/50 backdrop-blur-md shadow-sm focus:shadow-lg transition-all duration-300 focus:bg-white/70 placeholder:text-gray-400;
+  }
+
+  /* Advanced animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
+    to { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+  }
+
+  /* Responsive text scaling */
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+
+  /* Mobile-first spacing utilities */
+  .space-responsive {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+
+  .gap-responsive {
+    @apply gap-4 sm:gap-6 lg:gap-8;
+  }
+
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .px-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .py-responsive {
+    @apply py-4 sm:py-6 lg:py-8;
+  }
+}
+
+/* Enhanced mobile touch targets */
+@media (hover: none) {
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+  
+  button, [role="button"], input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
