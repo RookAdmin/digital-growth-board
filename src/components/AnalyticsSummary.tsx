@@ -25,7 +25,6 @@ const fetchAnalyticsSummary = async () => {
   return { leadCount, clientCount, totalRevenue, activeProjectsCount, pendingInvoicesCount };
 };
 
-
 export const AnalyticsSummary = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['analyticsSummary'],
@@ -33,24 +32,24 @@ export const AnalyticsSummary = () => {
   });
 
   const summaryData = [
-    { title: 'Total Revenue', value: data?.totalRevenue, icon: <DollarSign className="h-4 w-4 text-muted-foreground" />, format: 'currency' },
-    { title: 'Total Clients', value: data?.clientCount, icon: <Users className="h-4 w-4 text-muted-foreground" />, format: 'number' },
-    { title: 'Active Projects', value: data?.activeProjectsCount, icon: <Briefcase className="h-4 w-4 text-muted-foreground" />, format: 'number' },
-    { title: 'Pending Invoices', value: data?.pendingInvoicesCount, icon: <FileClock className="h-4 w-4 text-muted-foreground" />, format: 'number' },
-    { title: 'Lead Conversion', value: data?.leadCount ? ((data.clientCount ?? 0) / data.leadCount * 100) : 0, icon: <CheckCircle className="h-4 w-4 text-muted-foreground" />, format: 'percent' },
+    { title: 'Total Revenue', value: data?.totalRevenue, icon: <DollarSign className="h-4 w-4 text-gray-600" />, format: 'currency' },
+    { title: 'Total Clients', value: data?.clientCount, icon: <Users className="h-4 w-4 text-gray-600" />, format: 'number' },
+    { title: 'Active Projects', value: data?.activeProjectsCount, icon: <Briefcase className="h-4 w-4 text-gray-600" />, format: 'number' },
+    { title: 'Pending Invoices', value: data?.pendingInvoicesCount, icon: <FileClock className="h-4 w-4 text-gray-600" />, format: 'number' },
+    { title: 'Lead Conversion', value: data?.leadCount ? ((data.clientCount ?? 0) / data.leadCount * 100) : 0, icon: <CheckCircle className="h-4 w-4 text-gray-600" />, format: 'percent' },
   ];
 
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         {[...Array(5)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="bg-white border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-2/3 bg-gray-100" />
+              <Skeleton className="h-4 w-4 bg-gray-100" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-8 w-1/2 bg-gray-100" />
             </CardContent>
           </Card>
         ))}
@@ -61,13 +60,13 @@ export const AnalyticsSummary = () => {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
       {summaryData.map(item => (
-        <Card key={item.title}>
+        <Card key={item.title} className="bg-white border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
+            <CardTitle className="text-sm font-medium text-black">{item.title}</CardTitle>
             {item.icon}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-black">
               {item.format === 'currency' && '$'}
               {typeof item.value === 'number' ? item.value.toLocaleString(undefined, { maximumFractionDigits: item.format === 'percent' ? 1 : 0 }) : '0'}
               {item.format === 'percent' && '%'}

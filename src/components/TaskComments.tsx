@@ -97,9 +97,9 @@ export const TaskComments = ({ taskId, taskTitle }: TaskCommentsProps) => {
   };
 
   return (
-    <Card>
+    <Card className="bg-white border-gray-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+        <CardTitle className="flex items-center gap-2 text-lg text-black">
           <MessageSquare className="h-5 w-5" />
           Comments for "{taskTitle}"
         </CardTitle>
@@ -109,26 +109,26 @@ export const TaskComments = ({ taskId, taskTitle }: TaskCommentsProps) => {
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {isLoading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
             </div>
           ) : comments.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No comments yet. Be the first to add feedback!</p>
+            <p className="text-gray-600 text-center py-4">No comments yet. Be the first to add feedback!</p>
           ) : (
             comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3 p-3 bg-muted/30 rounded-lg animate-fade-in">
+              <div key={comment.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg animate-fade-in">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-xs bg-gray-200 text-black">
                     {getInitials(comment.user_name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{comment.user_name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="font-medium text-sm text-black">{comment.user_name}</span>
+                    <span className="text-xs text-gray-600">
                       {format(new Date(comment.created_at), 'MMM dd, yyyy at HH:mm')}
                     </span>
                   </div>
-                  <p className="text-sm">{comment.comment}</p>
+                  <p className="text-sm text-black">{comment.comment}</p>
                 </div>
               </div>
             ))
@@ -141,12 +141,12 @@ export const TaskComments = ({ taskId, taskTitle }: TaskCommentsProps) => {
             placeholder="Add your feedback or comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            className="min-h-[80px]"
+            className="min-h-[80px] bg-white border-gray-300 text-black placeholder:text-gray-500"
           />
           <Button 
             onClick={handleSubmitComment}
             disabled={!newComment.trim() || addComment.isPending}
-            className="w-full"
+            className="w-full bg-gray-900 text-white hover:bg-gray-800 hover:text-white"
           >
             <Send className="h-4 w-4 mr-2" />
             {addComment.isPending ? 'Adding Comment...' : 'Add Comment'}

@@ -115,47 +115,47 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Edit Client</DialogTitle>
+          <DialogTitle className="text-black">Edit Client</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="first_name" className="text-gray-700">First Name *</Label>
+              <Label htmlFor="first_name" className="text-black">First Name *</Label>
               <Input
                 id="first_name"
                 value={formData.first_name}
                 onChange={(e) => handleInputChange('first_name', e.target.value)}
                 required
                 maxLength={18}
-                className="bg-white border border-gray-300 text-gray-900 rounded-xl"
+                className="bg-white border border-gray-300 text-black rounded-xl"
               />
             </div>
             <div>
-              <Label htmlFor="last_name" className="text-gray-700">Last Name</Label>
+              <Label htmlFor="last_name" className="text-black">Last Name</Label>
               <Input
                 id="last_name"
                 value={formData.last_name}
                 onChange={(e) => handleInputChange('last_name', e.target.value)}
                 maxLength={18}
-                className="bg-white border border-gray-300 text-gray-900 rounded-xl"
+                className="bg-white border border-gray-300 text-black rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-gray-700">Email *</Label>
+            <Label htmlFor="email" className="text-black">Email *</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
-              className="bg-white border border-gray-300 text-gray-900 rounded-xl"
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="phone" className="text-gray-700">Phone Number</Label>
+            <Label htmlFor="phone" className="text-black">Phone Number</Label>
             <PhoneInput
               value={formData.phone}
               onChange={(value) => handleInputChange('phone', value)}
@@ -164,55 +164,59 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           </div>
 
           <div>
-            <Label htmlFor="business_name">Business Name</Label>
+            <Label htmlFor="business_name" className="text-black">Business Name</Label>
             <Input
               id="business_name"
               value={formData.business_name}
               onChange={(e) => handleInputChange('business_name', e.target.value)}
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="legal_name">Legal Name</Label>
+            <Label htmlFor="legal_name" className="text-black">Legal Name</Label>
             <Input
               id="legal_name"
               value={formData.legal_name}
               onChange={(e) => handleInputChange('legal_name', e.target.value)}
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="gst_no">GST No.</Label>
+            <Label htmlFor="gst_no" className="text-black">GST No.</Label>
             <Input
               id="gst_no"
               value={formData.gst_no}
               onChange={(e) => handleInputChange('gst_no', e.target.value)}
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="industry">Industry</Label>
+            <Label htmlFor="industry" className="text-black">Industry</Label>
             <Input
               id="industry"
               value={formData.industry}
               onChange={(e) => handleInputChange('industry', e.target.value)}
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country" className="text-black">Country</Label>
               <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-gray-300 text-black">
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300">
                   {countries.map((country) => (
-                    <SelectItem key={country.isoCode} value={country.isoCode}>
+                    <SelectItem key={country.isoCode} value={country.isoCode} className="text-black hover:bg-gray-100">
                       {country.name}
                     </SelectItem>
                   ))}
@@ -220,14 +224,14 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="state">State</Label>
+              <Label htmlFor="state" className="text-black">State</Label>
               <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)} disabled={!formData.country}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-gray-300 text-black">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300">
                   {states.map((state) => (
-                    <SelectItem key={state.isoCode} value={state.isoCode}>
+                    <SelectItem key={state.isoCode} value={state.isoCode} className="text-black hover:bg-gray-100">
                       {state.name}
                     </SelectItem>
                   ))}
@@ -238,14 +242,14 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city" className="text-black">City</Label>
               <Select value={formData.city} onValueChange={(value) => handleInputChange('city', value)} disabled={!formData.state}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-gray-300 text-black">
                   <SelectValue placeholder="Select city" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300">
                   {cities.map((city) => (
-                    <SelectItem key={city.name} value={city.name}>
+                    <SelectItem key={city.name} value={city.name} className="text-black hover:bg-gray-100">
                       {city.name}
                     </SelectItem>
                   ))}
@@ -253,19 +257,20 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="pincode">Pincode</Label>
+              <Label htmlFor="pincode" className="text-black">Pincode</Label>
               <Input
                 id="pincode"
                 value={formData.pincode}
                 onChange={(e) => handleInputChange('pincode', e.target.value)}
                 maxLength={10}
                 placeholder="Enter pincode"
+                className="bg-white border border-gray-300 text-black rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="facebook_url">Facebook URL</Label>
+            <Label htmlFor="facebook_url" className="text-black">Facebook URL</Label>
             <Input
               id="facebook_url"
               type="url"
@@ -273,11 +278,12 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               onChange={(e) => handleInputChange('facebook_url', e.target.value)}
               placeholder="https://facebook.com/..."
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="instagram_url">Instagram URL</Label>
+            <Label htmlFor="instagram_url" className="text-black">Instagram URL</Label>
             <Input
               id="instagram_url"
               type="url"
@@ -285,11 +291,12 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               onChange={(e) => handleInputChange('instagram_url', e.target.value)}
               placeholder="https://instagram.com/..."
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+            <Label htmlFor="linkedin_url" className="text-black">LinkedIn URL</Label>
             <Input
               id="linkedin_url"
               type="url"
@@ -297,6 +304,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
               placeholder="https://linkedin.com/..."
               maxLength={18}
+              className="bg-white border border-gray-300 text-black rounded-xl"
             />
           </div>
 

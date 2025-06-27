@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -100,9 +101,14 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Task Title</FormLabel>
+              <FormLabel className="text-black">Task Title</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Design new landing page" {...field} maxLength={18} />
+                <Input 
+                  placeholder="e.g., Design new landing page" 
+                  {...field} 
+                  maxLength={18} 
+                  className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,18 +119,18 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
+              <FormLabel className="text-black">Description (Optional)</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Add more details about the task" 
                   {...field} 
                   value={field.value || ''} 
                   maxLength={150}
-                  className="resize-none"
+                  className="resize-none bg-white border-gray-300 text-black placeholder:text-gray-500"
                   rows={3}
                 />
               </FormControl>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-gray-600">
                 {(field.value || '').length}/150 characters
               </div>
               <FormMessage />
@@ -137,18 +143,18 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Priority</FormLabel>
+                <FormLabel className="text-black">Priority</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white border-gray-300 text-black">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectContent className="bg-white border-gray-300">
+                    <SelectItem value="low" className="text-black hover:bg-gray-100">Low</SelectItem>
+                    <SelectItem value="medium" className="text-black hover:bg-gray-100">Medium</SelectItem>
+                    <SelectItem value="high" className="text-black hover:bg-gray-100">High</SelectItem>
+                    <SelectItem value="urgent" className="text-black hover:bg-gray-100">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -160,15 +166,15 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
             name="due_date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Due Date (Optional)</FormLabel>
+                <FormLabel className="text-black">Due Date (Optional)</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          "w-full pl-3 text-left font-normal bg-white border-gray-300 text-black",
+                          !field.value && "text-gray-500"
                         )}
                       >
                         {field.value ? (
@@ -180,13 +186,14 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
                       disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                       initialFocus
+                      className="bg-white"
                     />
                   </PopoverContent>
                 </Popover>

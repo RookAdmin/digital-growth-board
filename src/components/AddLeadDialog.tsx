@@ -123,21 +123,34 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>
-            <FormLabel>Full Name *</FormLabel>
-            <FormControl><Input placeholder="John Doe" {...field} maxLength={18} /></FormControl>
+            <FormLabel className="text-black">Full Name *</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="John Doe" 
+                {...field} 
+                maxLength={18} 
+                className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )} />
         <FormField control={form.control} name="email" render={({ field }) => (
           <FormItem>
-            <FormLabel>Email ID *</FormLabel>
-            <FormControl><Input placeholder="john.doe@example.com" {...field} /></FormControl>
+            <FormLabel className="text-black">Email ID *</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="john.doe@example.com" 
+                {...field} 
+                className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )} />
         <FormField control={form.control} name="phone" render={({ field }) => (
           <FormItem>
-            <FormLabel>Phone Number</FormLabel>
+            <FormLabel className="text-black">Phone Number</FormLabel>
             <FormControl>
               <PhoneInput 
                 value={field.value} 
@@ -150,14 +163,21 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         )} />
         <FormField control={form.control} name="business_name" render={({ field }) => (
           <FormItem>
-            <FormLabel>Business Name</FormLabel>
-            <FormControl><Input placeholder="Doe's Digital" {...field} maxLength={18} /></FormControl>
+            <FormLabel className="text-black">Business Name</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="Doe's Digital" 
+                {...field} 
+                maxLength={18} 
+                className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )} />
         <FormField control={form.control} name="services_interested" render={() => (
           <FormItem>
-            <FormLabel>Services Interested</FormLabel>
+            <FormLabel className="text-black">Services Interested</FormLabel>
             {services.map((service) => (
               <FormField key={service.id} control={form.control} name="services_interested" render={({ field }) => (
                 <FormItem key={service.id} className="flex flex-row items-start space-x-3 space-y-0">
@@ -172,7 +192,7 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
                       }}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal">{service.label}</FormLabel>
+                  <FormLabel className="font-normal text-black">{service.label}</FormLabel>
                 </FormItem>
               )} />
             ))}
@@ -181,20 +201,33 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         )} />
         <FormField control={form.control} name="budget_range" render={({ field }) => (
             <FormItem>
-              <FormLabel>Budget Range</FormLabel>
-              <FormControl><Input placeholder="$5,000 - $10,000" {...field} maxLength={18} /></FormControl>
+              <FormLabel className="text-black">Budget Range</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="$5,000 - $10,000" 
+                  {...field} 
+                  maxLength={18} 
+                  className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )} />
         <FormField control={form.control} name="lead_source" render={({ field }) => (
             <FormItem>
-              <FormLabel>Lead Source</FormLabel>
+              <FormLabel className="text-black">Lead Source</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select a source" /></SelectTrigger>
+                  <SelectTrigger className="bg-white border-gray-300 text-black">
+                    <SelectValue placeholder="Select a source" />
+                  </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  {leadSources.map(source => <SelectItem key={source} value={source}>{source}</SelectItem>)}
+                <SelectContent className="bg-white border-gray-300">
+                  {leadSources.map(source => (
+                    <SelectItem key={source} value={source} className="text-black hover:bg-gray-100">
+                      {source}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -202,8 +235,14 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
           )} />
         <FormField control={form.control} name="notes" render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl><Textarea placeholder="Any additional information..." {...field} /></FormControl>
+              <FormLabel className="text-black">Notes</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Any additional information..." 
+                  {...field} 
+                  className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )} />
@@ -242,7 +281,7 @@ export const AddLeadDialog = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg bg-white border border-gray-200 rounded-xl shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Add a New Lead</DialogTitle>
+          <DialogTitle className="text-black">Add a New Lead</DialogTitle>
           <DialogDescription className="text-gray-600">
             Fill in the lead's information below. Required fields are marked with an asterisk.
           </DialogDescription>
