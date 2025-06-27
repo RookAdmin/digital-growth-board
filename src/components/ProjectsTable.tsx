@@ -10,6 +10,7 @@ import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,87 @@ const getStatusColor = (status: ProjectStatus) => {
   }
 };
 
+const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
+  project: Project;
+  onView: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) => (
+  <div className="modern-card p-4 mb-4">
+    <div className="flex justify-between items-start mb-3">
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-gray-900 text-sm truncate">{project.name}</h3>
+        <p className="text-xs text-gray-500 mt-1">
+          {project.clients?.business_name || project.clients?.name}
+        </p>
+      </div>
+      <Badge className={`${getStatusColor(project.status)} text-xs font-medium px-2 py-1 rounded-full ml-2`} variant="outline">
+        {project.status}
+      </Badge>
+    </div>
+
+    {project.description && (
+      <p className="text-xs text-gray-600 mb-3 line-clamp-2">{project.description}</p>
+    )}
+
+    <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+      <div className="flex items-center gap-1 text-gray-600">
+        <CheckSquare className="h-3 w-3" />
+        <span>
+          {project.tasks ? `${project.tasks.filter((t) => t.status === 'Completed').length}/${project.tasks.length}` : '0'} tasks
+        </span>
+      </div>
+      
+      <div className="flex items-center gap-1 text-gray-600">
+        <Users className="h-3 w-3" />
+        <span>{project.assigned_team_members?.length || 0} members</span>
+      </div>
+
+      {project.deadline && (
+        <div className="flex items-center gap-1 text-gray-600">
+          <CalendarIcon className="h-3 w-3" />
+          <span>{format(new Date(project.deadline), 'MMM dd')}</span>
+        </div>
+      )}
+
+      {project.budget && (
+        <div className="flex items-center gap-1 text-gray-900 font-medium">
+          <DollarSign className="h-3 w-3" />
+          <span>${project.budget.toLocaleString()}</span>
+        </div>
+      )}
+    </div>
+
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onView}
+        className="flex-1 h-8 text-xs modern-button border-gray-200 hover:bg-gray-50"
+      >
+        <Eye className="mr-1 h-3 w-3" />
+        View
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEdit}
+        className="h-8 px-2 modern-button border-gray-200 hover:bg-gray-50"
+      >
+        <Pencil className="h-3 w-3" />
+      </Button>
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={onDelete}
+        className="h-8 px-2 modern-button"
+      >
+        <Trash2 className="h-3 w-3" />
+      </Button>
+    </div>
+  </div>
+);
+
 export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +152,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleViewProject = (project: Project) => {
     setSelectedProject(project);
@@ -139,7 +222,6 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
         throw error;
       }
 
-      // Log activity for project update
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('activity_logs').insert({
@@ -214,13 +296,181 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
   if (projects.length === 0) {
     return (
       <div className="modern-card">
-        <CardContent className="flex items-center justify-center py-16">
+        <CardContent className="flex items-center justify-center py-12 sm:py-16">
           <div className="text-center">
-            <p className="text-lg text-gray-600 mb-2">No projects found</p>
+            <p className="text-base sm:text-lg text-gray-600 mb-2">No projects found</p>
             <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
           </div>
         </CardContent>
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="space-y-0">
+          <div className="modern-card mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Active Projects ({projects.length})
+              </CardTitle>
+            </CardHeader>
+          </div>
+          
+          <div className="space-y-0">
+            {projects.map((project) => (
+              <MobileProjectCard
+                key={project.id}
+                project={project}
+                onView={() => handleViewProject(project)}
+                onEdit={() => openEditModal(project)}
+                onDelete={() => setProjectToDelete(project)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <ProjectDetailsModal
+          project={selectedProject}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+
+        {projectToDelete && (
+          <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+            <AlertDialogContent className="modern-card mx-4">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the project
+                  "{projectToDelete.name}" and all of its associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setProjectToDelete(null)} className="modern-button">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteProject}
+                  disabled={deleteProjectMutation.isPending}
+                  className="bg-red-600 hover:bg-red-700 modern-button"
+                >
+                  {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        {projectToEdit && (
+          <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
+            <DialogContent className="sm:max-w-[600px] modern-card mx-4 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Project Details</DialogTitle>
+                <DialogDescription>
+                  Update all project information including name, description, status, deadline, and budget.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleEditProject} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="project-name">Project Name</Label>
+                  <Input
+                    id="project-name"
+                    value={editedProject.name || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, name: e.target.value })}
+                    placeholder="Enter project name"
+                    required
+                    className="modern-input"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project-description">Description</Label>
+                  <Input
+                    id="project-description"
+                    value={editedProject.description || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
+                    placeholder="Enter project description"
+                    className="modern-input"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={editedProject.status}
+                    onValueChange={(value) => setEditedProject({ ...editedProject, status: value as ProjectStatus })}
+                  >
+                    <SelectTrigger className="modern-input">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="modern-card">
+                      <SelectItem value="Not Started">Not Started</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Deadline</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal modern-input",
+                          !editedProject.deadline && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {editedProject.deadline ? format(new Date(editedProject.deadline), "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 modern-card">
+                      <Calendar
+                        mode="single"
+                        selected={editedProject.deadline ? new Date(editedProject.deadline) : undefined}
+                        onSelect={(date) => setEditedProject({ ...editedProject, deadline: date ? date.toISOString().split('T')[0] : null })}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="budget">Budget (USD)</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="budget"
+                      type="number"
+                      placeholder="0.00"
+                      value={editedProject.budget || ''}
+                      onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value ? parseFloat(e.target.value) : null })}
+                      className="pl-10 modern-input"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">Enter the project budget in US dollars</p>
+                </div>
+                
+                <DialogFooter className="gap-2">
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button flex-1 sm:flex-none">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-green-600 hover:bg-green-700 flex-1 sm:flex-none">
+                    {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
     );
   }
 
