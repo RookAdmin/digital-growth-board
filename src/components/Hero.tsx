@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Shield, Users } from "lucide-react";
+import { ArrowRight, Shield, Users, Clock, MessageSquare, FolderLock } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -121,24 +121,24 @@ export const Hero = () => {
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <div className="w-6 h-6 bg-green-500 rounded-lg"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                <Clock className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Real-Time Updates</h3>
               <p className="text-gray-600">Stay informed with instant notifications and live project status updates.</p>
             </div>
             
             <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <div className="w-6 h-6 bg-blue-500 rounded-lg"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                <MessageSquare className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Direct Communication</h3>
               <p className="text-gray-600">Connect directly with your team through integrated messaging and comments.</p>
             </div>
             
             <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/30">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                <div className="w-6 h-6 bg-purple-500 rounded-lg"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                <FolderLock className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure File Management</h3>
               <p className="text-gray-600">Access all your project files and documents in one organized, secure location.</p>

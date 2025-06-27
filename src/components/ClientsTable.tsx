@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Users } from 'lucide-react';
 import { EditClientDialog } from './EditClientDialog';
 import { Country, State } from 'country-state-city';
 
@@ -87,84 +87,86 @@ export const ClientsTable = () => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-8 w-1/4" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-12 w-full bg-white/40" />
+        <Skeleton className="h-12 w-full bg-white/40" />
+        <Skeleton className="h-12 w-full bg-white/40" />
+      </div>
     );
   }
 
   if (error instanceof Error) {
-    return <p className="text-red-500">Error fetching clients: {error.message}</p>;
+    return (
+      <div className="p-6">
+        <div className="text-red-600 bg-red-50/80 backdrop-blur-sm p-4 rounded-xl border border-red-200/50">
+          Error fetching clients: {error.message}
+        </div>
+      </div>
+    );
   }
   
   if (!clients || clients.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Clients Yet</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>You haven't converted any leads to clients. Go to the dashboard to convert some!</p>
-        </CardContent>
-      </Card>
+      <div className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <Users className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No clients yet</h3>
+        <p className="text-gray-500">You haven't converted any leads to clients. Go to the dashboard to convert some!</p>
+      </div>
     );
   }
 
   return (
     <>
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-bold">Name</TableHead>
-                <TableHead className="font-bold">Email</TableHead>
-                <TableHead className="font-bold">Phone</TableHead>
-                <TableHead className="font-bold">Business Name</TableHead>
-                <TableHead className="font-bold">Location</TableHead>
-                <TableHead className="font-bold text-right">Actions</TableHead>
+      <div className="overflow-hidden rounded-2xl">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-0 bg-gray-50/50">
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">Name</TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">Email</TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">Phone</TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">Business Name</TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">Location</TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {clients?.map((client, index) => (
+              <TableRow 
+                key={client.id}
+                className={`border-0 hover:bg-gray-50/30 transition-colors ${
+                  index < clients.length - 1 ? 'border-b border-gray-100/50' : ''
+                }`}
+              >
+                <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">{client.email}</TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">{client.phone || '-'}</TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">{client.business_name || '-'}</TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">{getLocationDisplay(client)}</TableCell>
+                <TableCell className="text-right py-4 px-6">
+                  <div className="flex gap-2 justify-end">
+                    <EditClientDialog client={client} />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setClientToDelete(client)}
+                      className="bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clients?.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell>{client.name}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone || '-'}</TableCell>
-                  <TableCell>{client.business_name || '-'}</TableCell>
-                  <TableCell>{getLocationDisplay(client)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <EditClientDialog client={client} />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setClientToDelete(client)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       {clientToDelete && (
         <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="modern-card border-0">
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -172,11 +174,16 @@ export const ClientsTable = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setClientToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel 
+                onClick={() => setClientToDelete(null)}
+                className="modern-button border border-gray-300/50 bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80"
+              >
+                Cancel
+              </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteClient}
                 disabled={deleteClientMutation.isPending}
-                className="bg-destructive hover:bg-destructive/90"
+                className="modern-button bg-red-500 hover:bg-red-600 text-white"
               >
                 {deleteClientMutation.isPending ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>
