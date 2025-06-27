@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -214,22 +213,22 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   if (projects.length === 0) {
     return (
-      <Card className="border-0 shadow-sm">
+      <div className="modern-card">
         <CardContent className="flex items-center justify-center py-16">
           <div className="text-center">
-            <p className="text-xl text-muted-foreground mb-2">No projects found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your filters or search terms</p>
+            <p className="text-lg text-gray-600 mb-2">No projects found</p>
+            <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
           </div>
         </CardContent>
-      </Card>
+      </div>
     );
   }
 
   return (
     <>
-      <Card className="border-0 shadow-sm">
+      <div className="modern-card">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold">
+          <CardTitle className="text-xl font-semibold text-gray-900">
             Active Projects ({projects.length})
           </CardTitle>
         </CardHeader>
@@ -237,26 +236,26 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
           <div className="overflow-auto max-h-[calc(100vh-300px)]">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-border/50">
-                  <TableHead className="w-[250px] font-medium">Project</TableHead>
-                  <TableHead className="w-[200px] font-medium">Client</TableHead>
-                  <TableHead className="w-[120px] font-medium">Status</TableHead>
-                  <TableHead className="w-[80px] font-medium">Tasks</TableHead>
-                  <TableHead className="w-[120px] font-medium">Deadline</TableHead>
-                  <TableHead className="w-[100px] font-medium">Team</TableHead>
-                  <TableHead className="w-[120px] font-medium">Budget</TableHead>
-                  <TableHead className="w-[100px] font-medium">Created</TableHead>
-                  <TableHead className="w-[200px] font-medium">Actions</TableHead>
+                <TableRow className="border-b border-gray-200/50">
+                  <TableHead className="w-[250px] font-medium text-gray-700">Project</TableHead>
+                  <TableHead className="w-[200px] font-medium text-gray-700">Client</TableHead>
+                  <TableHead className="w-[120px] font-medium text-gray-700">Status</TableHead>
+                  <TableHead className="w-[80px] font-medium text-gray-700">Tasks</TableHead>
+                  <TableHead className="w-[120px] font-medium text-gray-700">Deadline</TableHead>
+                  <TableHead className="w-[100px] font-medium text-gray-700">Team</TableHead>
+                  <TableHead className="w-[120px] font-medium text-gray-700">Budget</TableHead>
+                  <TableHead className="w-[100px] font-medium text-gray-700">Created</TableHead>
+                  <TableHead className="w-[200px] font-medium text-gray-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {projects.map((project) => (
-                  <TableRow key={project.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow key={project.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-100/50">
                     <TableCell className="py-4">
                       <div className="space-y-1">
-                        <div className="font-medium text-sm leading-tight">{project.name}</div>
+                        <div className="font-medium text-sm leading-tight text-gray-900">{project.name}</div>
                         {project.description && (
-                          <div className="text-xs text-muted-foreground line-clamp-2 max-w-[230px]">
+                          <div className="text-xs text-gray-500 line-clamp-2 max-w-[230px]">
                             {project.description}
                           </div>
                         )}
@@ -264,71 +263,71 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="space-y-1">
-                        <div className="font-medium text-sm">
+                        <div className="font-medium text-sm text-gray-900">
                           {project.clients?.business_name || project.clients?.name}
                         </div>
-                        <div className="text-xs text-muted-foreground">{project.clients?.email}</div>
+                        <div className="text-xs text-gray-500">{project.clients?.email}</div>
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
-                      <Badge className={`${getStatusColor(project.status)} text-xs font-medium px-2 py-1`} variant="outline">
+                      <Badge className={`${getStatusColor(project.status)} text-xs font-medium px-3 py-1 rounded-full`} variant="outline">
                         {project.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="py-4">
                       {project.tasks && project.tasks.length > 0 ? (
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1 text-xs text-gray-600">
                           <CheckSquare className="h-3 w-3" />
                           <span>
                             {project.tasks.filter((t) => t.status === 'Completed').length}/{project.tasks.length}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-xs">None</span>
+                        <span className="text-gray-400 text-xs">None</span>
                       )}
                     </TableCell>
                     <TableCell className="py-4">
                       {project.deadline ? (
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1 text-xs text-gray-600">
                           <CalendarIcon className="h-3 w-3" />
                           <span>{format(new Date(project.deadline), 'MMM dd, yyyy')}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-xs">Not set</span>
+                        <span className="text-gray-400 text-xs">Not set</span>
                       )}
                     </TableCell>
                     <TableCell className="py-4">
                       {project.assigned_team_members && project.assigned_team_members.length > 0 ? (
-                        <div className="flex items-center gap-1 text-xs">
+                        <div className="flex items-center gap-1 text-xs text-gray-600">
                           <Users className="h-3 w-3" />
                           <span>{project.assigned_team_members.length}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-xs">None</span>
+                        <span className="text-gray-400 text-xs">None</span>
                       )}
                     </TableCell>
                     <TableCell className="py-4">
                       {project.budget ? (
-                        <div className="flex items-center gap-1 text-xs font-medium">
+                        <div className="flex items-center gap-1 text-xs font-medium text-gray-900">
                           <DollarSign className="h-3 w-3" />
                           <span>${project.budget.toLocaleString()}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-xs">Not set</span>
+                        <span className="text-gray-400 text-xs">Not set</span>
                       )}
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-gray-500">
                         {format(new Date(project.created_at), 'MMM dd, yyyy')}
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewProject(project)}
-                          className="h-8 px-3 text-xs"
+                          className="h-8 px-3 text-xs modern-button border-gray-200 hover:bg-gray-50"
                         >
                           <Eye className="mr-1 h-3 w-3" />
                           View
@@ -337,7 +336,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                           variant="outline"
                           size="sm"
                           onClick={() => openEditModal(project)}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 modern-button border-gray-200 hover:bg-gray-50"
                         >
                           <Pencil className="h-3 w-3" />
                           <span className="sr-only">Edit project</span>
@@ -346,7 +345,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                           variant="destructive"
                           size="sm"
                           onClick={() => setProjectToDelete(project)}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 modern-button"
                         >
                           <Trash2 className="h-3 w-3" />
                           <span className="sr-only">Delete project</span>
@@ -359,7 +358,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
             </Table>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       <ProjectDetailsModal
         project={selectedProject}
@@ -369,7 +368,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       {projectToDelete && (
         <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="modern-card">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Project</AlertDialogTitle>
               <AlertDialogDescription>
@@ -378,11 +377,11 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setProjectToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setProjectToDelete(null)} className="modern-button">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteProject}
                 disabled={deleteProjectMutation.isPending}
-                className="bg-destructive hover:bg-destructive/90"
+                className="bg-red-600 hover:bg-red-700 modern-button"
               >
                 {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>
@@ -393,7 +392,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       {projectToEdit && (
         <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] modern-card">
             <DialogHeader>
               <DialogTitle>Edit Project Details</DialogTitle>
               <DialogDescription>
@@ -409,6 +408,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   onChange={(e) => setEditedProject({ ...editedProject, name: e.target.value })}
                   placeholder="Enter project name"
                   required
+                  className="modern-input"
                 />
               </div>
 
@@ -419,6 +419,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   value={editedProject.description || ''}
                   onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
                   placeholder="Enter project description"
+                  className="modern-input"
                 />
               </div>
 
@@ -428,10 +429,10 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                   value={editedProject.status}
                   onValueChange={(value) => setEditedProject({ ...editedProject, status: value as ProjectStatus })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="modern-input">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="modern-card">
                     <SelectItem value="Not Started">Not Started</SelectItem>
                     <SelectItem value="In Progress">In Progress</SelectItem>
                     <SelectItem value="Review">Review</SelectItem>
@@ -447,7 +448,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal modern-input",
                         !editedProject.deadline && "text-muted-foreground"
                       )}
                     >
@@ -455,7 +456,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                       {editedProject.deadline ? format(new Date(editedProject.deadline), "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 modern-card">
                     <Calendar
                       mode="single"
                       selected={editedProject.deadline ? new Date(editedProject.deadline) : undefined}
@@ -469,28 +470,28 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
               <div className="space-y-2">
                 <Label htmlFor="budget">Budget (USD)</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="budget"
                     type="number"
                     placeholder="0.00"
                     value={editedProject.budget || ''}
                     onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value ? parseFloat(e.target.value) : null })}
-                    className="pl-10"
+                    className="pl-10 modern-input"
                     min="0"
                     step="0.01"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">Enter the project budget in US dollars</p>
+                <p className="text-xs text-gray-500">Enter the project budget in US dollars</p>
               </div>
               
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)}>
+                  <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button">
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" disabled={editProjectMutation.isPending}>
+                <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-green-600 hover:bg-green-700">
                   {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>
