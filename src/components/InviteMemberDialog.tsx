@@ -35,6 +35,7 @@ const inviteSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Invalid email address.' }),
   role: z.enum(['Admin', 'Project Manager', 'Staff']),
+  defaultPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
 interface InviteMemberDialogProps {
@@ -51,6 +52,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
       name: '',
       email: '',
       role: 'Staff',
+      defaultPassword: '',
     },
   });
 
@@ -58,17 +60,22 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
     setIsSubmitting(true);
     try {
       const { error } = await supabase.functions.invoke('invite-team-member', {
-        body: values,
+        body: {
+          name: values.name,
+          email: values.email,
+          role: values.role,
+          defaultPassword: values.defaultPassword,
+        },
       });
 
       if (error) throw error;
       
-      toast.success('Invitation sent successfully!');
+      toast.success('Team member added successfully!');
       onInviteSuccess();
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
-      toast.error('Failed to send invitation: ' + error.message);
+      toast.error('Failed to add team member: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -76,11 +83,11 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-white">
         <DialogHeader>
-          <DialogTitle>Invite a new team member</DialogTitle>
-          <DialogDescription>
-            They will receive an email to set up their account and join your team.
+          <DialogTitle className="text-gray-900">Add a new team member</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Enter the team member's details. They will use the default password to login initially and can change it later.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -90,9 +97,9 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel className="text-gray-900">Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe" {...field} className="bg-white border-gray-300" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,9 +110,9 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-gray-900">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="john.doe@example.com" {...field} />
+                    <Input placeholder="john.doe@example.com" {...field} className="bg-white border-gray-300" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -116,14 +123,14 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel className="text-gray-900">Role</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-gray-300">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="Admin">Admin</SelectItem>
                       <SelectItem value="Project Manager">Project Manager</SelectItem>
                       <SelectItem value="Staff">Staff</SelectItem>
@@ -133,12 +140,30 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="defaultPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-900">Default Password</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Enter default password" 
+                      {...field} 
+                      className="bg-white border-gray-300" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Invitation'}
+                {isSubmitting ? 'Adding...' : 'Add Team Member'}
               </Button>
             </DialogFooter>
           </form>

@@ -928,6 +928,7 @@ export type Database = {
       team_members: {
         Row: {
           created_at: string
+          default_password: string | null
           email: string
           first_name: string | null
           id: string
@@ -937,12 +938,14 @@ export type Database = {
           joined_at: string | null
           last_name: string | null
           name: string
+          password_changed: boolean | null
           role: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          default_password?: string | null
           email: string
           first_name?: string | null
           id?: string
@@ -952,12 +955,14 @@ export type Database = {
           joined_at?: string | null
           last_name?: string | null
           name: string
+          password_changed?: boolean | null
           role: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          default_password?: string | null
           email?: string
           first_name?: string | null
           id?: string
@@ -967,6 +972,7 @@ export type Database = {
           joined_at?: string | null
           last_name?: string | null
           name?: string
+          password_changed?: boolean | null
           role?: string
           updated_at?: string
           user_id?: string

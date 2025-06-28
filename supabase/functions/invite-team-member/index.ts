@@ -9,7 +9,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, role } = await req.json()
+    const { email, name, role, defaultPassword } = await req.json()
 
     console.log('Invite request:', { email, name, role })
 
@@ -53,17 +53,39 @@ serve(async (req) => {
       })
     }
 
-    console.log('Creating team member record for:', email)
+    console.log('Creating auth user for:', email)
 
-    // Create the team member record directly without temporary user_id
+    // Create the auth user with the provided password
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: defaultPassword,
+      email_confirm: true,
+      user_metadata: { name, role }
+    })
+
+    if (authError) {
+      console.error('Auth user creation error:', authError)
+      return new Response(JSON.stringify({ error: `Failed to create user: ${authError.message}` }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    console.log('Auth user created:', authUser.user?.id)
+
+    // Create the team member record
     const { data: teamMemberData, error: insertError } = await supabaseAdmin
       .from('team_members')
       .insert({
+        user_id: authUser.user!.id,
         email,
         name,
         role,
         invited_by: inviter.id,
-        is_active: false,
+        is_active: true,
+        joined_at: new Date().toISOString(),
+        default_password: defaultPassword,
+        password_changed: false,
       })
       .select()
       .single()
@@ -80,29 +102,9 @@ serve(async (req) => {
 
     console.log('Team member record created successfully')
 
-    // Try to send the invitation email (optional)
-    try {
-      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        data: { 
-          name,
-          role,
-          team_member_id: teamMemberData.id
-        },
-        redirectTo: `${req.headers.get('origin') || 'https://preview--digital-growth-board.lovable.app'}/dashboard/team`
-      })
-      
-      console.log('Email invite result:', { inviteData, inviteError })
-      
-      if (inviteError) {
-        console.log('Email invitation failed but team member was created:', inviteError.message)
-      }
-    } catch (emailError) {
-      console.log('Email invitation failed but team member was created:', emailError)
-    }
-
     return new Response(JSON.stringify({ 
       success: true, 
-      message: 'Team member added successfully. They can now sign up using the provided email address.' 
+      message: 'Team member added successfully. They can now log in with the provided credentials.' 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

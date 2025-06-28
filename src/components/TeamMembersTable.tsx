@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -8,16 +9,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
+import { InviteMemberDialog } from './InviteMemberDialog';
+import { Plus } from 'lucide-react';
 
 type TeamMember = Tables<'team_members'>;
 
 interface TeamMembersTableProps {
   teamMembers: TeamMember[];
+  onRefresh?: () => void;
 }
 
-export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
+export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTableProps) => {
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "Admin":
@@ -31,6 +38,12 @@ export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
     }
   };
 
+  const handleInviteSuccess = () => {
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
   if (!teamMembers || teamMembers.length === 0) {
     return (
       <div className="p-8 text-center">
@@ -38,13 +51,30 @@ export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
           <span className="text-2xl text-gray-400">👥</span>
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No team members yet</h3>
-        <p className="text-gray-500">Get started by inviting your first team member.</p>
+        <p className="text-gray-500 mb-4">Get started by inviting your first team member.</p>
+        <Button onClick={() => setIsInviteDialogOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Team Member
+        </Button>
+        <InviteMemberDialog
+          isOpen={isInviteDialogOpen}
+          onOpenChange={setIsInviteDialogOpen}
+          onInviteSuccess={handleInviteSuccess}
+        />
       </div>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl">
+      <div className="flex justify-between items-center p-6 bg-white border-b border-gray-100">
+        <h2 className="text-lg font-semibold text-gray-900">Team Members</h2>
+        <Button onClick={() => setIsInviteDialogOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Team Member
+        </Button>
+      </div>
+      
       <Table>
         <TableHeader>
           <TableRow className="border-0 bg-gray-50/50">
@@ -53,6 +83,7 @@ export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Role</TableHead>
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Status</TableHead>
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Joined At</TableHead>
+            <TableHead className="font-semibold text-gray-900 py-4 px-6">Password</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -82,12 +113,29 @@ export const TeamMembersTable = ({ teamMembers }: TeamMembersTableProps) => {
                 </Badge>
               </TableCell>
               <TableCell className="text-gray-600 py-4 px-6">
-                {member.joined_at ? format(new Date(member.joined_at), "PPP") : "Pending Invitation"}
+                {member.joined_at ? format(new Date(member.joined_at), "PPP") : "Pending"}
+              </TableCell>
+              <TableCell className="py-4 px-6">
+                <Badge 
+                  variant="outline" 
+                  className={member.password_changed ? 
+                    "bg-green-100 text-green-800 border-green-200" : 
+                    "bg-yellow-100 text-yellow-800 border-yellow-200"
+                  }
+                >
+                  {member.password_changed ? "Updated" : "Default"}
+                </Badge>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <InviteMemberDialog
+        isOpen={isInviteDialogOpen}
+        onOpenChange={setIsInviteDialogOpen}
+        onInviteSuccess={handleInviteSuccess}
+      />
     </div>
   );
 };

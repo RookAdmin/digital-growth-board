@@ -2,10 +2,12 @@
 import { useEffect } from "react";
 import { Header } from '@/components/Header';
 import { TeamMembersTable } from '@/components/TeamMembersTable';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const TeamPage = () => {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     document.title = "Team - Rook";
   }, []);
@@ -22,6 +24,10 @@ const TeamPage = () => {
       return data || [];
     },
   });
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['team-members'] });
+  };
 
   if (isLoading) {
     return (
@@ -50,7 +56,7 @@ const TeamPage = () => {
         </div>
         
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <TeamMembersTable teamMembers={teamMembers} />
+          <TeamMembersTable teamMembers={teamMembers} onRefresh={handleRefresh} />
         </div>
       </main>
     </div>
