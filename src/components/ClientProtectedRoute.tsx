@@ -1,8 +1,12 @@
 
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useClientAuth } from '@/hooks/useClientAuth';
 
-const ClientProtectedRoute = () => {
+interface ClientProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ClientProtectedRoute = ({ children }: ClientProtectedRouteProps) => {
   const { clientUser, loading } = useClientAuth();
 
   if (loading) {
@@ -17,7 +21,7 @@ const ClientProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default ClientProtectedRoute;

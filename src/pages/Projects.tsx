@@ -4,6 +4,7 @@ import { Header } from '@/components/Header';
 import { ProjectsTable } from '@/components/ProjectsTable';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Project } from '@/types';
 
 const ProjectsPage = () => {
   useEffect(() => {
@@ -18,15 +19,12 @@ const ProjectsPage = () => {
         .select(`
           *,
           clients(id, name, email, business_name),
-          tasks(id, title, status),
-          assigned_team_members:project_team_assignments(
-            team_members(id, name, email, role)
-          )
+          tasks(id, title, status)
         `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Project[];
     },
   });
 
