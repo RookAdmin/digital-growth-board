@@ -187,7 +187,9 @@ export type Database = {
           country: string | null
           created_at: string
           email: string
+          first_name: string | null
           id: string
+          last_name: string | null
           lead_id: string | null
           name: string
           onboarding_status: string
@@ -203,7 +205,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           lead_id?: string | null
           name: string
           onboarding_status?: string
@@ -219,7 +223,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           lead_id?: string | null
           name?: string
           onboarding_status?: string
@@ -427,7 +433,9 @@ export type Database = {
           business_name: string | null
           created_at: string
           email: string
+          first_name: string | null
           id: string
+          last_name: string | null
           lead_source: string | null
           name: string
           notes: string | null
@@ -441,7 +449,9 @@ export type Database = {
           business_name?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           lead_source?: string | null
           name: string
           notes?: string | null
@@ -455,7 +465,9 @@ export type Database = {
           business_name?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           lead_source?: string | null
           name?: string
           notes?: string | null
@@ -917,11 +929,13 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          first_name: string | null
           id: string
           invited_at: string
           invited_by: string | null
           is_active: boolean
           joined_at: string | null
+          last_name: string | null
           name: string
           role: string
           updated_at: string
@@ -930,11 +944,13 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          first_name?: string | null
           id?: string
           invited_at?: string
           invited_by?: string | null
           is_active?: boolean
           joined_at?: string | null
+          last_name?: string | null
           name: string
           role: string
           updated_at?: string
@@ -943,11 +959,13 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          first_name?: string | null
           id?: string
           invited_at?: string
           invited_by?: string | null
           is_active?: boolean
           joined_at?: string | null
+          last_name?: string | null
           name?: string
           role?: string
           updated_at?: string
@@ -960,6 +978,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_email_exists: {
+        Args: { email_to_check: string }
+        Returns: boolean
+      }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string

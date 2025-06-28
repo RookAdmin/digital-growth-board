@@ -1,73 +1,52 @@
-# Welcome to your Lovable project
 
-## Project info
+# Rook - Digital Agency Management Platform
 
-**URL**: https://lovable.dev/projects/65df8f2a-fea9-4a04-b876-06139e3327a4
+A comprehensive digital agency management platform built with React, TypeScript, and Supabase. Manage leads, clients, projects, and team members in one unified dashboard.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Lead Management**: Track and manage potential clients through the sales pipeline
+- **Client Portal**: Dedicated portal for clients to view project progress and communicate
+- **Project Management**: Organize and track project progress with Kanban boards
+- **Team Management**: Manage team members, roles, and permissions
+- **Reporting & Analytics**: Comprehensive reporting dashboard with charts and metrics
+- **File Management**: Upload and organize project files
+- **Meeting Scheduling**: Schedule and manage client meetings
+- **Authentication**: Secure user authentication and role-based access control
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/65df8f2a-fea9-4a04-b876-06139e3327a4) and start prompting.
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Authentication, Storage)
+- **UI Components**: Radix UI, shadcn/ui
+- **Charts**: Recharts
+- **Forms**: React Hook Form with Zod validation
+- **State Management**: TanStack Query
+- **Routing**: React Router DOM
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up your Supabase project and configure environment variables
+4. Run the development server: `npm run dev`
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Project Structure
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+src/
+├── components/          # Reusable UI components
+├── pages/              # Page components
+├── hooks/              # Custom React hooks
+├── integrations/       # External service integrations
+├── lib/                # Utility functions
+└── types/              # TypeScript type definitions
 ```
 
-**Edit a file directly in GitHub**
+## Contributing
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+This is a proprietary project by Rook. All rights reserved.
 
-**Use GitHub Codespaces**
+## License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/65df8f2a-fea9-4a04-b876-06139e3327a4) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+© 2024 Rook. All rights reserved.

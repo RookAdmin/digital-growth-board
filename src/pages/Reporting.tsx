@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { AnalyticsSummary } from '@/components/AnalyticsSummary';
 import { LeadConversionChart } from '@/components/LeadConversionChart';
@@ -6,6 +7,10 @@ import { ProjectStatusChart } from '@/components/ProjectStatusChart';
 import { RevenueChart } from '@/components/RevenueChart';
 
 const ReportingPage = () => {
+  useEffect(() => {
+    document.title = "Reporting - Rook";
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Header isAuthenticated={true} />

@@ -1,18 +1,22 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useClientAuth } from '@/hooks/useClientAuth';
-import { Rocket } from 'lucide-react';
+import { Building } from 'lucide-react';
 
 export const ClientPortalLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useClientAuth();
+
+  useEffect(() => {
+    document.title = "Client Login - Rook";
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +41,12 @@ export const ClientPortalLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Rocket className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">StellarGrowth</span>
+            <Building className="h-8 w-8 text-black" />
+            <span className="text-2xl font-bold text-black">Rook</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
           <p className="text-gray-600 mt-2">Access your projects and updates</p>
@@ -80,7 +84,7 @@ export const ClientPortalLogin = () => {
                   maxLength={18}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={isLoading}>
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
