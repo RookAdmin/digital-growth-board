@@ -99,7 +99,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                 <FormItem>
                   <FormLabel className="text-gray-900">Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} className="bg-white border-gray-300" />
+                    <Input placeholder="John Doe" {...field} className="bg-white border-gray-300 text-gray-900" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,7 +112,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                 <FormItem>
                   <FormLabel className="text-gray-900">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="john.doe@example.com" {...field} className="bg-white border-gray-300" />
+                    <Input placeholder="john.doe@example.com" {...field} className="bg-white border-gray-300 text-gray-900" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -126,7 +126,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                   <FormLabel className="text-gray-900">Role</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300">
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
@@ -151,7 +151,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                       type="password" 
                       placeholder="Enter default password" 
                       {...field} 
-                      className="bg-white border-gray-300" 
+                      className="bg-white border-gray-300 text-gray-900" 
                     />
                   </FormControl>
                   <FormMessage />
