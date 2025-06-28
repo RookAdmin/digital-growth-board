@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { ClientProtectedRoute } from '@/components/ClientProtectedRoute';
+import ClientProtectedRoute from '@/components/ClientProtectedRoute';
 import { ClientPortalDashboard } from '@/components/ClientPortalDashboard';
 
 const ClientPortalPage = () => {

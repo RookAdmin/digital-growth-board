@@ -2,11 +2,42 @@
 import { useEffect } from "react";
 import { Header } from '@/components/Header';
 import { TeamMembersTable } from '@/components/TeamMembersTable';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const TeamPage = () => {
   useEffect(() => {
     document.title = "Team - Rook";
   }, []);
+
+  const { data: teamMembers = [], isLoading } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header isAuthenticated={true} />
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              <p className="text-gray-500">Loading team members...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -19,7 +50,7 @@ const TeamPage = () => {
         </div>
         
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <TeamMembersTable />
+          <TeamMembersTable teamMembers={teamMembers} />
         </div>
       </main>
     </div>

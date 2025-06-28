@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Header } from '@/components/Header';
 import { Calendar, Clock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { BookingDialog } from '@/components/BookingDialog';
-import { useState } from 'react';
 
 const SchedulingPage = () => {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -117,11 +115,6 @@ const SchedulingPage = () => {
           )}
         </div>
       </main>
-      
-      <BookingDialog 
-        isOpen={isBookingDialogOpen}
-        onClose={() => setIsBookingDialogOpen(false)}
-      />
     </div>
   );
 };

@@ -18,7 +18,7 @@ const FilesPage = () => {
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage and organize your project files.</p>
         </div>
         
-        <FileUploadPortal />
+        <FileUploadPortal clientId="admin" clientName="Admin" />
       </main>
     </div>
   );
