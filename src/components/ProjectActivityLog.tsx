@@ -46,23 +46,23 @@ const getActivityIcon = (activityType: string) => {
 const getActivityColor = (activityType: string) => {
   switch (activityType) {
     case 'task_created':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-blue-50 text-blue-700 border-blue-200';
     case 'task_updated':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-yellow-50 text-yellow-700 border-yellow-200';
     case 'task_completed':
-      return 'bg-green-100 text-green-800';
+      return 'bg-green-50 text-green-700 border-green-200';
     case 'file_uploaded':
-      return 'bg-purple-100 text-purple-800';
+      return 'bg-purple-50 text-purple-700 border-purple-200';
     case 'file_deleted':
-      return 'bg-red-100 text-red-800';
+      return 'bg-red-50 text-red-700 border-red-200';
     case 'message_sent':
-      return 'bg-indigo-100 text-indigo-800';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
     case 'project_updated':
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-50 text-gray-700 border-gray-200';
     case 'comment_added':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-orange-50 text-orange-700 border-orange-200';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-50 text-gray-700 border-gray-200';
   }
 };
 
@@ -91,7 +91,7 @@ export const ProjectActivityLog = ({ projectId }: ProjectActivityLogProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-sm text-muted-foreground">Loading activity log...</div>
+        <div className="text-sm text-gray-500">Loading activity log...</div>
       </div>
     );
   }
@@ -100,39 +100,39 @@ export const ProjectActivityLog = ({ projectId }: ProjectActivityLogProps) => {
     <ScrollArea className="h-96 pr-4">
       <div className="space-y-4">
         {activities.length === 0 ? (
-          <div className="text-center text-muted-foreground text-sm py-8">
+          <div className="text-center text-gray-500 text-sm py-8">
             No activities yet.
           </div>
         ) : (
           activities.map((activity, index) => (
             <div key={activity.id} className="flex gap-3">
               <div className="flex flex-col items-center">
-                <div className={`p-2 rounded-full ${getActivityColor(activity.activity_type)}`}>
+                <div className={`p-2 rounded-full border ${getActivityColor(activity.activity_type)}`}>
                   {getActivityIcon(activity.activity_type)}
                 </div>
                 {index < activities.length - 1 && (
-                  <div className="w-px h-8 bg-border mt-2" />
+                  <div className="w-px h-8 bg-gray-200 mt-2" />
                 )}
               </div>
               
-              <div className="flex-1 min-w-0 pb-4">
+              <div className="flex-1 min-w-0 pb-4 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="secondary" className={getActivityColor(activity.activity_type)}>
+                  <Badge variant="secondary" className={`${getActivityColor(activity.activity_type)} border`}>
                     {formatActivityType(activity.activity_type)}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-gray-500">
                     {format(new Date(activity.created_at), 'MMM d, h:mm a')}
                   </span>
                 </div>
                 
-                <p className="text-sm text-foreground mb-1">{activity.description}</p>
+                <p className="text-sm text-gray-800 mb-1">{activity.description}</p>
                 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
                   <span>by {activity.user_name}</span>
                 </div>
                 
                 {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                  <div className="mt-2 text-xs text-muted-foreground bg-muted rounded p-2">
+                  <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2 border">
                     {Object.entries(activity.metadata).map(([key, value]) => (
                       <div key={key}>
                         <span className="font-medium">{key}:</span> {String(value)}

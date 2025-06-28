@@ -25,7 +25,7 @@ const getStatusColor = (status: string) => {
     case 'Review':
       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
     case 'Completed':
-      return 'bg-black text-white hover:bg-gray-800';
+      return 'bg-green-100 text-green-800 hover:bg-green-200';
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   }
@@ -80,20 +80,20 @@ export const ProjectDetailsModal = ({ project, isOpen, onClose }: ProjectDetails
         
         <div className="mt-6 bg-white">
           <Tabs defaultValue="tasks" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4 bg-gray-100">
-              <TabsTrigger value="tasks" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-50">
+              <TabsTrigger value="tasks" className="flex items-center gap-2 text-gray-700 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">
                 <CheckSquare className="h-4 w-4" />
                 Tasks
               </TabsTrigger>
-              <TabsTrigger value="files" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
+              <TabsTrigger value="files" className="flex items-center gap-2 text-gray-700 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">
                 <Upload className="h-4 w-4" />
                 Files
               </TabsTrigger>
-              <TabsTrigger value="messages" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
+              <TabsTrigger value="messages" className="flex items-center gap-2 text-gray-700 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">
                 <MessageSquare className="h-4 w-4" />
                 Messages
               </TabsTrigger>
-              <TabsTrigger value="activity" className="flex items-center gap-2 text-black data-[state=active]:bg-white data-[state=active]:text-black">
+              <TabsTrigger value="activity" className="flex items-center gap-2 text-gray-700 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">
                 <Activity className="h-4 w-4" />
                 Activity
               </TabsTrigger>
