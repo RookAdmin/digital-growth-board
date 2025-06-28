@@ -55,12 +55,16 @@ serve(async (req) => {
 
     console.log('Creating auth user for:', email)
 
-    // Create the auth user with the provided password
+    // Create the auth user with minimal required fields to avoid the email_change issue
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: defaultPassword,
       email_confirm: true,
-      user_metadata: { name, role }
+      user_metadata: { 
+        name, 
+        role,
+        full_name: name
+      }
     })
 
     if (authError) {
@@ -94,6 +98,15 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Insert error:', insertError)
+      
+      // If team member creation fails, clean up the auth user
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(authUser.user!.id)
+        console.log('Cleaned up auth user due to team member creation failure')
+      } catch (cleanupError) {
+        console.error('Failed to cleanup auth user:', cleanupError)
+      }
+      
       return new Response(JSON.stringify({ error: `Failed to create team member: ${insertError.message}` }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
