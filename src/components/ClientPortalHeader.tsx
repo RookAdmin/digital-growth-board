@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useClientAuth } from '@/hooks/useClientAuth';
-import { LogOut, Crown, Menu, X } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -21,11 +21,13 @@ export const ClientPortalHeader = () => {
   return (
     <header className="border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-xl bg-gray-50 border border-gray-200">
-          <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-gray-800" strokeWidth={1.5} />
-          <span className="text-lg sm:text-xl font-light text-gray-900 tracking-wide hidden sm:block">Realm by Rook Concierge</span>
-          <span className="text-lg font-light text-gray-900 tracking-wide sm:hidden">Realm</span>
-          <span className="text-xs sm:text-sm text-gray-500 font-light border-l border-gray-200 pl-2 sm:pl-3">Client Portal</span>
+        <div className="flex items-center px-3 sm:px-4 py-2 rounded-xl bg-gray-50 border border-gray-200">
+          <img 
+            src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
+            alt="Realm | Concierge By Rook" 
+            className="h-6 sm:h-7 object-contain"
+          />
+          <span className="text-xs sm:text-sm text-gray-500 font-light border-l border-gray-200 pl-2 sm:pl-3 ml-2 sm:ml-3">Client Portal</span>
         </div>
         
         {/* Desktop Navigation */}

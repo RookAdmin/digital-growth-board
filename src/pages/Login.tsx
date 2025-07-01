@@ -66,6 +66,13 @@ const LoginPage = () => {
       <div className="flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md bg-white shadow-xl border-0">
           <CardHeader className="space-y-1 text-center pb-8">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
+                alt="Realm | Concierge By Rook" 
+                className="h-12 object-contain"
+              />
+            </div>
             <CardTitle className="text-3xl font-bold text-gray-900">Welcome Back</CardTitle>
             <CardDescription className="text-gray-600 text-lg">
               Sign in to access your dashboard

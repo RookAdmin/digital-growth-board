@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useClientAuth } from '@/hooks/useClientAuth';
-import { Building } from 'lucide-react';
 
 export const ClientPortalLogin = () => {
   const [email, setEmail] = useState('');
@@ -44,9 +43,12 @@ export const ClientPortalLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Building className="h-8 w-8 text-black" />
-            <span className="text-2xl font-bold text-black">Rook</span>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
+              alt="Realm | Concierge By Rook" 
+              className="h-10 object-contain"
+            />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
           <p className="text-gray-600 mt-2">Access your projects and updates</p>
