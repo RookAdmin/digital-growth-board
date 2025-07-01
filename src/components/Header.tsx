@@ -36,7 +36,7 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
           <img 
             src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
             alt="Rook Logo" 
-            className="h-8 object-contain"
+            className="h-12  object-contain"
           />
         </Link>
         
