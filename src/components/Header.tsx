@@ -32,10 +32,10 @@ export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = 
   return (
     <header className="py-4 px-4 md:px-6 animate-fade-in border-b border-white/20 flex-shrink-0 bg-white/60 backdrop-blur-xl sticky top-0 z-50 shadow-lg shadow-gray-100/20">
       <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center px-4 py-2 rounded-2xl bg-white/50 backdrop-blur-md border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Link to="/" className="flex items-center">
           <img 
             src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
-            alt="Realm | Concierge By Rook" 
+            alt="Rook Logo" 
             className="h-8 object-contain"
           />
         </Link>

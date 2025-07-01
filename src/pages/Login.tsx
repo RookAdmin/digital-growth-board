@@ -69,7 +69,7 @@ const LoginPage = () => {
             <div className="flex justify-center mb-6">
               <img 
                 src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
-                alt="Realm | Concierge By Rook" 
+                alt="Rook Logo" 
                 className="h-12 object-contain"
               />
             </div>

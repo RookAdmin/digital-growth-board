@@ -21,10 +21,10 @@ export const ClientPortalHeader = () => {
   return (
     <header className="border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center px-3 sm:px-4 py-2 rounded-xl bg-gray-50 border border-gray-200">
+        <div className="flex items-center">
           <img 
             src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
-            alt="Realm | Concierge By Rook" 
+            alt="Rook Logo" 
             className="h-6 sm:h-7 object-contain"
           />
           <span className="text-xs sm:text-sm text-gray-500 font-light border-l border-gray-200 pl-2 sm:pl-3 ml-2 sm:ml-3">Client Portal</span>
