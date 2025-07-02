@@ -36,7 +36,7 @@ export const FilterBar = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200">
       <div className="flex-1">
         <SearchInput
           value={searchTerm}

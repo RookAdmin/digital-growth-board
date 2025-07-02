@@ -49,6 +49,7 @@ interface ProjectsTableProps {
   startDate?: Date;
   endDate?: Date;
   singleDate?: Date;
+  statusFilter?: string;
 }
 
 const getStatusColor = (status: ProjectStatus) => {
@@ -147,7 +148,7 @@ const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
   </div>
 );
 
-export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, singleDate }: ProjectsTableProps) => {
+export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, singleDate, statusFilter = '' }: ProjectsTableProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -165,6 +166,9 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
         (project.clients?.business_name && project.clients.business_name.toLowerCase().includes(term)) ||
         project.status.toLowerCase().includes(term)
       );
+
+      // Status filter
+      const matchesStatus = !statusFilter || project.status === statusFilter;
 
       // Single date filter (creation date)
       const matchesDate = !singleDate || 
@@ -184,9 +188,9 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
         }
       }
 
-      return matchesSearch && matchesDate && matchesDateRange;
+      return matchesSearch && matchesStatus && matchesDate && matchesDateRange;
     });
-  }, [projects, searchTerm, startDate, endDate, singleDate]);
+  }, [projects, searchTerm, startDate, endDate, singleDate, statusFilter]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -343,7 +347,7 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
     );
   }
 
-  if (filteredProjects.length === 0 && (searchTerm || startDate || endDate || singleDate)) {
+  if (filteredProjects.length === 0 && (searchTerm || startDate || endDate || singleDate || statusFilter)) {
     return (
       <div className="p-8 text-center bg-white">
         <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
