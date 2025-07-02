@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LeadStatusHistory } from '@/types';
 import { format } from 'date-fns';
-import { Clock, ArrowRight, User } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface LeadStatusHistoryProps {
@@ -13,10 +13,7 @@ interface LeadStatusHistoryProps {
 const fetchLeadStatusHistory = async (leadId: string): Promise<LeadStatusHistory[]> => {
   const { data, error } = await supabase
     .from('lead_status_history')
-    .select(`
-      *,
-      team_members!lead_status_history_changed_by_fkey(name, email)
-    `)
+    .select('*')
     .eq('lead_id', leadId)
     .order('changed_at', { ascending: false });
   
@@ -72,12 +69,6 @@ export const LeadStatusHistoryComponent = ({ leadId }: LeadStatusHistoryProps) =
                 <div className="text-muted-foreground text-xs">
                   {format(new Date(history.changed_at), 'MMM dd, yyyy • h:mm a')}
                 </div>
-                {(history as any).team_members && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <User className="h-3 w-3" />
-                    <span>by {(history as any).team_members.name || (history as any).team_members.email}</span>
-                  </div>
-                )}
                 {history.notes && (
                   <div className="text-xs italic text-muted-foreground mt-1">
                     {history.notes}

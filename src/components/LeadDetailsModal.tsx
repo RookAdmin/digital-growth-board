@@ -1,3 +1,4 @@
+
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Briefcase, Mail, Phone, Calendar, DollarSign, List, Edit, User } from 'lucide-react';
+import { Briefcase, Mail, Phone, Calendar, DollarSign, List, Edit } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -52,27 +53,15 @@ const leadUpdateSchema = z.object({
 
 type LeadUpdateFormValues = z.infer<typeof leadUpdateSchema>;
 
-const fetchLeadNotes = async (leadId: string): Promise<(LeadNote & { user_name?: string; user_email?: string })[]> => {
+const fetchLeadNotes = async (leadId: string): Promise<LeadNote[]> => {
     if (!leadId) return [];
-    const { data, error } = await supabase
-      .from('lead_notes')
-      .select(`
-        *,
-        team_members!lead_notes_created_by_fkey(name, email)
-      `)
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('lead_notes').select('*').eq('lead_id', leadId).order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return data;
 };
 
 const addLeadNote = async ({ leadId, note }: { leadId: string; note: string }) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('lead_notes').insert({ 
-      lead_id: leadId, 
-      note,
-      created_by: user?.id 
-    });
+    const { error } = await supabase.from('lead_notes').insert({ lead_id: leadId, note });
     if (error) throw new Error(error.message);
 };
 
@@ -383,15 +372,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                 {notes?.map(note => (
                                     <div key={note.id} className="p-3 bg-secondary rounded-lg">
                                         <p className="text-sm whitespace-pre-wrap break-words">{note.note}</p>
-                                        <div className="flex items-center justify-between mt-2">
-                                          <p className="text-xs text-muted-foreground">{format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}</p>
-                                          {(note as any).team_members && (
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                              <User className="h-3 w-3" />
-                                              <span>{(note as any).team_members.name || (note as any).team_members.email}</span>
-                                            </div>
-                                          )}
-                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-2">{format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}</p>
                                     </div>
                                 ))}
                                 {!isLoadingNotes && notes?.length === 0 && <p className="text-sm text-muted-foreground">No notes yet.</p>}
