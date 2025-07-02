@@ -5,7 +5,7 @@ import { Client } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -28,7 +28,14 @@ const fetchClients = async (): Promise<Client[]> => {
   return data;
 };
 
-export const ClientsTable = () => {
+interface ClientsTableProps {
+  searchTerm?: string;
+  startDate?: Date;
+  endDate?: Date;
+  singleDate?: Date;
+}
+
+export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }: ClientsTableProps) => {
   const { data: clients, isLoading, error } = useQuery({
     queryKey: ['clients'],
     queryFn: fetchClients,
@@ -68,6 +75,41 @@ export const ClientsTable = () => {
       deleteClientMutation.mutate(clientToDelete.id);
     }
   };
+
+  const filteredClients = useMemo(() => {
+    if (!clients) return [];
+    
+    return clients.filter(client => {
+      // Search filter
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = !term || (
+        client.name.toLowerCase().includes(term) ||
+        client.email.toLowerCase().includes(term) ||
+        (client.phone && client.phone.toLowerCase().includes(term)) ||
+        (client.business_name && client.business_name.toLowerCase().includes(term))
+      );
+
+      // Single date filter (creation date)
+      const matchesDate = !singleDate || 
+        new Date(client.created_at).toDateString() === singleDate.toDateString();
+
+      // Date range filter
+      let matchesDateRange = true;
+      if (startDate || endDate) {
+        const createdDate = new Date(client.created_at);
+        if (startDate) {
+          matchesDateRange = matchesDateRange && createdDate >= startDate;
+        }
+        if (endDate) {
+          const endOfDay = new Date(endDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          matchesDateRange = matchesDateRange && createdDate <= endOfDay;
+        }
+      }
+
+      return matchesSearch && matchesDate && matchesDateRange;
+    });
+  }, [clients, searchTerm, startDate, endDate, singleDate]);
 
   const getLocationDisplay = (client: any) => {
     const parts = [];
@@ -117,6 +159,18 @@ export const ClientsTable = () => {
     );
   }
 
+  if (filteredClients.length === 0 && (searchTerm || startDate || endDate || singleDate)) {
+    return (
+      <div className="p-8 text-center bg-white">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <Users className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No clients found</h3>
+        <p className="text-gray-500">No clients match your current filters. Try adjusting your search criteria.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="overflow-hidden rounded-xl bg-white">
@@ -132,11 +186,11 @@ export const ClientsTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clients?.map((client, index) => (
+            {filteredClients?.map((client, index) => (
               <TableRow 
                 key={client.id}
                 className={`border-0 hover:bg-gray-50 transition-colors ${
-                  index < clients.length - 1 ? 'border-b border-gray-100' : ''
+                  index < filteredClients.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
               >
                 <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>

@@ -1,15 +1,30 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Header } from '@/components/Header';
 import { ProjectsTable } from '@/components/ProjectsTable';
+import { FilterBar } from '@/components/FilterBar';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types';
 
 const ProjectsPage = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [singleDate, setSingleDate] = useState<Date | undefined>();
+
   useEffect(() => {
     document.title = "Projects - Rook";
   }, []);
+
+  const handleDateRangeChange = (start?: Date, end?: Date) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const handleSingleDateChange = (date?: Date) => {
+    setSingleDate(date);
+  };
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
@@ -54,8 +69,25 @@ const ProjectsPage = () => {
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage and track all your active projects.</p>
         </div>
         
+        <FilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search projects by name, description, client, or status..."
+          startDate={startDate}
+          endDate={endDate}
+          singleDate={singleDate}
+          onDateRangeChange={handleDateRangeChange}
+          onSingleDateChange={handleSingleDateChange}
+        />
+        
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <ProjectsTable projects={projects} />
+          <ProjectsTable 
+            projects={projects} 
+            searchTerm={searchTerm}
+            startDate={startDate}
+            endDate={endDate}
+            singleDate={singleDate}
+          />
         </div>
       </main>
     </div>

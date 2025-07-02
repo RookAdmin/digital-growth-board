@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Users, Eye, CheckSquare, Trash2, Pencil, Calendar as CalendarIcon } from 'lucide-react';
+import { DollarSign, Users, Eye, CheckSquare, Trash2, Pencil, Calendar as CalendarIcon, FolderOpen } from 'lucide-react';
 import { Project, ProjectStatus } from '@/types';
 import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { format } from 'date-fns';
@@ -45,6 +45,10 @@ import { cn } from '@/lib/utils';
 
 interface ProjectsTableProps {
   projects: Project[];
+  searchTerm?: string;
+  startDate?: Date;
+  endDate?: Date;
+  singleDate?: Date;
 }
 
 const getStatusColor = (status: ProjectStatus) => {
@@ -143,12 +147,46 @@ const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
   </div>
 );
 
-export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
+export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, singleDate }: ProjectsTableProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
   const [editedProject, setEditedProject] = useState<Partial<Pick<Project, 'status' | 'deadline' | 'budget' | 'name' | 'description'>>>({});
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Search filter
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = !term || (
+        project.name.toLowerCase().includes(term) ||
+        (project.description && project.description.toLowerCase().includes(term)) ||
+        (project.clients?.name && project.clients.name.toLowerCase().includes(term)) ||
+        (project.clients?.business_name && project.clients.business_name.toLowerCase().includes(term)) ||
+        project.status.toLowerCase().includes(term)
+      );
+
+      // Single date filter (creation date)
+      const matchesDate = !singleDate || 
+        new Date(project.created_at).toDateString() === singleDate.toDateString();
+
+      // Date range filter
+      let matchesDateRange = true;
+      if (startDate || endDate) {
+        const createdDate = new Date(project.created_at);
+        if (startDate) {
+          matchesDateRange = matchesDateRange && createdDate >= startDate;
+        }
+        if (endDate) {
+          const endOfDay = new Date(endDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          matchesDateRange = matchesDateRange && createdDate <= endOfDay;
+        }
+      }
+
+      return matchesSearch && matchesDate && matchesDateRange;
+    });
+  }, [projects, searchTerm, startDate, endDate, singleDate]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -156,11 +194,11 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   const handleViewProject = (project: Project) => {
     setSelectedProject(project);
-    setIsModalOpen(true);
+    setShowDetailsModal(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setShowDetailsModal(false);
     setSelectedProject(null);
   };
 
@@ -295,13 +333,24 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
   if (projects.length === 0) {
     return (
-      <div className="modern-card">
-        <CardContent className="flex items-center justify-center py-12 sm:py-16">
-          <div className="text-center">
-            <p className="text-base sm:text-lg text-gray-600 mb-2">No projects found</p>
-            <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
-          </div>
-        </CardContent>
+      <div className="p-8 text-center bg-white">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <FolderOpen className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
+        <p className="text-gray-500">Create your first project to get started with managing client work.</p>
+      </div>
+    );
+  }
+
+  if (filteredProjects.length === 0 && (searchTerm || startDate || endDate || singleDate)) {
+    return (
+      <div className="p-8 text-center bg-white">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <FolderOpen className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+        <p className="text-gray-500">No projects match your current filters. Try adjusting your search criteria.</p>
       </div>
     );
   }
@@ -319,7 +368,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
           </div>
           
           <div className="space-y-0">
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <MobileProjectCard
                 key={project.id}
                 project={project}
@@ -333,7 +382,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
         <ProjectDetailsModal
           project={selectedProject}
-          isOpen={isModalOpen}
+          isOpen={showDetailsModal}
           onClose={handleCloseModal}
         />
 
@@ -479,7 +528,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
       <div className="modern-card">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl font-semibold text-gray-900">
-            Active Projects ({projects.length})
+            Active Projects ({filteredProjects.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -499,8 +548,13 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-100/50">
+                {filteredProjects.map((project, index) => (
+                  <TableRow 
+                    key={project.id} 
+                    className={`border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
+                      index < filteredProjects.length - 1 ? 'border-b border-gray-100' : ''
+                    }`}
+                  >
                     <TableCell className="py-4">
                       <div className="space-y-1">
                         <div className="font-medium text-sm leading-tight text-gray-900">{project.name}</div>
@@ -612,7 +666,7 @@ export const ProjectsTable = ({ projects }: ProjectsTableProps) => {
 
       <ProjectDetailsModal
         project={selectedProject}
-        isOpen={isModalOpen}
+        isOpen={showDetailsModal}
         onClose={handleCloseModal}
       />
 
