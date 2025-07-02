@@ -1,4 +1,3 @@
-
 import { Lead, LeadNote, LeadStatus } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -177,7 +176,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); setPendingStatus(null); }}}>
-            <DialogContent className="max-w-4xl h-[90vh]">
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <div className="flex justify-between items-start">
                         {isEditing ? (
@@ -219,7 +218,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         ) : null}
                     </div>
                 </DialogHeader>
-                <div className="grid md:grid-cols-3 gap-6 mt-4 overflow-hidden h-full">
+                <div className="grid md:grid-cols-3 gap-6 mt-4 flex-1 overflow-hidden">
                     <ScrollArea className="pr-4">
                         <h3 className="font-semibold mb-4 text-lg">Lead Information</h3>
                         {isEditing ? (
@@ -340,7 +339,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         )}
                     </ScrollArea>
                     
-                    <div className="flex flex-col h-full overflow-hidden">
+                    <div className="h-full overflow-hidden">
                         <LeadStatusHistoryComponent leadId={lead.id} />
                     </div>
                     
