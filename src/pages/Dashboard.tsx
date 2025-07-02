@@ -1,12 +1,15 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { FilterBar } from "@/components/FilterBar";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -25,6 +28,10 @@ const DashboardPage = () => {
     setSingleDate(date);
   };
 
+  const handleReportsClick = () => {
+    navigate('/dashboard/reporting');
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header isAuthenticated={true} />
@@ -36,14 +43,11 @@ const DashboardPage = () => {
               <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage your leads and track progress.</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2" onClick={handleReportsClick}>
                 <FileText className="h-4 w-4" />
                 Reports
               </Button>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add New Lead
-              </Button>
+              <AddLeadDialog />
             </div>
           </div>
         </div>

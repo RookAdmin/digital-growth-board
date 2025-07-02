@@ -70,43 +70,56 @@ const ProjectsPage = () => {
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage and track all your active projects.</p>
         </div>
         
-        <div className="space-y-4">
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="Search projects by name, description, client, or status..."
-            startDate={startDate}
-            endDate={endDate}
-            singleDate={singleDate}
-            onDateRangeChange={handleDateRangeChange}
-            onSingleDateChange={handleSingleDateChange}
-          />
-          
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full sm:w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">All Status</option>
-                  <option value="Not Started">Not Started</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Review">Review</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-              {statusFilter && (
-                <button
-                  onClick={() => setStatusFilter('')}
-                  className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 underline"
-                >
-                  Clear Status Filter
-                </button>
-              )}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200">
+          <div className="flex-1 flex gap-4">
+            <div className="flex-1">
+              <FilterBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder="Search projects by name, description, client, or status..."
+                startDate={startDate}
+                endDate={endDate}
+                singleDate={singleDate}
+                onDateRangeChange={handleDateRangeChange}
+                onSingleDateChange={handleSingleDateChange}
+                showDateFilter={false}
+              />
             </div>
+            <div className="flex-shrink-0">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                style={{ backgroundColor: '#374151', color: 'white' }}
+              >
+                <option value="" style={{ backgroundColor: '#374151', color: 'white' }}>All Status</option>
+                <option value="Not Started" style={{ backgroundColor: '#374151', color: 'white' }}>Not Started</option>
+                <option value="In Progress" style={{ backgroundColor: '#374151', color: 'white' }}>In Progress</option>
+                <option value="Review" style={{ backgroundColor: '#374151', color: 'white' }}>Review</option>
+                <option value="Completed" style={{ backgroundColor: '#374151', color: 'white' }}>Completed</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 items-center">
+            <FilterBar
+              searchTerm=""
+              onSearchChange={() => {}}
+              showDateFilter={true}
+              startDate={startDate}
+              endDate={endDate}
+              singleDate={singleDate}
+              onDateRangeChange={handleDateRangeChange}
+              onSingleDateChange={handleSingleDateChange}
+            />
+            {statusFilter && (
+              <button
+                onClick={() => setStatusFilter('')}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Clear Status Filter
+              </button>
+            )}
           </div>
         </div>
         
