@@ -13,7 +13,8 @@ import {
   Plus, 
   FileX,
   MessageCircle,
-  Edit
+  Edit,
+  User
 } from 'lucide-react';
 
 interface ProjectActivityLogProps {
@@ -128,7 +129,11 @@ export const ProjectActivityLog = ({ projectId }: ProjectActivityLogProps) => {
                 <p className="text-sm text-gray-800 mb-1">{activity.description}</p>
                 
                 <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <User className="h-3 w-3" />
                   <span>by {activity.user_name}</span>
+                  {activity.user_email && (
+                    <span className="text-gray-400">({activity.user_email})</span>
+                  )}
                 </div>
                 
                 {activity.metadata && Object.keys(activity.metadata).length > 0 && (

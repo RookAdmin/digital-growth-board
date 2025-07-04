@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LeadStatusHistoryComponent } from './LeadStatusHistory';
+import { LeadActivityLog } from './LeadActivityLog';
 import { PhoneInput } from '@/components/PhoneInput';
 
 interface LeadDetailsModalProps {
@@ -176,7 +177,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); setPendingStatus(null); }}}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <div className="flex justify-between items-start">
                         {isEditing ? (
@@ -218,7 +219,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         ) : null}
                     </div>
                 </DialogHeader>
-                <div className="grid md:grid-cols-3 gap-6 mt-4 flex-1 overflow-hidden">
+                <div className="grid md:grid-cols-4 gap-6 mt-4 flex-1 overflow-hidden">
                     <ScrollArea className="pr-4">
                         <h3 className="font-semibold mb-4 text-lg">Lead Information</h3>
                         {isEditing ? (
@@ -341,6 +342,10 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                     
                     <div className="h-full overflow-hidden">
                         <LeadStatusHistoryComponent leadId={lead.id} />
+                    </div>
+                    
+                    <div className="h-full overflow-hidden">
+                        <LeadActivityLog leadId={lead.id} />
                     </div>
                     
                     <div className="flex flex-col h-full overflow-hidden">

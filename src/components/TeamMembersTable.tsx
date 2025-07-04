@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 import { InviteMemberDialog } from './InviteMemberDialog';
-import { Plus } from 'lucide-react';
+import { EditTeamMemberDialog } from './EditTeamMemberDialog';
+import { Plus, Edit, UserX, UserCheck } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 type TeamMember = Tables<'team_members'>;
 
@@ -24,6 +28,25 @@ interface TeamMembersTableProps {
 
 export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTableProps) => {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const queryClient = useQueryClient();
+
+  const toggleMemberStatusMutation = useMutation({
+    mutationFn: async ({ memberId, isActive }: { memberId: string; isActive: boolean }) => {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ is_active: !isActive })
+        .eq('id', memberId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      toast.success('Team member status updated successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to update team member status: ${error.message}`);
+    }
+  });
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -42,6 +65,20 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
     if (onRefresh) {
       onRefresh();
     }
+  };
+
+  const handleEditSuccess = () => {
+    setEditingMember(null);
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
+  const handleToggleStatus = (member: TeamMember) => {
+    toggleMemberStatusMutation.mutate({ 
+      memberId: member.id, 
+      isActive: member.is_active 
+    });
   };
 
   if (!teamMembers || teamMembers.length === 0) {
@@ -84,6 +121,7 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Status</TableHead>
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Joined At</TableHead>
             <TableHead className="font-semibold text-gray-900 py-4 px-6">Password</TableHead>
+            <TableHead className="font-semibold text-gray-900 py-4 px-6">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -106,7 +144,7 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
                   variant="outline" 
                   className={member.is_active ? 
                     "bg-green-100 text-green-800 border-green-200" : 
-                    "bg-gray-100 text-gray-800 border-gray-200"
+                    "bg-red-100 text-red-800 border-red-200"
                   }
                 >
                   {member.is_active ? "Active" : "Inactive"}
@@ -126,6 +164,42 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
                   {member.password_changed ? "Updated" : "Default"}
                 </Badge>
               </TableCell>
+              <TableCell className="py-4 px-6">
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setEditingMember(member)}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit className="h-3 w-3" />
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleToggleStatus(member)}
+                    disabled={toggleMemberStatusMutation.isPending}
+                    className={`flex items-center gap-1 ${
+                      member.is_active 
+                        ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                        : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                    }`}
+                  >
+                    {member.is_active ? (
+                      <>
+                        <UserX className="h-3 w-3" />
+                        Disable
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck className="h-3 w-3" />
+                        Enable
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -136,6 +210,15 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
         onOpenChange={setIsInviteDialogOpen}
         onInviteSuccess={handleInviteSuccess}
       />
+
+      {editingMember && (
+        <EditTeamMemberDialog
+          teamMember={editingMember}
+          isOpen={!!editingMember}
+          onOpenChange={(open) => !open && setEditingMember(null)}
+          onEditSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 };
