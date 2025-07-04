@@ -85,6 +85,8 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
         mutationFn: addLeadNote,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['lead_notes', lead?.id] });
+            queryClient.invalidateQueries({ queryKey: ['lead-status-history', lead?.id] });
+            queryClient.invalidateQueries({ queryKey: ['lead-activity-logs', lead?.id] });
             toast.success('Note added successfully');
             noteForm.reset();
         },
@@ -97,6 +99,9 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
         mutationFn: updateLead,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['leads'] });
+            queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
+            queryClient.invalidateQueries({ queryKey: ['lead-status-history', lead?.id] });
+            queryClient.invalidateQueries({ queryKey: ['lead-activity-logs', lead?.id] });
             toast.success('Lead details updated successfully');
             setIsEditing(false);
         },
@@ -177,15 +182,15 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { noteForm.reset(); onClose(); setIsEditing(false); setPendingStatus(null); }}}>
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
-                <DialogHeader>
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col bg-white">
+                <DialogHeader className="bg-white">
                     <div className="flex justify-between items-start">
                         {isEditing ? (
                             <Form {...leadForm}>
                                 <div className="space-y-2 flex-grow pr-12">
                                     <FormField control={leadForm.control} name="name" render={({ field }) => (
                                         <FormItem>
-                                            <FormControl><Input {...field} className="text-2xl font-bold h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" maxLength={18} /></FormControl>
+                                            <FormControl><Input {...field} className="text-2xl font-bold h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-white" maxLength={18} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -193,7 +198,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                         <FormItem>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Briefcase size={14} />
-                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-background" maxLength={18} /></FormControl>
+                                                <FormControl><Input {...field} placeholder="Business Name" className="text-sm h-auto p-2 border border-input rounded-md shadow-sm focus-visible:ring-2 focus-visible:ring-ring bg-white" maxLength={18} /></FormControl>
                                             </div>
                                             <FormMessage />
                                         </FormItem>
@@ -219,8 +224,8 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         ) : null}
                     </div>
                 </DialogHeader>
-                <div className="grid md:grid-cols-4 gap-6 mt-4 flex-1 overflow-hidden">
-                    <ScrollArea className="pr-4">
+                <div className="grid md:grid-cols-4 gap-6 mt-4 flex-1 overflow-hidden bg-white">
+                    <ScrollArea className="pr-4 bg-white">
                         <h3 className="font-semibold mb-4 text-lg">Lead Information</h3>
                         {isEditing ? (
                             <Form {...leadForm}>
@@ -228,7 +233,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                     <FormField control={leadForm.control} name="email" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-3"><Mail size={16} className="text-muted-foreground" /> Email</FormLabel>
-                                            <FormControl><Input {...field} /></FormControl>
+                                            <FormControl><Input {...field} className="bg-white" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -250,9 +255,9 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                             <FormLabel className="flex items-center gap-3"><Edit size={16} className="text-muted-foreground" /> Lead Source</FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
-                                                    <SelectTrigger><SelectValue placeholder="Select a source" /></SelectTrigger>
+                                                    <SelectTrigger className="bg-white"><SelectValue placeholder="Select a source" /></SelectTrigger>
                                                 </FormControl>
-                                                <SelectContent>
+                                                <SelectContent className="bg-white">
                                                     {leadSources.map(source => <SelectItem key={source} value={source}>{source}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
@@ -262,7 +267,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                     <FormField control={leadForm.control} name="budget_range" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-3"><DollarSign size={16} className="text-muted-foreground" /> Budget</FormLabel>
-                                            <FormControl><Input {...field} maxLength={18} /></FormControl>
+                                            <FormControl><Input {...field} maxLength={18} className="bg-white" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
@@ -309,10 +314,10 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             value={currentDisplayStatus}
                             onValueChange={handleStatusChange}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-white">
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-white">
                                 {statusOptions.map(status => (
                                     <SelectItem key={status} value={status}>{status}</SelectItem>
                                 ))}
@@ -340,15 +345,15 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                         )}
                     </ScrollArea>
                     
-                    <div className="h-full overflow-hidden">
+                    <div className="h-full overflow-hidden bg-white">
                         <LeadStatusHistoryComponent leadId={lead.id} />
                     </div>
                     
-                    <div className="h-full overflow-hidden">
+                    <div className="h-full overflow-hidden bg-white">
                         <LeadActivityLog leadId={lead.id} />
                     </div>
                     
-                    <div className="flex flex-col h-full overflow-hidden">
+                    <div className="flex flex-col h-full overflow-hidden bg-white">
                         <h3 className="font-semibold mb-4 text-lg shrink-0">Follow-up Notes</h3>
                         <Form {...noteForm}>
                             <form onSubmit={noteForm.handleSubmit(onSubmitNote)} className="space-y-4 shrink-0">
@@ -359,7 +364,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                                         <FormItem>
                                             <FormLabel>New Note</FormLabel>
                                             <FormControl>
-                                                <Textarea placeholder="Add a new note..." {...field} />
+                                                <Textarea placeholder="Add a new note..." {...field} className="bg-white" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -374,7 +379,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             <div className="space-y-4">
                                 {isLoadingNotes && <p>Loading notes...</p>}
                                 {notes?.map(note => (
-                                    <div key={note.id} className="p-3 bg-secondary rounded-lg">
+                                    <div key={note.id} className="p-3 bg-gray-50 rounded-lg border">
                                         <p className="text-sm whitespace-pre-wrap break-words">{note.note}</p>
                                         <p className="text-xs text-muted-foreground mt-2">{format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}</p>
                                     </div>

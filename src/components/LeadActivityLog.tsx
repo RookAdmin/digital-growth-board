@@ -76,7 +76,7 @@ const formatActivityType = (activityType: string) => {
 };
 
 export const LeadActivityLog = ({ leadId }: LeadActivityLogProps) => {
-  const { data: activities = [], isLoading } = useQuery({
+  const { data: activities = [], isLoading, error } = useQuery({
     queryKey: ['lead-activity-logs', leadId],
     queryFn: async () => {
       // For now, we'll fetch from lead_status_history and lead_notes
@@ -136,9 +136,14 @@ export const LeadActivityLog = ({ leadId }: LeadActivityLogProps) => {
     enabled: !!leadId
   });
 
+  console.log('LeadActivityLog - leadId:', leadId);
+  console.log('LeadActivityLog - activities:', activities);
+  console.log('LeadActivityLog - isLoading:', isLoading);
+  console.log('LeadActivityLog - error:', error);
+
   if (isLoading) {
     return (
-      <div className="space-y-3 h-full flex flex-col">
+      <div className="space-y-3 h-full flex flex-col bg-white">
         <h4 className="font-semibold text-lg shrink-0">Activity Log</h4>
         <div className="flex items-center justify-center flex-1">
           <div className="text-sm text-gray-500">Loading activity log...</div>
@@ -147,8 +152,17 @@ export const LeadActivityLog = ({ leadId }: LeadActivityLogProps) => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="space-y-3 h-full flex flex-col bg-white">
+        <h4 className="font-semibold text-lg shrink-0">Activity Log</h4>
+        <div className="text-sm text-red-500">Error loading activity log: {error.message}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3 h-full flex flex-col">
+    <div className="space-y-3 h-full flex flex-col bg-white">
       <h4 className="font-semibold text-lg shrink-0">Activity Log</h4>
       <ScrollArea className="flex-1 pr-4">
         <div className="space-y-4">

@@ -25,37 +25,51 @@ const fetchLeadStatusHistory = async (leadId: string): Promise<LeadStatusHistory
 };
 
 export const LeadStatusHistoryComponent = ({ leadId }: LeadStatusHistoryProps) => {
-  const { data: statusHistory, isLoading } = useQuery({
+  const { data: statusHistory, isLoading, error } = useQuery({
     queryKey: ['lead-status-history', leadId],
     queryFn: () => fetchLeadStatusHistory(leadId),
     enabled: !!leadId,
   });
 
+  console.log('LeadStatusHistory - leadId:', leadId);
+  console.log('LeadStatusHistory - data:', statusHistory);
+  console.log('LeadStatusHistory - isLoading:', isLoading);
+  console.log('LeadStatusHistory - error:', error);
+
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <h4 className="font-semibold text-lg">Status History</h4>
+      <div className="space-y-3 h-full flex flex-col bg-white">
+        <h4 className="font-semibold text-lg shrink-0">Status History</h4>
         <div className="text-sm text-muted-foreground">Loading status history...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-3 h-full flex flex-col bg-white">
+        <h4 className="font-semibold text-lg shrink-0">Status History</h4>
+        <div className="text-sm text-red-500">Error loading status history: {error.message}</div>
       </div>
     );
   }
 
   if (!statusHistory || statusHistory.length === 0) {
     return (
-      <div className="space-y-3">
-        <h4 className="font-semibold text-lg">Status History</h4>
+      <div className="space-y-3 h-full flex flex-col bg-white">
+        <h4 className="font-semibold text-lg shrink-0">Status History</h4>
         <div className="text-sm text-muted-foreground">No status changes recorded yet.</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 h-full flex flex-col">
+    <div className="space-y-3 h-full flex flex-col bg-white">
       <h4 className="font-semibold text-lg shrink-0">Status History</h4>
       <ScrollArea className="flex-1 pr-4">
         <div className="space-y-3">
           {statusHistory.map((history) => (
-            <div key={history.id} className="flex items-start gap-3 text-sm p-3 bg-muted/30 rounded-lg border-l-2 border-l-primary/20">
+            <div key={history.id} className="flex items-start gap-3 text-sm p-3 bg-gray-50 rounded-lg border-l-2 border-l-primary/20">
               <Clock className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
               <div className="flex-1 space-y-1 min-w-0">
                 <div className="flex items-center gap-2 font-medium flex-wrap">
