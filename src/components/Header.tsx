@@ -1,169 +1,142 @@
+import { useState } from 'react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import { useAuth } from '@/hooks/useAuth'
+import { Link, useNavigate } from 'react-router-dom'
+import { AlignJustify, LogOut } from 'lucide-react'
 
-import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useState } from 'react';
+const navigation = [
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Clients', href: '/clients' },
+  { name: 'Projects', href: '/projects' },
+  { name: 'Partners', href: '/partners' },
+  { name: 'Team', href: '/team' },
+  { name: 'Files', href: '/files' },
+  { name: 'Scheduling', href: '/scheduling' },
+  { name: 'Reporting', href: '/reporting' },
+];
 
-interface HeaderProps {
-  isAuthenticated?: boolean;
-  onLightBg?: boolean;
-}
-
-export const Header = ({ isAuthenticated: _, onLightBg = false }: HeaderProps = {}) => {
-  const { session } = useAuth();
+export function Header() {
+  const { session, user, loading } = useAuth();
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Logged out successfully");
-      navigate('/login');
-    }
+  const handleSignOut = async () => {
+    await session?.supabaseClient.auth.signOut();
+    navigate('/login');
   };
 
-  const navLinkClasses = onLightBg ? 'text-gray-600 hover:text-gray-900' : 'text-gray-600 hover:text-gray-900';
-
   return (
-    <header className="py-4 px-4 md:px-6 animate-fade-in border-b border-white/20 flex-shrink-0 bg-white/60 backdrop-blur-xl sticky top-0 z-50 shadow-lg shadow-gray-100/20">
-      <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center">
-          <img 
-            src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
-            alt="Rook Logo" 
-            className="h-12  object-contain"
-          />
+    <div className="bg-white sticky top-0 z-50">
+      <div className="container flex items-center justify-between py-4">
+        <Link to="/dashboard" className="font-bold text-2xl">
+          CRM
         </Link>
-        
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2 bg-white/40 backdrop-blur-lg rounded-full p-2 shadow-lg border border-white/30">
-          {session ? (
-            <>
-              <Button variant="ghost" asChild className={`${navLinkClasses} font-light text-sm hover:bg-white/50 rounded-full px-4 py-2 transition-all duration-200`}>
-                <Link to="/dashboard/leads">Dashboard</Link>
-              </Button>
-              <Button variant="ghost" asChild className={`${navLinkClasses} font-light text-sm hover:bg-white/50 rounded-full px-4 py-2 transition-all duration-200`}>
-                <Link to="/dashboard/clients">Clients</Link>
-              </Button>
-              <Button variant="ghost" asChild className={`${navLinkClasses} font-light text-sm hover:bg-white/50 rounded-full px-4 py-2 transition-all duration-200`}>
-                <Link to="/dashboard/projects">Projects</Link>
-              </Button>
-              <Button variant="ghost" asChild className={`${navLinkClasses} font-light text-sm hover:bg-white/50 rounded-full px-4 py-2 transition-all duration-200`}>
-                <Link to="/dashboard/team">Team</Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleLogout} 
-                className="border border-green-300/50 bg-white/60 backdrop-blur-sm text-green-700 hover:bg-white/80 font-light rounded-full px-4 py-2 ml-2 shadow-md transition-all duration-300"
-              >
-                <LogOut className="mr-2 h-4 w-4" strokeWidth={1.5} />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button 
-                variant="outline" 
-                asChild 
-                className="border border-green-300/50 bg-white/60 backdrop-blur-sm text-green-700 hover:bg-white/80 font-light rounded-full px-4 py-2 shadow-md transition-all duration-300"
-              >
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button 
-                asChild 
-                className="bg-green-600 hover:bg-green-700 text-white font-light rounded-full px-4 py-2 shadow-lg transition-all duration-300 ml-1"
-              >
-                <Link to="/register">Register</Link>
-              </Button>
-            </>
-          )}
-        </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 bg-white/50 backdrop-blur-md rounded-full border border-white/30 shadow-lg"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-5 w-5 text-gray-700" strokeWidth={1.5} />
-          ) : (
-            <Menu className="h-5 w-5 text-gray-700" strokeWidth={1.5} />
-          )}
-        </button>
-      </div>
+        <div className="hidden md:flex items-center space-x-6">
+          <NavigationMenu>
+            <NavigationMenuList>
+              {navigation.map((item) => (
+                <NavigationMenuItem key={item.name}>
+                  <Link to={item.href} className={navigationMenuTriggerStyle()}>
+                    {item.name}
+                  </Link>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
 
-      {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 border-t border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl z-50 mx-4 rounded-2xl mt-2">
-          <div className="container mx-auto px-4">
-            <nav className="flex flex-col gap-1 py-4">
-              {session ? (
-                <>
-                  <Link 
-                    to="/dashboard/leads" 
-                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-xl hover:bg-white/60 transition-all duration-200 text-base"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link 
-                    to="/dashboard/clients" 
-                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-xl hover:bg-white/60 transition-all duration-200 text-base"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Clients
-                  </Link>
-                  <Link 
-                    to="/dashboard/projects" 
-                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-xl hover:bg-white/60 transition-all duration-200 text-base"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Projects
-                  </Link>
-                  <Link 
-                    to="/dashboard/team" 
-                    className="text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-xl hover:bg-white/60 transition-all duration-200 text-base"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Team
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="text-left text-gray-600 hover:text-gray-900 font-light py-3 px-4 rounded-xl hover:bg-white/60 transition-all duration-200 text-base"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link 
-                    to="/login" 
-                    className="text-green-700 bg-white/70 font-light py-3 px-4 rounded-xl transition-all duration-200 text-base text-center shadow-sm"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                  <Link 
-                    to="/register" 
-                    className="bg-green-600 hover:bg-green-700 text-white font-light py-3 px-4 rounded-xl transition-all duration-200 text-base text-center shadow-lg mt-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Register
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
+          {loading ? (
+            <div>Loading...</div>
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={`https://avatar.vercel.sh/${user?.email}.png`} alt={user?.email} />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/login">
+              <Button>Login</Button>
+            </Link>
+          )}
         </div>
-      )}
-    </header>
-  );
-};
+
+        <Sheet>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" className="p-2">
+              <AlignJustify className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+              <SheetDescription>
+                Navigate through the application.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="py-4">
+              {navigation.map((item) => (
+                <div key={item.name} className="py-2">
+                  <Link to={item.href} className="block text-sm font-medium text-gray-700 hover:text-gray-900">
+                    {item.name}
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6">
+              {loading ? (
+                <div>Loading...</div>
+              ) : user ? (
+                <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                  Logout
+                </Button>
+              ) : (
+                <Link to="/login">
+                  <Button className="w-full">Login</Button>
+                </Link>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
+  )
+}

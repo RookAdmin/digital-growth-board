@@ -1,56 +1,145 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import LoginPage from "./pages/Login";
-import SignupPage from "./pages/Signup";
-import RegisterPage from "./pages/Register";
-import DashboardPage from "./pages/Dashboard";
-import ClientsPage from "./pages/Clients";
-import ProjectsPage from "./pages/Projects";
-import SchedulingPage from "./pages/Scheduling";
-import FilesPage from "./pages/Files";
-import ClientPortalPage from "./pages/ClientPortal";
+import Dashboard from "./pages/Dashboard";
+import Clients from "./pages/Clients";
+import Projects from "./pages/Projects";
+import Team from "./pages/Team";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Signup from "./pages/Signup";
+import Reporting from "./pages/Reporting";
 import NotFound from "./pages/NotFound";
+import Files from "./pages/Files";
+import Scheduling from "./pages/Scheduling";
+import ClientPortal from "./pages/ClientPortal";
+import Partners from "./pages/Partners";
+import PartnerSignup from "./pages/PartnerSignup";
+import PartnerLogin from "./pages/PartnerLogin";
+import PartnerDashboard from "./pages/PartnerDashboard";
+import PartnerProject from "./pages/PartnerProject";
 import ProtectedRoute from "./components/ProtectedRoute";
-import TeamPage from "./pages/Team";
-import ReportingPage from "./pages/Reporting";
+import ClientProtectedRoute from "./components/ClientProtectedRoute";
+import PartnerProtectedRoute from "./components/PartnerProtectedRoute";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          {/* Redirect old client portal route to login */}
-          <Route path="/client-portal" element={<ClientPortalPage />} />
-          
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard/leads" element={<DashboardPage />} />
-            <Route path="/dashboard/clients" element={<ClientsPage />} />
-            <Route path="/dashboard/projects" element={<ProjectsPage />} />
-            <Route path="/dashboard/scheduling" element={<SchedulingPage />} />
-            <Route path="/dashboard/files" element={<FilesPage />} />
-            <Route path="/dashboard/team" element={<TeamPage />} />
-            <Route path="/dashboard/reporting" element={<ReportingPage />} />
-          </Route>
-
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Partner Routes */}
+            <Route path="/partner/signup" element={<PartnerSignup />} />
+            <Route path="/partner/login" element={<PartnerLogin />} />
+            <Route
+              path="/partner/dashboard"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerDashboard />
+                </PartnerProtectedRoute>
+              }
+            />
+            <Route
+              path="/partner/projects/:id"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerProject />
+                </PartnerProtectedRoute>
+              }
+            />
+            
+            {/* Client Portal Route */}
+            <Route
+              path="/client-portal"
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortal />
+                </ClientProtectedRoute>
+              }
+            />
+            
+            {/* Protected Admin Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients"
+              element={
+                <ProtectedRoute>
+                  <Clients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/partners"
+              element={
+                <ProtectedRoute>
+                  <Partners />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <ProtectedRoute>
+                  <Team />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reporting"
+              element={
+                <ProtectedRoute>
+                  <Reporting />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/files"
+              element={
+                <ProtectedRoute>
+                  <Files />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scheduling"
+              element={
+                <ProtectedRoute>
+                  <Scheduling />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
