@@ -1,144 +1,298 @@
 
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/integrations/supabase/client'
-import { Link, useNavigate } from 'react-router-dom'
-import { AlignJustify, LogOut } from 'lucide-react'
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Menu, X, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { usePartnerAuth } from "@/hooks/usePartnerAuth";
+import { toast } from "sonner";
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Clients', href: '/clients' },
-  { name: 'Projects', href: '/projects' },
-  { name: 'Partners', href: '/partners' },
-  { name: 'Team', href: '/team' },
-  { name: 'Files', href: '/files' },
-  { name: 'Scheduling', href: '/scheduling' },
-  { name: 'Reporting', href: '/reporting' },
-];
+interface HeaderProps {
+  isAuthenticated?: boolean;
+  onLightBg?: boolean;
+}
 
-export function Header() {
-  const { session, user, loading } = useAuth();
+export const Header = ({ isAuthenticated = false, onLightBg = false }: HeaderProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const { partner } = usePartnerAuth();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success("Signed out successfully");
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error("Failed to sign out");
+    }
   };
 
+  const isLoggedIn = session || partner || isAuthenticated;
+  const isPartner = !!partner;
+  const textColor = onLightBg ? "text-gray-900" : "text-white";
+  const logoTextColor = onLightBg ? "text-black" : "text-white";
+
   return (
-    <div className="bg-white sticky top-0 z-50">
-      <div className="container flex items-center justify-between py-4">
-        <Link to="/dashboard" className="font-bold text-2xl">
-          CRM
-        </Link>
+    <header className={`${onLightBg ? 'bg-white border-b border-gray-200' : 'bg-black'} relative z-50`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <span className={`text-xl font-bold tracking-tight ${logoTextColor}`}>
+              Rook
+            </span>
+          </Link>
 
-        <div className="hidden md:flex items-center space-x-6">
-          <NavigationMenu>
-            <NavigationMenuList>
-              {navigation.map((item) => (
-                <NavigationMenuItem key={item.name}>
-                  <Link to={item.href} className={navigationMenuTriggerStyle()}>
-                    {item.name}
-                  </Link>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {isLoggedIn ? (
+              <>
+                {isPartner ? (
+                  // Partner Navigation
+                  <>
+                    <Link 
+                      to="/partner/dashboard" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      My Projects
+                    </Link>
+                  </>
+                ) : (
+                  // Admin Navigation
+                  <>
+                    <Link 
+                      to="/dashboard" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link 
+                      to="/clients" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Clients
+                    </Link>
+                    <Link 
+                      to="/projects" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Projects
+                    </Link>
+                    <Link 
+                      to="/partners" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Partners
+                    </Link>
+                    <Link 
+                      to="/team" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Team
+                    </Link>
+                    <Link 
+                      to="/files" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Files
+                    </Link>
+                    <Link 
+                      to="/scheduling" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Scheduling
+                    </Link>
+                    <Link 
+                      to="/reporting" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                    >
+                      Reporting
+                    </Link>
+                  </>
+                )}
+                
+                {/* User Menu */}
+                <div className="flex items-center space-x-4">
+                  <div className={`flex items-center space-x-2 ${textColor}`}>
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">
+                      {partner ? partner.full_name : session?.user?.email}
+                    </span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleSignOut}
+                    className={`${textColor} hover:bg-gray-800 hover:text-white`}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/login" 
+                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/register" 
+                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                >
+                  Get Started
+                </Link>
+                <Link 
+                  to="/partner/login" 
+                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                >
+                  Partner Login
+                </Link>
+              </>
+            )}
+          </nav>
 
-          {loading ? (
-            <div>Loading...</div>
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://avatar.vercel.sh/${user?.email}.png`} alt={user?.email} />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/login">
-              <Button>Login</Button>
-            </Link>
-          )}
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`md:hidden ${textColor}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
 
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" className="p-2">
-              <AlignJustify className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64">
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-              <SheetDescription>
-                Navigate through the application.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="py-4">
-              {navigation.map((item) => (
-                <div key={item.name} className="py-2">
-                  <Link to={item.href} className="block text-sm font-medium text-gray-700 hover:text-gray-900">
-                    {item.name}
-                  </Link>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6">
-              {loading ? (
-                <div>Loading...</div>
-              ) : user ? (
-                <Button variant="outline" className="w-full" onClick={handleSignOut}>
-                  Logout
-                </Button>
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className={`md:hidden py-4 border-t ${onLightBg ? 'border-gray-200' : 'border-gray-800'}`}>
+            <nav className="flex flex-col space-y-3">
+              {isLoggedIn ? (
+                <>
+                  {isPartner ? (
+                    <Link 
+                      to="/partner/dashboard" 
+                      className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Projects
+                    </Link>
+                  ) : (
+                    <>
+                      <Link 
+                        to="/dashboard" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link 
+                        to="/clients" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Clients
+                      </Link>
+                      <Link 
+                        to="/projects" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Projects
+                      </Link>
+                      <Link 
+                        to="/partners" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Partners
+                      </Link>
+                      <Link 
+                        to="/team" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Team
+                      </Link>
+                      <Link 
+                        to="/files" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Files
+                      </Link>
+                      <Link 
+                        to="/scheduling" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Scheduling
+                      </Link>
+                      <Link 
+                        to="/reporting" 
+                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Reporting
+                      </Link>
+                    </>
+                  )}
+                  
+                  <div className="pt-2 border-t border-gray-800">
+                    <div className={`flex items-center space-x-2 ${textColor} py-2`}>
+                      <User className="w-4 h-4" />
+                      <span className="text-sm">
+                        {partner ? partner.full_name : session?.user?.email}
+                      </span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className={`${textColor} hover:bg-gray-800 hover:text-white w-full justify-start`}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </>
               ) : (
-                <Link to="/login">
-                  <Button className="w-full">Login</Button>
-                </Link>
+                <>
+                  <Link 
+                    to="/login" 
+                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                  <Link 
+                    to="/partner/login" 
+                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Partner Login
+                  </Link>
+                </>
               )}
-            </div>
-          </SheetContent>
-        </Sheet>
+            </nav>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
+    </header>
+  );
+};
