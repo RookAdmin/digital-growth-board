@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -28,6 +29,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/integrations/supabase/client'
 import { Link, useNavigate } from 'react-router-dom'
 import { AlignJustify, LogOut } from 'lucide-react'
 
@@ -47,7 +49,7 @@ export function Header() {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await session?.supabaseClient.auth.signOut();
+    await supabase.auth.signOut();
     navigate('/login');
   };
 

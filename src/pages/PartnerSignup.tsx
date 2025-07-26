@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,7 +6,6 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -16,8 +14,31 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { usePartnerAuth } from '@/hooks/usePartnerAuth';
 import { toast } from 'sonner';
+
+const serviceCategories = [
+  'Web Development',
+  'Mobile Development',
+  'UI/UX Design',
+  'Graphic Design',
+  'Content Writing',
+  'Digital Marketing',
+  'SEO Services',
+  'Social Media Management',
+  'Video Production',
+  'Photography',
+  'Consulting',
+  'Other'
+];
 
 const signupSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -31,17 +52,9 @@ const signupSchema = z.object({
 
 type SignupForm = z.infer<typeof signupSchema>;
 
-const serviceOptions = [
-  { id: 'design', label: 'Design' },
-  { id: 'development', label: 'Development' },
-  { id: 'content', label: 'Content Writing' },
-  { id: 'marketing', label: 'Marketing' },
-  { id: 'seo', label: 'SEO' },
-  { id: 'social-media', label: 'Social Media' },
-];
-
 const PartnerSignup = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const { signUp } = usePartnerAuth();
   const navigate = useNavigate();
 
@@ -55,12 +68,20 @@ const PartnerSignup = () => {
   const onSubmit = async (data: SignupForm) => {
     setLoading(true);
     try {
-      const { error } = await signUp(data);
+      const { error } = await signUp({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        phone: data.phone,
+        companyName: data.companyName,
+        serviceCategories: selectedCategories,
+        location: data.location,
+      });
       
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Account created successfully! Please check your email to verify your account.');
+        toast.success('Registration successful! Please check your email to verify your account.');
         navigate('/partner/login');
       }
     } catch (error) {
@@ -70,14 +91,22 @@ const PartnerSignup = () => {
     }
   };
 
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories(prev => [...prev, category]);
+    } else {
+      setSelectedCategories(prev => prev.filter(c => c !== category));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Partner Registration
+          Partner Signup
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Join our network of trusted partners
+          Create a new partner account
         </p>
       </div>
 
@@ -92,7 +121,7 @@ const PartnerSignup = () => {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +163,7 @@ const PartnerSignup = () => {
                   <FormItem>
                     <FormLabel>Phone (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="tel" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,7 +177,7 @@ const PartnerSignup = () => {
                   <FormItem>
                     <FormLabel>Company Name (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,36 +189,22 @@ const PartnerSignup = () => {
                 name="serviceCategories"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Service Categories</FormLabel>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {serviceOptions.map((option) => (
-                        <FormField
-                          key={option.id}
-                          control={form.control}
-                          name="serviceCategories"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(option.id)}
-                                  onCheckedChange={(checked) => {
-                                    const currentValue = field.value || [];
-                                    if (checked) {
-                                      field.onChange([...currentValue, option.id]);
-                                    } else {
-                                      field.onChange(
-                                        currentValue.filter((value) => value !== option.id)
-                                      );
-                                    }
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal">
-                                {option.label}
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
+                    <FormLabel>Service Categories (Optional)</FormLabel>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {serviceCategories.map((category) => (
+                        <div key={category} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={category}
+                            checked={selectedCategories.includes(category)}
+                            onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
+                          />
+                          <label
+                            htmlFor={category}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {category}
+                          </label>
+                        </div>
                       ))}
                     </div>
                     <FormMessage />
@@ -204,7 +219,7 @@ const PartnerSignup = () => {
                   <FormItem>
                     <FormLabel>Location (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="City, Country" {...field} />
+                      <Input type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,7 +231,7 @@ const PartnerSignup = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Sign Up'}
+                {loading ? 'Signing Up...' : 'Sign Up'}
               </Button>
             </form>
           </Form>
@@ -229,7 +244,7 @@ const PartnerSignup = () => {
                   to="/partner/login"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  Sign in
+                  Log in
                 </Link>
               </span>
             </div>
