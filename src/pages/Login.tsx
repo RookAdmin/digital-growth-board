@@ -25,7 +25,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (!loading && session) {
-      navigate('/dashboard/leads');
+      navigate('/dashboard');
     }
   }, [session, loading, navigate]);
 
@@ -47,7 +47,7 @@ const LoginPage = () => {
         toast.error(error.message);
       } else {
         toast.success("Logged in successfully");
-        navigate('/dashboard/leads');
+        navigate('/dashboard');
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
