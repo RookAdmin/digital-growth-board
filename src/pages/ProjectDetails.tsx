@@ -49,7 +49,7 @@ const ProjectDetails = () => {
           clients(id, name, email, business_name)
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
 
