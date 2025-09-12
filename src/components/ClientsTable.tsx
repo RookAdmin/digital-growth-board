@@ -193,7 +193,14 @@ export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }
                   index < filteredClients.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
               >
-                <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>
+                <TableCell className="font-medium text-gray-900 py-4 px-6">
+                  <button
+                    onClick={() => window.location.href = `/client/${client.id}`}
+                    className="text-left hover:text-blue-600 transition-colors cursor-pointer underline decoration-transparent hover:decoration-blue-600"
+                  >
+                    {client.name}
+                  </button>
+                </TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{client.email}</TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{client.phone || '-'}</TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{client.business_name || '-'}</TableCell>
