@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, UserPlus, MapPin, Phone, Mail, Building } from 'lucide-react';
 import { AssignPartnerDialog } from '@/components/AssignPartnerDialog';
 import { Tables } from '@/integrations/supabase/types';
+import { Header } from '@/components/Header';
 
 type Partner = Tables<'partners'>;
 
@@ -17,6 +18,10 @@ const Partners = () => {
   const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+
+  useEffect(() => {
+    document.title = "Partners - Rook";
+  }, []);
 
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ['partners'],
@@ -70,7 +75,10 @@ const Partners = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-white">
+      <Header isAuthenticated={true} />
+      
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Partners</h1>
@@ -233,6 +241,7 @@ const Partners = () => {
           }}
         />
       )}
+      </main>
     </div>
   );
 };

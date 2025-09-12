@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -195,10 +196,10 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const handleViewProject = (project: Project) => {
-    setSelectedProject(project);
-    setShowDetailsModal(true);
+    navigate(`/projects/${project.id}`);
   };
 
   const handleCloseModal = () => {
