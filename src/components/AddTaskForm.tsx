@@ -78,6 +78,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
     onSuccess: () => {
       toast.success("Task added successfully!");
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       form.reset();
