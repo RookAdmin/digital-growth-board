@@ -9,10 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Calendar, DollarSign, Users, CheckSquare, FolderOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Project, Task } from '@/types';
-import { TaskManagement } from '@/components/TaskManagement';
-import { ProjectMessaging } from '@/components/ProjectMessaging';
-import { ProjectFileManager } from '@/components/ProjectFileManager';
-import { ProjectActivityLog } from '@/components/ProjectActivityLog';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -49,7 +45,7 @@ const ProjectDetails = () => {
           clients(id, name, email, business_name)
         `)
         .eq('id', id)
-        .maybeSingle();
+        .single();
       
       if (error) throw error;
 

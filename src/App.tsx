@@ -8,7 +8,6 @@ import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
-import ClientDetails from "./pages/ClientDetails";
 import Team from "./pages/Team";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -97,18 +96,10 @@ function App() {
               }
             />
             <Route
-              path="/project/:id"
+              path="/projects/:id"
               element={
                 <ProtectedRoute>
                   <ProjectDetails />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/client/:id"
-              element={
-                <ProtectedRoute>
-                  <ClientDetails />
                 </ProtectedRoute>
               }
             />
