@@ -34,7 +34,7 @@ import { toast } from 'sonner';
 const inviteSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Invalid email address.' }),
-  role: z.enum(['Admin', 'Project Manager', 'Staff']),
+  role: z.enum(['Admin', 'Client Executive', 'Developers']),
   defaultPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -51,7 +51,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
     defaultValues: {
       name: '',
       email: '',
-      role: 'Staff',
+      role: 'Developers',
       defaultPassword: '',
     },
   });
@@ -132,8 +132,8 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                     </FormControl>
                     <SelectContent className="bg-white">
                       <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Project Manager">Project Manager</SelectItem>
-                      <SelectItem value="Staff">Staff</SelectItem>
+                      <SelectItem value="Client Executive">Client Executive</SelectItem>
+                      <SelectItem value="Developers">Developers</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
