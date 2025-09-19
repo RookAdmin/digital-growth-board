@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, DollarSign, Users, CheckSquare, FolderOpen, Plus, MessageSquare, Upload, Activity } from 'lucide-react';
+import { ArrowLeft, Calendar, DollarSign, Users, CheckSquare, FolderOpen, Plus, MessageSquare, Upload, Activity, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { Project, Task } from '@/types';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { ProjectFileManager } from '@/components/ProjectFileManager';
 import { ProjectMessaging } from '@/components/ProjectMessaging';
 import { ProjectActivityLog } from '@/components/ProjectActivityLog';
+import { ProjectTeamManager } from '@/components/ProjectTeamManager';
+import { EditTaskDialog } from '@/components/EditTaskDialog';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -34,6 +36,7 @@ const ProjectDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   useEffect(() => {
     document.title = "Project Details - Rook";
@@ -180,6 +183,12 @@ const ProjectDetails = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Team Management */}
+                <ProjectTeamManager 
+                  projectId={id!} 
+                  assignedTeamMembers={project.assigned_team_members || []} 
+                />
               </TabsContent>
 
               <TabsContent value="tasks" className="space-y-6">
@@ -238,8 +247,22 @@ const ProjectDetails = () => {
                                     {task.priority}
                                   </span>
                                 )}
+                                {task.assigned_team_members && task.assigned_team_members.length > 0 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Users className="w-3 h-3 mr-1" />
+                                    {task.assigned_team_members.length} assigned
+                                  </Badge>
+                                )}
                               </div>
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingTask(task)}
+                              className="mt-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -354,6 +377,14 @@ const ProjectDetails = () => {
           </div>
         </div>
         </Tabs>
+
+        {/* Edit Task Dialog */}
+        <EditTaskDialog
+          task={editingTask}
+          projectId={id!}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+        />
       </main>
     </div>
   );
