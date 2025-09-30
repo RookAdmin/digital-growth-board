@@ -15,13 +15,15 @@ import { Calendar } from '@/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { CalendarIcon, Users } from 'lucide-react';
+import { CalendarIcon, Users, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const editTaskSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(18, { message: "Title must be at most 18 characters." }),
+  type: z.enum(["new", "bug", "testing", "task", "milestone"]),
   description: z.string().max(150, { message: "Description must be at most 150 characters." }).optional(),
+  remarks: z.string().max(200, { message: "Remarks must be at most 200 characters." }).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]),
   status: z.enum(["Not Started", "In Progress", "Review", "Completed"]),
   due_date: z.date().optional(),
@@ -40,12 +42,18 @@ interface EditTaskDialogProps {
 export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDialogProps) => {
   const queryClient = useQueryClient();
   const [selectedMembers, setSelectedMembers] = useState<string[]>(task?.assigned_team_members || []);
+  const [descriptionImage, setDescriptionImage] = useState<File | null>(null);
+  const [descriptionImagePreview, setDescriptionImagePreview] = useState<string | null>(task?.description_image_url || null);
+  const [remarksImage, setRemarksImage] = useState<File | null>(null);
+  const [remarksImagePreview, setRemarksImagePreview] = useState<string | null>(task?.remarks_image_url || null);
 
   const form = useForm<EditTaskFormValues>({
     resolver: zodResolver(editTaskSchema),
     defaultValues: {
       title: task?.title || "",
+      type: task?.type || "new",
       description: task?.description || "",
+      remarks: task?.remarks || "",
       priority: task?.priority || "medium",
       status: task?.status || "Not Started",
       due_date: task?.due_date ? new Date(task.due_date) : undefined,
@@ -58,13 +66,17 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
     if (task) {
       form.reset({
         title: task.title,
+        type: task.type || "new",
         description: task.description || "",
+        remarks: task.remarks || "",
         priority: task.priority,
         status: task.status,
         due_date: task.due_date ? new Date(task.due_date) : undefined,
         assigned_team_members: task.assigned_team_members || [],
       });
       setSelectedMembers(task.assigned_team_members || []);
+      setDescriptionImagePreview(task.description_image_url || null);
+      setRemarksImagePreview(task.remarks_image_url || null);
     }
   }, [task, form]);
 
@@ -82,14 +94,53 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
     },
   });
 
+  const uploadImage = async (file: File, folder: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-files')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-files')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    }
+  };
+
   // Update task mutation
   const updateTaskMutation = useMutation({
     mutationFn: async (data: EditTaskFormValues) => {
+      let descriptionImageUrl = descriptionImagePreview;
+      let remarksImageUrl = remarksImagePreview;
+
+      if (descriptionImage) {
+        descriptionImageUrl = await uploadImage(descriptionImage, 'task-descriptions');
+      }
+
+      if (remarksImage) {
+        remarksImageUrl = await uploadImage(remarksImage, 'task-remarks');
+      }
+
       const { data: taskData, error } = await supabase
         .from('tasks')
         .update({
           title: data.title,
+          type: data.type,
           description: data.description || null,
+          description_image_url: descriptionImageUrl,
+          remarks: data.remarks || null,
+          remarks_image_url: remarksImageUrl,
           priority: data.priority,
           status: data.status,
           due_date: data.due_date ? data.due_date.toISOString() : null,
@@ -126,6 +177,7 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['task-activity-logs'] });
       onClose();
     },
     onError: (error) => {
@@ -142,6 +194,68 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
     }
   };
 
+  const handleDescriptionImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setDescriptionImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDescriptionImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemarksImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setRemarksImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRemarksImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDescriptionPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            setDescriptionImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setDescriptionImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    }
+  };
+
+  const handleRemarksPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            setRemarksImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setRemarksImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    }
+  };
+
   const onSubmit = (data: EditTaskFormValues) => {
     updateTaskMutation.mutate(data);
   };
@@ -150,25 +264,52 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Task Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} maxLength={18} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Task Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} maxLength={18} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Task Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="bug">Bug</SelectItem>
+                        <SelectItem value="testing">Testing</SelectItem>
+                        <SelectItem value="task">Task</SelectItem>
+                        <SelectItem value="milestone">Milestone</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
@@ -181,12 +322,96 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
                       {...field} 
                       value={field.value || ''} 
                       maxLength={150}
+                      onPaste={handleDescriptionPaste}
+                      placeholder="You can paste images here"
                       rows={3}
                     />
                   </FormControl>
-                  <div className="text-xs text-muted-foreground">
-                    {(field.value || '').length}/150 characters
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-muted-foreground">
+                      {(field.value || '').length}/150 characters
+                    </div>
+                    <label htmlFor="edit-description-image" className="cursor-pointer">
+                      <Upload className="w-4 h-4 text-gray-600 hover:text-black" />
+                      <input
+                        id="edit-description-image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleDescriptionImageChange}
+                      />
+                    </label>
                   </div>
+                  {descriptionImagePreview && (
+                    <div className="relative mt-2">
+                      <img src={descriptionImagePreview} alt="Description preview" className="max-w-xs rounded border" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 right-1 bg-white"
+                        onClick={() => {
+                          setDescriptionImage(null);
+                          setDescriptionImagePreview(null);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="remarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Remarks</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      value={field.value || ''} 
+                      maxLength={200}
+                      onPaste={handleRemarksPaste}
+                      placeholder="You can paste images here"
+                      rows={3}
+                    />
+                  </FormControl>
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-muted-foreground">
+                      {(field.value || '').length}/200 characters
+                    </div>
+                    <label htmlFor="edit-remarks-image" className="cursor-pointer">
+                      <Upload className="w-4 h-4 text-gray-600 hover:text-black" />
+                      <input
+                        id="edit-remarks-image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleRemarksImageChange}
+                      />
+                    </label>
+                  </div>
+                  {remarksImagePreview && (
+                    <div className="relative mt-2">
+                      <img src={remarksImagePreview} alt="Remarks preview" className="max-w-xs rounded border" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 right-1 bg-white"
+                        onClick={() => {
+                          setRemarksImage(null);
+                          setRemarksImagePreview(null);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

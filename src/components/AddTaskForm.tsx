@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,13 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const addTaskSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(18, { message: "Title must be at most 18 characters." }),
+  type: z.enum(["new", "bug", "testing", "task", "milestone"]).default("new"),
   description: z.string().max(150, { message: "Description must be at most 150 characters." }).optional(),
+  remarks: z.string().max(200, { message: "Remarks must be at most 200 characters." }).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   due_date: z.date().optional(),
 });
@@ -32,25 +35,70 @@ interface AddTaskFormProps {
 
 export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
   const queryClient = useQueryClient();
+  const [descriptionImage, setDescriptionImage] = useState<File | null>(null);
+  const [descriptionImagePreview, setDescriptionImagePreview] = useState<string | null>(null);
+  const [remarksImage, setRemarksImage] = useState<File | null>(null);
+  const [remarksImagePreview, setRemarksImagePreview] = useState<string | null>(null);
+
   const form = useForm<AddTaskFormValues>({
     resolver: zodResolver(addTaskSchema),
     defaultValues: {
       title: "",
+      type: "new",
       description: "",
+      remarks: "",
       priority: "medium",
     },
   });
 
+  const uploadImage = async (file: File, folder: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('project-files')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-files')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    }
+  };
+
   const addTaskMutation = useMutation({
     mutationFn: async (data: AddTaskFormValues) => {
+      let descriptionImageUrl = null;
+      let remarksImageUrl = null;
+
+      if (descriptionImage) {
+        descriptionImageUrl = await uploadImage(descriptionImage, 'task-descriptions');
+      }
+
+      if (remarksImage) {
+        remarksImageUrl = await uploadImage(remarksImage, 'task-remarks');
+      }
+
       const { data: taskData, error } = await supabase.from('tasks').insert({
         project_id: projectId,
         title: data.title,
+        type: data.type,
         description: data.description || null,
+        description_image_url: descriptionImageUrl,
+        remarks: data.remarks || null,
+        remarks_image_url: remarksImageUrl,
         priority: data.priority,
         due_date: data.due_date ? data.due_date.toISOString() : null,
         status: 'Not Started',
-        type: 'task',
         assigned_team_members: [],
       }).select().single();
       
@@ -68,6 +116,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           metadata: {
             task_id: taskData.id,
             task_title: taskData.title,
+            task_type: taskData.type,
             priority: taskData.priority
           }
         });
@@ -82,6 +131,10 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       form.reset();
+      setDescriptionImage(null);
+      setDescriptionImagePreview(null);
+      setRemarksImage(null);
+      setRemarksImagePreview(null);
       onCancel();
     },
     onError: (error) => {
@@ -94,27 +147,115 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
     addTaskMutation.mutate(data);
   };
 
+  const handleDescriptionImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setDescriptionImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDescriptionImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemarksImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setRemarksImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRemarksImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDescriptionPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            setDescriptionImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setDescriptionImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    }
+  };
+
+  const handleRemarksPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            setRemarksImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setRemarksImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 border border-gray-200 rounded-xl bg-white animate-fade-in">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-black">Task Title</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="e.g., Design new landing page" 
-                  {...field} 
-                  maxLength={18} 
-                  className="bg-white border-gray-300 text-black placeholder:text-gray-500"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-black">Task Title</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="e.g., Design new landing page" 
+                    {...field} 
+                    maxLength={18} 
+                    className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-black">Task Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white border-gray-300 text-black">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-white border-gray-300">
+                    <SelectItem value="new" className="text-black hover:bg-gray-100">New</SelectItem>
+                    <SelectItem value="bug" className="text-black hover:bg-gray-100">Bug</SelectItem>
+                    <SelectItem value="testing" className="text-black hover:bg-gray-100">Testing</SelectItem>
+                    <SelectItem value="task" className="text-black hover:bg-gray-100">Task</SelectItem>
+                    <SelectItem value="milestone" className="text-black hover:bg-gray-100">Milestone</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="description"
@@ -123,17 +264,100 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
               <FormLabel className="text-black">Description (Optional)</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Add more details about the task" 
+                  placeholder="Add more details about the task (You can paste images here)" 
                   {...field} 
                   value={field.value || ''} 
                   maxLength={150}
+                  onPaste={handleDescriptionPaste}
                   className="resize-none bg-white border-gray-300 text-black placeholder:text-gray-500"
                   rows={3}
                 />
               </FormControl>
-              <div className="text-xs text-gray-600">
-                {(field.value || '').length}/150 characters
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-gray-600">
+                  {(field.value || '').length}/150 characters
+                </div>
+                <label htmlFor="description-image" className="cursor-pointer">
+                  <Upload className="w-4 h-4 text-gray-600 hover:text-black" />
+                  <input
+                    id="description-image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleDescriptionImageChange}
+                  />
+                </label>
               </div>
+              {descriptionImagePreview && (
+                <div className="relative mt-2">
+                  <img src={descriptionImagePreview} alt="Description preview" className="max-w-xs rounded border" />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 bg-white"
+                    onClick={() => {
+                      setDescriptionImage(null);
+                      setDescriptionImagePreview(null);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="remarks"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-black">Remarks (Optional)</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Add remarks or notes (You can paste images here)" 
+                  {...field} 
+                  value={field.value || ''} 
+                  maxLength={200}
+                  onPaste={handleRemarksPaste}
+                  className="resize-none bg-white border-gray-300 text-black placeholder:text-gray-500"
+                  rows={3}
+                />
+              </FormControl>
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-gray-600">
+                  {(field.value || '').length}/200 characters
+                </div>
+                <label htmlFor="remarks-image" className="cursor-pointer">
+                  <Upload className="w-4 h-4 text-gray-600 hover:text-black" />
+                  <input
+                    id="remarks-image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleRemarksImageChange}
+                  />
+                </label>
+              </div>
+              {remarksImagePreview && (
+                <div className="relative mt-2">
+                  <img src={remarksImagePreview} alt="Remarks preview" className="max-w-xs rounded border" />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 bg-white"
+                    onClick={() => {
+                      setRemarksImage(null);
+                      setRemarksImagePreview(null);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}

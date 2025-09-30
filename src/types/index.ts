@@ -112,7 +112,7 @@ export interface ClientFile {
 
 export type ProjectStatus = "Not Started" | "In Progress" | "Review" | "Completed";
 export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Blocked";
-export type TaskType = "task" | "milestone";
+export type TaskType = "new" | "bug" | "testing" | "task" | "milestone";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface Project {
@@ -135,6 +135,9 @@ export interface Task {
   project_id: string;
   title: string;
   description: string | null;
+  description_image_url: string | null;
+  remarks: string | null;
+  remarks_image_url: string | null;
   type: TaskType;
   status: TaskStatus;
   priority: TaskPriority;

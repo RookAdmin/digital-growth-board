@@ -16,6 +16,7 @@ import { ProjectMessaging } from '@/components/ProjectMessaging';
 import { ProjectActivityLog } from '@/components/ProjectActivityLog';
 import { ProjectTeamManager } from '@/components/ProjectTeamManager';
 import { EditTaskDialog } from '@/components/EditTaskDialog';
+import { TaskActivityLog } from '@/components/TaskActivityLog';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -223,46 +224,74 @@ const ProjectDetails = () => {
                     {project.tasks && project.tasks.length > 0 ? (
                       <div className="space-y-3">
                         {project.tasks.map((task: any) => (
-                          <div key={task.id} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg">
-                            <div className={`w-2 h-2 rounded-full mt-2 ${
-                              task.status === 'Completed' ? 'bg-green-500' : 
-                              task.status === 'In Progress' ? 'bg-blue-500' : 'bg-gray-300'
-                            }`} />
-                            <div className="flex-1 min-w-0">
-                              <h5 className="font-medium text-gray-900">{task.title}</h5>
-                              {task.description && (
-                                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                              )}
-                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                <span>Status: {task.status}</span>
-                                {task.due_date && (
-                                  <span>Due: {format(new Date(task.due_date), 'MMM dd, yyyy')}</span>
-                                )}
-                                {task.priority && (
-                                  <span className={`px-2 py-1 rounded ${
-                                    task.priority === 'high' || task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-green-100 text-green-700'
-                                  }`}>
-                                    {task.priority}
-                                  </span>
-                                )}
-                                {task.assigned_team_members && task.assigned_team_members.length > 0 && (
+                          <div key={task.id} className="border border-gray-200 rounded-lg">
+                            <div className="flex items-start gap-3 p-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                                task.status === 'Completed' ? 'bg-green-500' : 
+                                task.status === 'In Progress' ? 'bg-blue-500' : 'bg-gray-300'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start gap-2">
+                                  <h5 className="font-medium text-gray-900">{task.title}</h5>
                                   <Badge variant="outline" className="text-xs">
-                                    <Users className="w-3 h-3 mr-1" />
-                                    {task.assigned_team_members.length} assigned
+                                    {task.type}
                                   </Badge>
+                                </div>
+                                {task.description && (
+                                  <p className="text-sm text-gray-600 mt-1">{task.description}</p>
                                 )}
+                                {task.description_image_url && (
+                                  <img 
+                                    src={task.description_image_url} 
+                                    alt="Task description" 
+                                    className="mt-2 max-w-xs rounded border"
+                                  />
+                                )}
+                                {task.remarks && (
+                                  <div className="mt-2">
+                                    <span className="text-xs font-medium text-gray-700">Remarks: </span>
+                                    <span className="text-sm text-gray-600">{task.remarks}</span>
+                                  </div>
+                                )}
+                                {task.remarks_image_url && (
+                                  <img 
+                                    src={task.remarks_image_url} 
+                                    alt="Task remarks" 
+                                    className="mt-2 max-w-xs rounded border"
+                                  />
+                                )}
+                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                  <span>Status: {task.status}</span>
+                                  {task.due_date && (
+                                    <span>Due: {format(new Date(task.due_date), 'MMM dd, yyyy')}</span>
+                                  )}
+                                  {task.priority && (
+                                    <span className={`px-2 py-1 rounded ${
+                                      task.priority === 'high' || task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
+                                    }`}>
+                                      {task.priority}
+                                    </span>
+                                  )}
+                                  {task.assigned_team_members && task.assigned_team_members.length > 0 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      <Users className="w-3 h-3 mr-1" />
+                                      {task.assigned_team_members.length} assigned
+                                    </Badge>
+                                  )}
+                                </div>
+                                <TaskActivityLog taskId={task.id} />
                               </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingTask(task)}
+                                className="mt-1"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditingTask(task)}
-                              className="mt-1"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
                           </div>
                         ))}
                       </div>

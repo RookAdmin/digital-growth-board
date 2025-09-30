@@ -941,10 +941,13 @@ export type Database = {
           completed_at: string | null
           created_at: string
           description: string | null
+          description_image_url: string | null
           due_date: string | null
           id: string
           priority: string
           project_id: string
+          remarks: string | null
+          remarks_image_url: string | null
           status: string
           title: string
           type: string
@@ -955,10 +958,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
+          description_image_url?: string | null
           due_date?: string | null
           id?: string
           priority?: string
           project_id: string
+          remarks?: string | null
+          remarks_image_url?: string | null
           status?: string
           title: string
           type?: string
@@ -969,10 +975,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
+          description_image_url?: string | null
           due_date?: string | null
           id?: string
           priority?: string
           project_id?: string
+          remarks?: string | null
+          remarks_image_url?: string | null
           status?: string
           title?: string
           type?: string
