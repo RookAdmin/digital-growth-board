@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
+import ClientDetails from "./pages/ClientDetails";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Team from "./pages/Team";
@@ -84,6 +85,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Clients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:id"
+              element={
+                <ProtectedRoute>
+                  <ClientDetails />
                 </ProtectedRoute>
               }
             />

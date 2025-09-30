@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +37,7 @@ interface ClientsTableProps {
 }
 
 export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }: ClientsTableProps) => {
+  const navigate = useNavigate();
   const { data: clients, isLoading, error } = useQuery({
     queryKey: ['clients'],
     queryFn: fetchClients,
@@ -189,9 +191,10 @@ export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }
             {filteredClients?.map((client, index) => (
               <TableRow 
                 key={client.id}
-                className={`border-0 hover:bg-gray-50 transition-colors ${
+                className={`border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
                   index < filteredClients.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
+                onClick={() => navigate(`/clients/${client.id}`)}
               >
                 <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{client.email}</TableCell>
@@ -199,12 +202,15 @@ export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }
                 <TableCell className="text-gray-600 py-4 px-6">{client.business_name || '-'}</TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{getLocationDisplay(client)}</TableCell>
                 <TableCell className="text-right py-4 px-6">
-                  <div className="flex gap-2 justify-end">
+                  <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                     <EditClientDialog client={client} />
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => setClientToDelete(client)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setClientToDelete(client);
+                      }}
                       className="bg-red-600 hover:bg-red-700 hover:text-white text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
