@@ -11,11 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { CalendarIcon, Upload, X, Users } from 'lucide-react';
+import { CalendarIcon, Upload, X, Users, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -42,6 +42,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
   const [remarksImage, setRemarksImage] = useState<File | null>(null);
   const [remarksImagePreview, setRemarksImagePreview] = useState<string | null>(null);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [openMembersDropdown, setOpenMembersDropdown] = useState(false);
 
   const form = useForm<AddTaskFormValues>({
     resolver: zodResolver(addTaskSchema),
@@ -226,12 +227,20 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
     }
   };
 
-  const handleMemberToggle = (memberId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedMembers(prev => [...prev, memberId]);
-    } else {
-      setSelectedMembers(prev => prev.filter(id => id !== memberId));
-    }
+  const handleMemberToggle = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId)
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
+
+  const getSelectedMemberNames = () => {
+    if (!teamMembers) return '';
+    return selectedMembers
+      .map(id => teamMembers.find(m => m.id === id)?.name)
+      .filter(Boolean)
+      .join(', ');
   };
 
   return (
@@ -453,34 +462,73 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           />
         </div>
         
-        <div className="space-y-3">
-          <FormLabel className="flex items-center gap-2 text-black">
-            <Users className="w-4 h-4" />
-            Assign Team Members
-            {selectedMembers.length > 0 && (
-              <Badge variant="secondary">{selectedMembers.length} selected</Badge>
-            )}
-          </FormLabel>
-          <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-300 rounded-md p-3 bg-white">
-            {teamMembers?.map((member) => (
-              <div key={member.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={member.id}
-                  checked={selectedMembers.includes(member.id)}
-                  onCheckedChange={(checked) => 
-                    handleMemberToggle(member.id, checked as boolean)
-                  }
-                />
-                <label
-                  htmlFor={member.id}
-                  className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  <div className="text-black">{member.name}</div>
-                  <div className="text-xs text-gray-600">{member.role}</div>
-                </label>
-              </div>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <FormLabel className="text-black">Assign Team Members</FormLabel>
+          <Popover open={openMembersDropdown} onOpenChange={setOpenMembersDropdown}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openMembersDropdown}
+                className="w-full justify-between bg-white border-gray-300 text-black"
+              >
+                <span className="truncate">
+                  {selectedMembers.length > 0
+                    ? `${selectedMembers.length} member${selectedMembers.length > 1 ? 's' : ''} selected`
+                    : "Select team members..."}
+                </span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0 bg-white border-gray-300" align="start">
+              <Command className="bg-white">
+                <CommandInput placeholder="Search team members..." className="border-0" />
+                <CommandList>
+                  <CommandEmpty>No team member found.</CommandEmpty>
+                  <CommandGroup>
+                    {teamMembers?.map((member) => (
+                      <CommandItem
+                        key={member.id}
+                        value={member.name}
+                        onSelect={() => handleMemberToggle(member.id)}
+                        className="cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedMembers.includes(member.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-black">{member.name}</span>
+                          <span className="text-xs text-gray-600">{member.role}</span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {selectedMembers.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {selectedMembers.map(memberId => {
+                const member = teamMembers?.find(m => m.id === memberId);
+                return member ? (
+                  <Badge key={memberId} variant="secondary" className="text-xs">
+                    {member.name}
+                    <button
+                      type="button"
+                      onClick={() => handleMemberToggle(memberId)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-2">
