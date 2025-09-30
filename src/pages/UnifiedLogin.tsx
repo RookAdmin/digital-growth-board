@@ -1,21 +1,40 @@
-
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useClientAuth } from '@/hooks/useClientAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Eye, EyeOff } from 'lucide-react';
 
-export const ClientPortalLogin = () => {
+const UnifiedLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useClientAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const { signIn, user, userType } = useUnifiedAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Client Login - Rook";
+    document.title = "Login - Rook";
   }, []);
+
+  useEffect(() => {
+    if (user && userType) {
+      switch (userType) {
+        case 'client':
+          navigate('/client-portal');
+          break;
+        case 'partner':
+          navigate('/partner-dashboard');
+          break;
+        case 'admin':
+          navigate('/dashboard');
+          break;
+      }
+    }
+  }, [user, userType, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +45,12 @@ export const ClientPortalLogin = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await signIn(email, password);
+      const { error, userType } = await signIn(email, password);
       if (error) {
         toast.error(error.message);
       } else {
         toast.success('Logged in successfully');
+        // Navigation handled by useEffect
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -50,15 +70,15 @@ export const ClientPortalLogin = () => {
               className="h-10 object-contain"
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
-          <p className="text-gray-600 mt-2">Access your projects and updates</p>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome to Rook</h1>
+          <p className="text-gray-600 mt-2">Sign in to access your portal</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>
-              Enter your credentials to access your client portal
+              Enter your credentials to continue
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -76,17 +96,36 @@ export const ClientPortalLogin = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  maxLength={18}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    maxLength={18}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
               </div>
-              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-black hover:bg-gray-800 text-white" 
+                disabled={isLoading}
+              >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
@@ -96,3 +135,5 @@ export const ClientPortalLogin = () => {
     </div>
   );
 };
+
+export default UnifiedLogin;

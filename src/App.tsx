@@ -10,7 +10,7 @@ import ClientDetails from "./pages/ClientDetails";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Team from "./pages/Team";
-import Login from "./pages/Login";
+import UnifiedLogin from "./pages/UnifiedLogin";
 import Register from "./pages/Register";
 import Signup from "./pages/Signup";
 import Reporting from "./pages/Reporting";
@@ -20,7 +20,6 @@ import Scheduling from "./pages/Scheduling";
 import ClientPortal from "./pages/ClientPortal";
 import Partners from "./pages/Partners";
 import PartnerSignup from "./pages/PartnerSignup";
-import PartnerLogin from "./pages/PartnerLogin";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerProject from "./pages/PartnerProject";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -37,13 +36,12 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<UnifiedLogin />} />
             <Route path="/register" element={<Register />} />
             <Route path="/signup" element={<Signup />} />
             
             {/* Partner Routes */}
             <Route path="/partner/signup" element={<PartnerSignup />} />
-            <Route path="/partner/login" element={<PartnerLogin />} />
             <Route
               path="/partner/dashboard"
               element={
