@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { CalendarIcon, Users, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { TaskActivityLog } from '@/components/TaskActivityLog';
 
 const editTaskSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(18, { message: "Title must be at most 18 characters." }),
@@ -535,6 +536,10 @@ export const EditTaskDialog = ({ task, projectId, isOpen, onClose }: EditTaskDia
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <TaskActivityLog taskId={task.id} />
             </div>
 
             <DialogFooter>

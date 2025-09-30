@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { CalendarIcon, Upload, X } from 'lucide-react';
+import { CalendarIcon, Upload, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -39,6 +41,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
   const [descriptionImagePreview, setDescriptionImagePreview] = useState<string | null>(null);
   const [remarksImage, setRemarksImage] = useState<File | null>(null);
   const [remarksImagePreview, setRemarksImagePreview] = useState<string | null>(null);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
   const form = useForm<AddTaskFormValues>({
     resolver: zodResolver(addTaskSchema),
@@ -48,6 +51,20 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
       description: "",
       remarks: "",
       priority: "medium",
+    },
+  });
+
+  // Fetch team members
+  const { data: teamMembers } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('id, name, email, role')
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -99,7 +116,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
         priority: data.priority,
         due_date: data.due_date ? data.due_date.toISOString() : null,
         status: 'Not Started',
-        assigned_team_members: [],
+        assigned_team_members: selectedMembers,
       }).select().single();
       
       if (error) throw error;
@@ -206,6 +223,14 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
           }
         }
       }
+    }
+  };
+
+  const handleMemberToggle = (memberId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedMembers(prev => [...prev, memberId]);
+    } else {
+      setSelectedMembers(prev => prev.filter(id => id !== memberId));
     }
   };
 
@@ -427,6 +452,37 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
             )}
           />
         </div>
+        
+        <div className="space-y-3">
+          <FormLabel className="flex items-center gap-2 text-black">
+            <Users className="w-4 h-4" />
+            Assign Team Members
+            {selectedMembers.length > 0 && (
+              <Badge variant="secondary">{selectedMembers.length} selected</Badge>
+            )}
+          </FormLabel>
+          <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-300 rounded-md p-3 bg-white">
+            {teamMembers?.map((member) => (
+              <div key={member.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={member.id}
+                  checked={selectedMembers.includes(member.id)}
+                  onCheckedChange={(checked) => 
+                    handleMemberToggle(member.id, checked as boolean)
+                  }
+                />
+                <label
+                  htmlFor={member.id}
+                  className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  <div className="text-black">{member.name}</div>
+                  <div className="text-xs text-gray-600">{member.role}</div>
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="flex justify-end gap-2">
             <Button 
               type="button" 

@@ -16,7 +16,6 @@ import { ProjectMessaging } from '@/components/ProjectMessaging';
 import { ProjectActivityLog } from '@/components/ProjectActivityLog';
 import { ProjectTeamManager } from '@/components/ProjectTeamManager';
 import { EditTaskDialog } from '@/components/EditTaskDialog';
-import { TaskActivityLog } from '@/components/TaskActivityLog';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -281,7 +280,6 @@ const ProjectDetails = () => {
                                     </Badge>
                                   )}
                                 </div>
-                                <TaskActivityLog taskId={task.id} />
                               </div>
                               <Button
                                 variant="ghost"
