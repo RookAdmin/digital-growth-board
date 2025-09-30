@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { AddMeetingSlotDialog } from '@/components/AddMeetingSlotDialog';
 
 const SchedulingPage = () => {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -16,7 +17,7 @@ const SchedulingPage = () => {
     document.title = "Scheduling - Rook";
   }, []);
 
-  const { data: meetingSlots, isLoading } = useQuery({
+  const { data: meetingSlots, isLoading, refetch } = useQuery({
     queryKey: ['meeting-slots'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -115,6 +116,12 @@ const SchedulingPage = () => {
           )}
         </div>
       </main>
+
+      <AddMeetingSlotDialog
+        open={isBookingDialogOpen}
+        onOpenChange={setIsBookingDialogOpen}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 };
