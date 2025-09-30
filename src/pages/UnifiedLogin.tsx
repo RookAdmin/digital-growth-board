@@ -129,6 +129,18 @@ const UnifiedLogin = () => {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Are you a partner?{' '}
+                <a 
+                  href="/partner/signup" 
+                  className="text-black font-medium hover:underline"
+                >
+                  Register here
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
