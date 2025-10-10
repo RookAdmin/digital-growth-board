@@ -23,7 +23,7 @@ export const useUnifiedAuth = () => {
       .from('client_users')
       .select('id')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     
     if (clientData) return 'client';
 
@@ -32,7 +32,7 @@ export const useUnifiedAuth = () => {
       .from('partners')
       .select('id')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     if (partnerData) return 'partner';
 
@@ -41,7 +41,7 @@ export const useUnifiedAuth = () => {
       .from('team_members')
       .select('id')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     if (teamData) return 'admin';
 
