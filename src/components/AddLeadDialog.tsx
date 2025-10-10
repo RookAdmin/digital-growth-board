@@ -48,7 +48,8 @@ const services = [
 const leadSources = ["Website", "Referral", "LinkedIn", "Ads", "Other"] as const;
 
 const leadFormSchema = z.object({
-  name: z.string().min(2, "Full Name must be at least 2 characters.").max(18, "Full Name must be at most 18 characters."),
+  first_name: z.string().min(2, "First Name must be at least 2 characters.").max(18, "First Name must be at most 18 characters."),
+  last_name: z.string().max(18, "Last Name must be at most 18 characters.").optional(),
   email: z.string().email("Invalid email address."),
   phone: z.string().max(18, "Phone number must be at most 18 characters.").optional(),
   business_name: z.string().max(18, "Business name must be at most 18 characters.").optional(),
@@ -65,7 +66,8 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
-      name: "",
+      first_name: "",
+      last_name: "",
       email: "",
       phone: "",
       business_name: "",
@@ -77,8 +79,11 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (newLead: LeadFormValues) => {
+      const fullName = `${newLead.first_name}${newLead.last_name ? ' ' + newLead.last_name : ''}`.trim();
       const leadData = {
-        name: newLead.name,
+        name: fullName,
+        first_name: newLead.first_name,
+        last_name: newLead.last_name || null,
         email: newLead.email,
         phone: newLead.phone || null,
         business_name: newLead.business_name || null,
@@ -121,12 +126,26 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-        <FormField control={form.control} name="name" render={({ field }) => (
+        <FormField control={form.control} name="first_name" render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-black">Full Name *</FormLabel>
+            <FormLabel className="text-black">First Name *</FormLabel>
             <FormControl>
               <Input 
-                placeholder="John Doe" 
+                placeholder="John" 
+                {...field} 
+                maxLength={18} 
+                className="bg-white border-gray-300 text-black placeholder:text-gray-500"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="last_name" render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-black">Last Name</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="Doe" 
                 {...field} 
                 maxLength={18} 
                 className="bg-white border-gray-300 text-black placeholder:text-gray-500"
