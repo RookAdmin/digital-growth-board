@@ -19,25 +19,46 @@ import { ArrowLeft, CheckCircle, Star, Users, Zap } from "lucide-react";
 import { useEffect } from "react";
 
 const services = [
-  { id: "web-development", label: "Web Development", icon: "🌐" },
-  { id: "digital-marketing", label: "Digital Marketing", icon: "📱" },
-  { id: "seo", label: "SEO Optimization", icon: "🔍" },
-  { id: "social-media-management", label: "Social Media Management", icon: "📊" },
-  { id: "content-creation", label: "Content Creation", icon: "✨" },
+  { id: "ai-agents-automation", label: "AI Agents Automation" },
+  { id: "web-app-development", label: "Web/App Development" },
+  { id: "social-media-marketing", label: "Social Media Marketing" },
+  { id: "branding", label: "Branding" },
+  { id: "ui-ux-design", label: "UI/UX Design" },
+  { id: "seo", label: "SEO" },
+  { id: "domain-name-consultation", label: "Domain Name Consultation" },
+  { id: "enterprise-domain-management", label: "Enterprise Domain Management" },
+] as const;
+
+const budgetRanges = [
+  "$1,000—$5,000",
+  "$5,001—$15,000",
+  "$15,001—$50,000",
+  "$50,001—$100,000",
+  "$100,000+"
 ] as const;
 
 const leadSources = ["Website", "Referral", "LinkedIn", "Google Ads", "Social Media", "Other"] as const;
 
 const registerFormSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters.").max(20, "First name must be at most 20 characters."),
-  lastName: z.string().min(2, "Last name must be at least 2 characters.").max(20, "Last name must be at most 20 characters."),
-  email: z.string().email("Invalid email address."),
-  phone: z.string().optional(),
-  business_name: z.string().max(50, "Business name must be at most 50 characters.").optional(),
+  firstName: z.string()
+    .min(1, "First name is required")
+    .max(30, "First name must be at most 30 characters")
+    .regex(/^[A-Za-z\s]+$/, "Please use valid characters"),
+  lastName: z.string()
+    .max(30, "Last name must be at most 30 characters")
+    .regex(/^[A-Za-z\s]*$/, "Please use valid characters")
+    .optional()
+    .or(z.literal("")),
+  email: z.string().email("Invalid email address"),
+  phone: z.string()
+    .regex(/^[\d\s\+\-\(\)]*$/, "Invalid phone number format")
+    .optional()
+    .or(z.literal("")),
+  business_name: z.string().max(100).optional().or(z.literal("")),
   services_interested: z.array(z.string()).optional(),
-  budget_range: z.string().max(50, "Budget range must be at most 50 characters.").optional(),
+  budget_range: z.string().optional(),
   lead_source: z.enum(leadSources).optional(),
-  notes: z.string().optional(),
+  notes: z.string().optional().or(z.literal("")),
 });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
@@ -69,8 +90,8 @@ const RegisterPage = () => {
     mutationFn: async (newLead: RegisterFormValues) => {
       const leadData = {
         first_name: newLead.firstName,
-        last_name: newLead.lastName,
-        name: `${newLead.firstName} ${newLead.lastName}`,
+        last_name: newLead.lastName || null,
+        name: `${newLead.firstName}${newLead.lastName ? ' ' + newLead.lastName : ''}`.trim(),
         email: newLead.email,
         phone: newLead.phone || null,
         business_name: newLead.business_name || null,
@@ -82,7 +103,12 @@ const RegisterPage = () => {
       };
       
       const { data, error } = await supabase.from("leads").insert(leadData).select().single();
-      if (error) throw new Error(error.message);
+      if (error) {
+        if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          throw new Error("Unable to register, please double check your email");
+        }
+        throw new Error(error.message);
+      }
       
       // Record initial status in history
       const { data: { user } } = await supabase.auth.getUser();
@@ -101,7 +127,7 @@ const RegisterPage = () => {
       navigate('/');
     },
     onError: (error) => {
-      toast.error(`Failed to submit registration: ${error.message}`);
+      toast.error(error.message);
     },
   });
 
@@ -111,7 +137,7 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50">
+    <div className="min-h-screen bg-white">
       <Header onLightBg />
       
       <div className="container mx-auto px-4 py-12">
@@ -121,14 +147,14 @@ const RegisterPage = () => {
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="mb-6 text-black hover:text-gray-700"
+              className="mb-6 text-gray-900 hover:text-gray-700"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
             
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
-              <Star className="w-8 h-8 text-black" />
+              <Star className="w-8 h-8 text-gray-900" />
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -141,15 +167,15 @@ const RegisterPage = () => {
             {/* Trust Indicators */}
             <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-black" />
+                <CheckCircle className="w-4 h-4 text-gray-900" />
                 <span>Free Consultation</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-black" />
-                <span>50+ Happy Clients</span>
+                <Users className="w-4 h-4 text-gray-900" />
+                <span>Dedicated Support</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-black" />
+                <Zap className="w-4 h-4 text-gray-900" />
                 <span>24h Response Time</span>
               </div>
             </div>
@@ -157,9 +183,9 @@ const RegisterPage = () => {
 
           {/* Main Form */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-black to-gray-800 p-8 text-white">
+            <div className="bg-primary p-8 text-primary-foreground">
               <h2 className="text-2xl font-semibold mb-2">Project Details</h2>
-              <p className="text-gray-100">Help us understand your needs better</p>
+              <p className="opacity-90">Help us understand your needs better</p>
             </div>
             
             <div className="p-8">
@@ -169,12 +195,13 @@ const RegisterPage = () => {
                   <div className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="firstName" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">First Name *</FormLabel>
+                        <FormLabel className="text-gray-900 font-medium">First Name *</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="John" 
                             {...field} 
-                            className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black"
+                            maxLength={30}
+                            className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary"
                           />
                         </FormControl>
                         <FormMessage />
@@ -183,12 +210,13 @@ const RegisterPage = () => {
 
                     <FormField control={form.control} name="lastName" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">Last Name *</FormLabel>
+                        <FormLabel className="text-gray-900 font-medium">Last Name</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Doe" 
                             {...field} 
-                            className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black"
+                            maxLength={30}
+                            className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary"
                           />
                         </FormControl>
                         <FormMessage />
@@ -198,12 +226,12 @@ const RegisterPage = () => {
 
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Email Address *</FormLabel>
+                      <FormLabel className="text-gray-900 font-medium">Email Address *</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="john.doe@example.com" 
                           {...field} 
-                          className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black"
+                          className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary"
                         />
                       </FormControl>
                       <FormMessage />
@@ -213,7 +241,7 @@ const RegisterPage = () => {
                   <div className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="phone" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">Phone Number</FormLabel>
+                        <FormLabel className="text-gray-900 font-medium">Phone Number</FormLabel>
                         <FormControl>
                           <PhoneInput 
                             value={field.value} 
@@ -228,12 +256,13 @@ const RegisterPage = () => {
 
                     <FormField control={form.control} name="business_name" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">Business Name</FormLabel>
+                        <FormLabel className="text-gray-900 font-medium">Business Name</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Your Company Name" 
                             {...field} 
-                            className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black"
+                            maxLength={100}
+                            className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary"
                           />
                         </FormControl>
                         <FormMessage />
@@ -247,7 +276,7 @@ const RegisterPage = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       {services.map((service) => (
                         <FormField key={service.id} control={form.control} name="services_interested" render={({ field }) => (
-                          <FormItem key={service.id} className="flex flex-row items-start space-x-3 space-y-0 p-4 border border-gray-200 rounded-lg hover:border-black hover:bg-gray-50/50 transition-colors">
+                          <FormItem key={service.id} className="flex flex-row items-start space-x-3 space-y-0 p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-gray-50/50 transition-colors">
                             <FormControl>
                               <Checkbox
                                 checked={field.value?.includes(service.label)}
@@ -257,13 +286,10 @@ const RegisterPage = () => {
                                     ? field.onChange([...currentValue, service.label])
                                     : field.onChange(currentValue.filter(value => value !== service.label));
                                 }}
-                                className="data-[state=checked]:bg-black data-[state=checked]:border-black"
+                                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
                             </FormControl>
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{service.icon}</span>
-                              <FormLabel className="font-normal text-gray-700">{service.label}</FormLabel>
-                            </div>
+                            <FormLabel className="font-normal text-gray-900 cursor-pointer">{service.label}</FormLabel>
                           </FormItem>
                         )} />
                       ))}
@@ -274,24 +300,29 @@ const RegisterPage = () => {
                   <div className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="budget_range" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">Estimated Budget Range</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="e.g., $5,000 - $10,000" 
-                            {...field} 
-                            className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black"
-                          />
-                        </FormControl>
+                        <FormLabel className="text-gray-900 font-medium">Monthly Budget</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary">
+                              <SelectValue placeholder="Select budget range" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {budgetRanges.map(range => 
+                              <SelectItem key={range} value={range}>{range}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )} />
 
                     <FormField control={form.control} name="lead_source" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">How did you hear about us?</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="text-gray-900 font-medium">How did you hear about us?</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-black focus:ring-black">
+                            <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-primary focus:ring-primary">
                               <SelectValue placeholder="Select a source" />
                             </SelectTrigger>
                           </FormControl>
@@ -308,11 +339,11 @@ const RegisterPage = () => {
 
                   <FormField control={form.control} name="notes" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Tell us about your project</FormLabel>
+                      <FormLabel className="text-gray-900 font-medium">Tell us about your project</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Describe your project goals, timeline, specific requirements, or any questions you have..."
-                          className="min-h-[120px] bg-white border-gray-300 focus:border-black focus:ring-black"
+                          className="min-h-[120px] bg-white border-gray-300 focus:border-primary focus:ring-primary"
                           {...field}
                         />
                       </FormControl>
@@ -325,7 +356,7 @@ const RegisterPage = () => {
                     <Button 
                       type="submit" 
                       disabled={isPending || isSubmitting}
-                      className="w-full bg-gradient-to-r from-black to-gray-800 hover:from-gray-800 hover:to-black text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       {isPending || isSubmitting ? (
                         <div className="flex items-center gap-2">
