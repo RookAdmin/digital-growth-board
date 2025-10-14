@@ -14,7 +14,7 @@ const UnifiedLogin = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, user, userType } = useUnifiedAuth();
+  const { signIn, user, userType, loading } = useUnifiedAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,20 +22,20 @@ const UnifiedLogin = () => {
   }, []);
 
   useEffect(() => {
-    if (user && userType) {
+    if (!loading && user && userType) {
       switch (userType) {
         case 'client':
-          navigate('/client-portal');
+          navigate('/client-portal', { replace: true });
           break;
         case 'partner':
-          navigate('/partner-dashboard');
+          navigate('/partner-dashboard', { replace: true });
           break;
         case 'admin':
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
           break;
       }
     }
-  }, [user, userType, navigate]);
+  }, [user, userType, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +105,14 @@ const UnifiedLogin = () => {
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
