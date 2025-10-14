@@ -49,41 +49,39 @@ export const useUnifiedAuth = () => {
   };
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const userType = await detectUserType(session.user.id);
-          setAuthState({
-            user: session.user,
-            userType,
-            loading: false,
-          });
-        } else {
-          setAuthState({ user: null, userType: null, loading: false });
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        setAuthState({ user: null, userType: null, loading: false });
-      }
-    };
-
-    checkSession();
-
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (session?.user) {
-          const userType = await detectUserType(session.user.id);
-          setAuthState({
-            user: session.user,
-            userType,
-            loading: false,
-          });
+          // Defer async operations
+          setTimeout(async () => {
+            const userType = await detectUserType(session.user.id);
+            setAuthState({
+              user: session.user,
+              userType,
+              loading: false,
+            });
+          }, 0);
         } else {
           setAuthState({ user: null, userType: null, loading: false });
         }
       }
     );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        detectUserType(session.user.id).then((userType) => {
+          setAuthState({
+            user: session.user,
+            userType,
+            loading: false,
+          });
+        });
+      } else {
+        setAuthState({ user: null, userType: null, loading: false });
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
