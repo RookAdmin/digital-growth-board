@@ -13,6 +13,8 @@ import Team from "./pages/Team";
 import UnifiedLogin from "./pages/UnifiedLogin";
 import Register from "./pages/Register";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Reporting from "./pages/Reporting";
 import NotFound from "./pages/NotFound";
 import Files from "./pages/Files";
@@ -39,6 +41,8 @@ function App() {
             <Route path="/login" element={<UnifiedLogin />} />
             <Route path="/register" element={<Register />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Partner Routes */}
             <Route path="/partner/signup" element={<PartnerSignup />} />

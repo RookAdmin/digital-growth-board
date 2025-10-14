@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const UnifiedLogin = () => {
   const [email, setEmail] = useState('');
@@ -45,14 +46,60 @@ const UnifiedLogin = () => {
 
     setIsLoading(true);
     try {
+      // Check if account is locked
+      const { data: isLockedData, error: lockCheckError } = await supabase
+        .rpc('is_account_locked', { user_email: email });
+
+      if (lockCheckError) {
+        console.error('Lock check error:', lockCheckError);
+      }
+
+      if (isLockedData === true) {
+        toast.error('Account temporarily locked due to multiple failed login attempts. Please try again in 30 minutes.');
+        
+        // Log failed attempt
+        await supabase.from('login_audit').insert({
+          email: email,
+          attempt_type: 'login_failed',
+          failure_reason: 'Account locked',
+          user_agent: navigator.userAgent
+        });
+        
+        setIsLoading(false);
+        return;
+      }
+
       const { error, userType } = await signIn(email, password);
+      
       if (error) {
-        toast.error(error.message);
+        // Record failed login attempt
+        await supabase.rpc('record_failed_login', { user_email: email });
+        
+        // Log failed attempt
+        await supabase.from('login_audit').insert({
+          email: email,
+          attempt_type: 'login_failed',
+          failure_reason: error.message,
+          user_agent: navigator.userAgent
+        });
+        
+        toast.error('Unable to sign in. Please check your credentials.');
       } else {
+        // Reset failed attempts on successful login
+        await supabase.rpc('reset_failed_login', { user_email: email });
+        
+        // Log successful login
+        await supabase.from('login_audit').insert({
+          email: email,
+          attempt_type: 'login_success',
+          user_agent: navigator.userAgent
+        });
+        
         toast.success('Logged in successfully');
         // Navigation handled by useEffect
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -130,12 +177,21 @@ const UnifiedLogin = () => {
               </Button>
             </form>
             
-            <div className="mt-4 text-center">
+            <div className="mt-4 space-y-3 text-center">
+              <Button
+                type="button"
+                variant="link"
+                className="text-sm text-gray-600 hover:text-primary p-0"
+                onClick={() => navigate('/forgot-password')}
+              >
+                Forgot your password?
+              </Button>
+              
               <p className="text-sm text-gray-600">
                 Are you a partner?{' '}
                 <a 
                   href="/partner/signup" 
-                  className="text-black font-medium hover:underline"
+                  className="text-primary font-medium hover:underline"
                 >
                   Register here
                 </a>

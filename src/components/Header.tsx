@@ -21,6 +21,17 @@ export const Header = ({ isAuthenticated = false, onLightBg = false }: HeaderPro
 
   const handleSignOut = async () => {
     try {
+      const userEmail = session?.user?.email || partner?.email;
+      
+      // Log logout attempt
+      if (userEmail) {
+        await supabase.from('login_audit').insert({
+          email: userEmail,
+          attempt_type: 'logout',
+          user_agent: navigator.userAgent
+        });
+      }
+      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       toast.success("Signed out successfully");
