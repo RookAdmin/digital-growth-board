@@ -49,19 +49,22 @@ export const useUnifiedAuth = () => {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+        
         if (session?.user) {
-          // Defer async operations
-          setTimeout(async () => {
-            const userType = await detectUserType(session.user.id);
+          const userType = await detectUserType(session.user.id);
+          if (mounted) {
             setAuthState({
               user: session.user,
               userType,
               loading: false,
             });
-          }, 0);
+          }
         } else {
           setAuthState({ user: null, userType: null, loading: false });
         }
@@ -69,21 +72,27 @@ export const useUnifiedAuth = () => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      
       if (session?.user) {
-        detectUserType(session.user.id).then((userType) => {
+        const userType = await detectUserType(session.user.id);
+        if (mounted) {
           setAuthState({
             user: session.user,
             userType,
             loading: false,
           });
-        });
+        }
       } else {
         setAuthState({ user: null, userType: null, loading: false });
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
