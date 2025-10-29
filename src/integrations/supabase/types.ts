@@ -1158,34 +1158,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_email_exists: {
-        Args: { email_to_check: string }
-        Returns: boolean
-      }
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_team_member: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_account_locked: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      record_failed_login: {
-        Args: { user_email: string }
-        Returns: undefined
-      }
-      reset_failed_login: {
-        Args: { user_email: string }
-        Returns: undefined
-      }
+      check_email_exists: { Args: { email_to_check: string }; Returns: boolean }
+      generate_invoice_number: { Args: never; Returns: string }
+      get_current_team_member: { Args: never; Returns: string }
+      get_user_role: { Args: never; Returns: string }
+      is_account_locked: { Args: { user_email: string }; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
+      is_developer: { Args: never; Returns: boolean }
+      record_failed_login: { Args: { user_email: string }; Returns: undefined }
+      reset_failed_login: { Args: { user_email: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

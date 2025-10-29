@@ -7,7 +7,7 @@ import { Mail, Phone, Briefcase, Trash2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +30,7 @@ const statusColors: { [key in Lead['status']]: string } = {
   Contacted: "bg-blue-500 hover:bg-blue-600 text-white",
   Qualified: "bg-yellow-500 hover:bg-yellow-600 text-white",
   "Proposal Sent": "bg-purple-500 hover:bg-purple-600 text-white",
+  Approvals: "bg-orange-500 hover:bg-orange-600 text-white",
   Converted: "bg-green-500 hover:bg-green-600 text-white",
   Dropped: "bg-red-500 hover:bg-red-600 text-white",
 };
@@ -38,6 +39,44 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isApprovalConfirmOpen, setIsApprovalConfirmOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch user role
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from('team_members')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single()
+          .then(({ data }) => {
+            setUserRole(data?.role || null);
+          });
+      }
+    });
+  }, []);
+
+  const requestApprovalMutation = useMutation({
+    mutationFn: async (leadToApprove: Lead) => {
+      const { error } = await supabase
+        .from('leads')
+        .update({ status: 'Approvals' })
+        .eq('id', leadToApprove.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Lead sent for approval!");
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to send for approval: ${error.message}`);
+    },
+  });
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
@@ -133,16 +172,26 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
     },
   });
 
+  const handleRequestApproval = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    requestApprovalMutation.mutate(lead);
+  };
+
   const handleConfirmConversion = (e: React.MouseEvent) => {
     e.stopPropagation();
     convertToClientMutation.mutate(lead);
-    setIsConfirmOpen(false);
+    setIsApprovalConfirmOpen(false);
   };
   
   const handleOpenDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsConfirmOpen(true);
   }
+
+  const handleOpenApprovalDialog = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsApprovalConfirmOpen(true);
+  };
 
   const handleOpenDeleteDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -235,21 +284,34 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
               {lead.budget_range && (
                 <p className="text-xs break-words text-gray-600"><strong>Budget:</strong> {lead.budget_range}</p>
               )}
-              {lead.status !== 'Converted' && lead.status !== 'Dropped' && (
-                 <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-                    <Button
-                      className="w-full mt-2 bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
-                      size="sm"
-                      onClick={handleOpenDialog}
-                      disabled={convertToClientMutation.isPending}
-                    >
-                      {convertToClientMutation.isPending ? 'Converting...' : 'Convert to Client'}
-                    </Button>
+              {/* Request Approval Button - for non-converted/dropped/approval leads */}
+              {lead.status !== 'Converted' && lead.status !== 'Dropped' && lead.status !== 'Approvals' && (
+                <Button
+                  className="w-full mt-2 bg-orange-600 text-white hover:bg-orange-700 hover:text-white rounded-xl"
+                  size="sm"
+                  onClick={handleRequestApproval}
+                  disabled={requestApprovalMutation.isPending}
+                >
+                  {requestApprovalMutation.isPending ? 'Requesting...' : 'Request Approval'}
+                </Button>
+              )}
+              
+              {/* Convert to Client Button - only for leads in Approvals status and only for Admins */}
+              {lead.status === 'Approvals' && userRole === 'Admin' && (
+                <AlertDialog open={isApprovalConfirmOpen} onOpenChange={setIsApprovalConfirmOpen}>
+                  <Button
+                    className="w-full mt-2 bg-green-600 text-white hover:bg-green-700 hover:text-white rounded-xl"
+                    size="sm"
+                    onClick={handleOpenApprovalDialog}
+                    disabled={convertToClientMutation.isPending}
+                  >
+                    {convertToClientMutation.isPending ? 'Converting...' : 'Approve & Convert'}
+                  </Button>
                   <AlertDialogContent className="bg-white border border-gray-200 rounded-xl shadow-lg" onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-gray-900">Are you sure?</AlertDialogTitle>
+                      <AlertDialogTitle className="text-gray-900">Approve and Convert Lead?</AlertDialogTitle>
                       <AlertDialogDescription className="text-gray-600">
-                        This will convert "{lead.name}" into a client. This action cannot be undone.
+                        This will approve and convert "{lead.name}" into a client. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -258,9 +320,9 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                       </AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={handleConfirmConversion}
-                        className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
+                        className="bg-green-600 text-white hover:bg-green-700 hover:text-white rounded-xl"
                       >
-                        Confirm
+                        Approve & Convert
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

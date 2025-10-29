@@ -63,10 +63,11 @@ const initialData: KanbanData = {
     'Contacted': { id: 'Contacted', title: 'Contacted', leadIds: [] },
     'Qualified': { id: 'Qualified', title: 'Qualified', leadIds: [] },
     'Proposal Sent': { id: 'Proposal Sent', title: 'Proposal Sent', leadIds: [] },
+    'Approvals': { id: 'Approvals', title: 'Approvals', leadIds: [] },
     'Converted': { id: 'Converted', title: 'Converted', leadIds: [] },
     'Dropped': { id: 'Dropped', title: 'Dropped', leadIds: [] },
   },
-  columnOrder: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Converted', 'Dropped'],
+  columnOrder: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Approvals', 'Converted', 'Dropped'],
 };
 
 interface KanbanBoardProps {
