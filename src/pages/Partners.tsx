@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, UserPlus, MapPin, Phone, Mail, Building } from 'lucide-react';
 import { AssignPartnerDialog } from '@/components/AssignPartnerDialog';
+import { AddPartnerDialog } from '@/components/AddPartnerDialog';
 import { Tables } from '@/integrations/supabase/types';
 import { Header } from '@/components/Header';
 
@@ -17,6 +18,7 @@ const Partners = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
 
   useEffect(() => {
@@ -84,6 +86,10 @@ const Partners = () => {
           <h1 className="text-3xl font-bold">Partners</h1>
           <p className="text-gray-600">Manage external partners and freelancers</p>
         </div>
+        <Button onClick={() => setAddDialogOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Add Partner
+        </Button>
       </div>
 
       {/* Filters */}
@@ -228,6 +234,15 @@ const Partners = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Add Partner Dialog */}
+      <AddPartnerDialog
+        isOpen={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onSuccess={() => {
+          setAddDialogOpen(false);
+        }}
+      />
 
       {/* Assign Partner Dialog */}
       {selectedPartner && (
