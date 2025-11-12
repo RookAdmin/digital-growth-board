@@ -18,43 +18,52 @@ export const useUnifiedAuth = () => {
   });
 
   const detectUserType = async (userId: string): Promise<UserType> => {
-    // Check if user is a client
-    const { data: clientData } = await supabase
-      .from('client_users')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle();
-    
-    if (clientData) return 'client';
+    // Run all queries in parallel for better performance
+    const [clientResult, partnerResult, teamResult] = await Promise.all([
+      supabase.from('client_users').select('id').eq('id', userId).maybeSingle(),
+      supabase.from('partners').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('team_members').select('id').eq('user_id', userId).maybeSingle(),
+    ]);
 
-    // Check if user is a partner
-    const { data: partnerData } = await supabase
-      .from('partners')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (partnerData) return 'partner';
-
-    // Check if user is a team member (admin)
-    const { data: teamData } = await supabase
-      .from('team_members')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (teamData) return 'admin';
+    if (clientResult.data) return 'client';
+    if (partnerResult.data) return 'partner';
+    if (teamResult.data) return 'admin';
 
     return null;
   };
 
   useEffect(() => {
     let mounted = true;
+    let initialCheckDone = false;
 
-    // Set up auth state listener FIRST
+    // Check for existing session FIRST
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!mounted) return;
+      
+      if (session?.user) {
+        const userType = await detectUserType(session.user.id);
+        if (mounted) {
+          setAuthState({
+            user: session.user,
+            userType,
+            loading: false,
+          });
+        }
+      } else {
+        setAuthState({ user: null, userType: null, loading: false });
+      }
+      initialCheckDone = true;
+    };
+
+    initAuth();
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
+        // Skip if initial check hasn't completed to avoid duplicate calls
+        if (!initialCheckDone || !mounted) return;
         
         if (session?.user) {
           const userType = await detectUserType(session.user.id);
@@ -70,24 +79,6 @@ export const useUnifiedAuth = () => {
         }
       }
     );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      
-      if (session?.user) {
-        const userType = await detectUserType(session.user.id);
-        if (mounted) {
-          setAuthState({
-            user: session.user,
-            userType,
-            loading: false,
-          });
-        }
-      } else {
-        setAuthState({ user: null, userType: null, loading: false });
-      }
-    });
 
     return () => {
       mounted = false;

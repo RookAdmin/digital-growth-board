@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, userType, loading } = useUnifiedAuth();
   const location = useLocation();
 
-  // Fetch user role
+  // Fetch user role only if user is admin
   const { data: userRole, isLoading: roleLoading } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -22,10 +22,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         .select('role')
         .eq('user_id', user.id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
       return data?.role || null;
     },
     enabled: !!user && userType === 'admin',
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   if (loading || (userType === 'admin' && roleLoading)) {
