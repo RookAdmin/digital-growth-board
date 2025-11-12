@@ -147,11 +147,13 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         toast.info(`Client with email ${client.email} already exists. Lead status updated.`);
       } else {
         toast.success("Lead converted to client and initial project created!");
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      // Refetch queries immediately to update the UI
+      queryClient.refetchQueries({ queryKey: ['leads'] });
+      queryClient.refetchQueries({ queryKey: ['leads-with-history'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: (error: Error) => {
       toast.error(`Conversion failed: ${error.message}`);

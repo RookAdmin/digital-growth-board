@@ -24,20 +24,41 @@ interface AddPartnerDialogProps {
 
 const serviceCategories = ['design', 'development', 'content', 'marketing', 'seo', 'social-media'];
 
+const registrationTypes = [
+  'Sole Proprietorship',
+  'Partnership',
+  'LLC',
+  'Corporation',
+  'Private Limited',
+  'Public Limited',
+  'Other'
+];
+
 export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartnerDialogProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     companyName: '',
-    location: '',
+    gstNo: '',
+    registrationType: '',
+    address: '',
+    website: '',
+    position: '',
+    officePhoneNo: '',
+    city: '',
+    state: '',
+    country: '',
     password: '',
     selectedCategories: [] as string[],
   });
 
   const addPartnerMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const fullName = `${data.firstName} ${data.lastName}`.trim();
+      
       // Step 1: Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
@@ -45,11 +66,12 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
         options: {
           data: {
             user_type: 'partner',
-            full_name: data.fullName,
+            full_name: fullName,
+            first_name: data.firstName,
+            last_name: data.lastName,
             phone: data.phone,
             company_name: data.companyName,
             service_categories: data.selectedCategories.join(','),
-            location: data.location,
           }
         }
       });
@@ -62,12 +84,22 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
         .from('partners')
         .insert({
           user_id: authData.user.id,
-          full_name: data.fullName,
+          full_name: fullName,
+          first_name: data.firstName,
+          last_name: data.lastName,
           email: data.email,
           phone: data.phone || null,
           company_name: data.companyName || null,
+          gst_no: data.gstNo || null,
+          registration_type: data.registrationType || null,
+          address: data.address || null,
+          website: data.website || null,
+          position: data.position || null,
+          office_phone_no: data.officePhoneNo || null,
+          city: data.city || null,
+          state: data.state || null,
+          country: data.country || null,
           service_categories: data.selectedCategories.length > 0 ? data.selectedCategories : null,
-          location: data.location || null,
           is_active: true,
         });
 
@@ -79,11 +111,20 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
       toast.success('Partner added successfully!');
       queryClient.invalidateQueries({ queryKey: ['partners'] });
       setFormData({
-        fullName: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phone: '',
         companyName: '',
-        location: '',
+        gstNo: '',
+        registrationType: '',
+        address: '',
+        website: '',
+        position: '',
+        officePhoneNo: '',
+        city: '',
+        state: '',
+        country: '',
         password: '',
         selectedCategories: [],
       });
@@ -97,7 +138,7 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.fullName || !formData.email || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -142,14 +183,27 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">
-                Full Name <span className="text-destructive">*</span>
+              <Label htmlFor="firstName">
+                First Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                placeholder="John Doe"
+                id="firstName"
+                value={formData.firstName}
+                onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                placeholder="John"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName">
+                Last Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="lastName"
+                value={formData.lastName}
+                onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                placeholder="Doe"
                 required
               />
             </div>
@@ -169,7 +223,7 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -189,13 +243,100 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="location">Location</Label>
+            <div className="space-y-2">
+              <Label htmlFor="gstNo">GST Number</Label>
               <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="New York, USA"
+                id="gstNo"
+                value={formData.gstNo}
+                onChange={(e) => setFormData(prev => ({ ...prev, gstNo: e.target.value }))}
+                placeholder="22AAAAA0000A1Z5"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="registrationType">Registration Type</Label>
+              <select
+                id="registrationType"
+                value={formData.registrationType}
+                onChange={(e) => setFormData(prev => ({ ...prev, registrationType: e.target.value }))}
+                className="w-full h-10 px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select type...</option>
+                {registrationTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="position">Position</Label>
+              <Input
+                id="position"
+                value={formData.position}
+                onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                placeholder="CEO"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                placeholder="123 Main Street"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                placeholder="New York"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                placeholder="NY"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                value={formData.country}
+                onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                placeholder="USA"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="officePhoneNo">Office Phone Number</Label>
+              <Input
+                id="officePhoneNo"
+                type="tel"
+                value={formData.officePhoneNo}
+                onChange={(e) => setFormData(prev => ({ ...prev, officePhoneNo: e.target.value }))}
+                placeholder="+1234567890"
               />
             </div>
 

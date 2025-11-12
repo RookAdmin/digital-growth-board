@@ -46,7 +46,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   if (userRole === 'Developer') {
     const allowedPaths = ['/projects'];
     const isProjectDetailPath = location.pathname.startsWith('/projects/');
+    const restrictedPaths = ['/clients', '/dashboard', '/team', '/reporting', '/files', '/scheduling'];
     
+    // Block access to restricted paths
+    if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
+      return <Navigate to="/projects" replace />;
+    }
+    
+    // Allow only projects and project detail pages
     if (!allowedPaths.includes(location.pathname) && !isProjectDetailPath) {
       return <Navigate to="/projects" replace />;
     }

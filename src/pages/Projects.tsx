@@ -30,6 +30,38 @@ const ProjectsPage = () => {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get user role
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('role, id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      // If Developer, only fetch assigned projects
+      if (teamMember?.role === 'Developer') {
+        const { data: assignedProjects, error: assignError } = await supabase
+          .from('team_member_projects')
+          .select(`
+            project_id,
+            projects (
+              *,
+              clients(id, name, email, business_name),
+              tasks(id, title, status)
+            )
+          `)
+          .eq('team_member_id', teamMember.id);
+
+        if (assignError) throw assignError;
+        
+        return (assignedProjects?.map(ap => ap.projects).filter(Boolean) || []) as Project[];
+      }
+
+      // For other roles, fetch all projects
       const { data, error } = await supabase
         .from('projects')
         .select(`

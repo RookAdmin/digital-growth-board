@@ -650,43 +650,76 @@ export type Database = {
       }
       partners: {
         Row: {
+          address: string | null
+          city: string | null
           company_name: string | null
+          country: string | null
           created_at: string | null
           email: string
+          first_name: string | null
           full_name: string
+          gst_no: string | null
           id: string
           is_active: boolean | null
+          last_name: string | null
           location: string | null
+          office_phone_no: string | null
           phone: string | null
+          position: string | null
+          registration_type: string | null
           service_categories: string[] | null
+          state: string | null
           updated_at: string | null
           user_id: string
+          website: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           company_name?: string | null
+          country?: string | null
           created_at?: string | null
           email: string
+          first_name?: string | null
           full_name: string
+          gst_no?: string | null
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
           location?: string | null
+          office_phone_no?: string | null
           phone?: string | null
+          position?: string | null
+          registration_type?: string | null
           service_categories?: string[] | null
+          state?: string | null
           updated_at?: string | null
           user_id: string
+          website?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           company_name?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string
+          first_name?: string | null
           full_name?: string
+          gst_no?: string | null
           id?: string
           is_active?: boolean | null
+          last_name?: string | null
           location?: string | null
+          office_phone_no?: string | null
           phone?: string | null
+          position?: string | null
+          registration_type?: string | null
           service_categories?: string[] | null
+          state?: string | null
           updated_at?: string | null
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
