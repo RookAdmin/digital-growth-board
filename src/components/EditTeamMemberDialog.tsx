@@ -19,7 +19,7 @@ interface EditTeamMemberDialogProps {
   onEditSuccess: () => void;
 }
 
-const roles = ["Admin", "Client Executive", "Developers"];
+const roles = ["CEO", "CTO / Director of Technology", "SME (Subject Matter Expert)", "Project Manager", "Client Executive", "Developer"];
 
 export const EditTeamMemberDialog = ({ 
   teamMember, 
