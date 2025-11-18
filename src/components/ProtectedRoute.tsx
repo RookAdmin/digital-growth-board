@@ -42,21 +42,47 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Check if Developer role is trying to access non-project pages
-  if (userRole === 'Developer') {
+  // Check role-based access control
+  if (userRole) {
     const allowedPaths = ['/projects'];
     const isProjectDetailPath = location.pathname.startsWith('/projects/');
-    const restrictedPaths = ['/clients', '/dashboard', '/team', '/reporting', '/files', '/scheduling'];
     
-    // Block access to restricted paths
-    if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
-      return <Navigate to="/projects" replace />;
+    // Developer: Only projects and project details
+    if (userRole === 'Developer') {
+      const restrictedPaths = ['/clients', '/dashboard', '/team', '/reporting', '/files', '/scheduling', '/partners'];
+      if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
+        return <Navigate to="/projects" replace />;
+      }
+      if (!allowedPaths.includes(location.pathname) && !isProjectDetailPath) {
+        return <Navigate to="/projects" replace />;
+      }
     }
     
-    // Allow only projects and project detail pages
-    if (!allowedPaths.includes(location.pathname) && !isProjectDetailPath) {
-      return <Navigate to="/projects" replace />;
+    // Project Manager: Projects and clients (assigned only)
+    if (userRole === 'Project Manager') {
+      const restrictedPaths = ['/dashboard', '/team', '/reporting', '/files', '/scheduling', '/partners'];
+      if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
+        return <Navigate to="/projects" replace />;
+      }
     }
+    
+    // SME: Projects and clients (specialization only)
+    if (userRole === 'SME (Subject Matter Expert)') {
+      const restrictedPaths = ['/dashboard', '/team', '/reporting', '/files', '/scheduling', '/partners'];
+      if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
+        return <Navigate to="/projects" replace />;
+      }
+    }
+    
+    // Client Executive: Access to clients and projects, no admin pages
+    if (userRole === 'Client Executive') {
+      const restrictedPaths = ['/team', '/reporting', '/partners'];
+      if (restrictedPaths.some(path => location.pathname.startsWith(path))) {
+        return <Navigate to="/dashboard" replace />;
+      }
+    }
+    
+    // CEO and CTO: Full access (no restrictions)
   }
 
   return <>{children}</>;

@@ -34,7 +34,7 @@ import { toast } from 'sonner';
 const inviteSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Invalid email address.' }),
-  role: z.enum(['Admin', 'Client Executive', 'Developers']),
+  role: z.enum(['CEO', 'CTO / Director of Technology', 'SME (Subject Matter Expert)', 'Project Manager', 'Client Executive', 'Developer']),
   defaultPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -51,7 +51,7 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
     defaultValues: {
       name: '',
       email: '',
-      role: 'Developers',
+      role: 'Developer',
       defaultPassword: '',
     },
   });
@@ -131,9 +131,12 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white">
-                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="CEO">CEO</SelectItem>
+                      <SelectItem value="CTO / Director of Technology">CTO / Director of Technology</SelectItem>
+                      <SelectItem value="SME (Subject Matter Expert)">SME (Subject Matter Expert)</SelectItem>
+                      <SelectItem value="Project Manager">Project Manager</SelectItem>
                       <SelectItem value="Client Executive">Client Executive</SelectItem>
-                      <SelectItem value="Developers">Developers</SelectItem>
+                      <SelectItem value="Developer">Developer</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
