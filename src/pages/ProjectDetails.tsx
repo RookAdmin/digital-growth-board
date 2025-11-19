@@ -16,19 +16,22 @@ import { ProjectMessaging } from '@/components/ProjectMessaging';
 import { ProjectActivityLog } from '@/components/ProjectActivityLog';
 import { ProjectTeamManager } from '@/components/ProjectTeamManager';
 import { EditTaskDialog } from '@/components/EditTaskDialog';
+import { pillClasses } from '@/constants/palette';
+import { DockNav } from '@/components/DockNav';
+import { LoadingState } from '@/components/LoadingState';
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Not Started':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
     case 'In Progress':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
+      return pillClasses.dark;
     case 'Review':
-      return 'bg-amber-100 text-amber-700 border-amber-200';
+      return pillClasses.charcoal;
     case 'Completed':
-      return 'bg-green-100 text-green-700 border-green-200';
+      return pillClasses.soft;
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
   }
 };
 
@@ -77,23 +80,19 @@ const ProjectDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#FAF9F6] pb-32">
         <Header isAuthenticated={true} />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading project details...</p>
-            </div>
-          </div>
+          <LoadingState message="Loading project details..." fullHeight />
         </main>
+        <DockNav />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#FAF9F6] pb-32">
         <Header isAuthenticated={true} />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex items-center justify-center py-8">
@@ -108,12 +107,13 @@ const ProjectDetails = () => {
             </div>
           </div>
         </main>
+        <DockNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAF9F6] pb-32">
       <Header isAuthenticated={true} />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -226,8 +226,8 @@ const ProjectDetails = () => {
                           <div key={task.id} className="border border-gray-200 rounded-lg">
                             <div className="flex items-start gap-3 p-3">
                               <div className={`w-2 h-2 rounded-full mt-2 ${
-                                task.status === 'Completed' ? 'bg-green-500' : 
-                                task.status === 'In Progress' ? 'bg-blue-500' : 'bg-gray-300'
+                                task.status === 'Completed' ? 'bg-[#131313]' : 
+                                task.status === 'In Progress' ? 'bg-[#222222]' : 'bg-[#F1F1F1]'
                               }`} />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start gap-2">
@@ -266,9 +266,9 @@ const ProjectDetails = () => {
                                   )}
                                   {task.priority && (
                                     <span className={`px-2 py-1 rounded ${
-                                      task.priority === 'high' || task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-green-100 text-green-700'
+                                      task.priority === 'high' || task.priority === 'urgent' ? 'bg-[#131313] text-[#FAF9F6]' :
+                                      task.priority === 'medium' ? 'bg-[#222222] text-[#FAF9F6]' :
+                                      'bg-[#F1F1F1] text-[#131313]'
                                     }`}>
                                       {task.priority}
                                     </span>
@@ -413,6 +413,7 @@ const ProjectDetails = () => {
           onClose={() => setEditingTask(null)}
         />
       </main>
+      <DockNav />
     </div>
   );
 };

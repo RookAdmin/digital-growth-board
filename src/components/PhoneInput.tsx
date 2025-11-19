@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { countries, Country } from '@/utils/countryCodes';
@@ -7,13 +7,51 @@ import { countries, Country } from '@/utils/countryCodes';
 interface PhoneInputProps {
   value?: string;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   className?: string;
+  numericOnly?: boolean;
+  maxLength?: number;
+  defaultCountryCode?: string;
 }
 
-export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone number", className }: PhoneInputProps) => {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === 'US') || countries[0]);
-  const [phoneNumber, setPhoneNumber] = useState(value.replace(/^\+\d+\s*/, '') || '');
+export const PhoneInput = ({
+  value = '',
+  onChange,
+  placeholder = "Enter phone number",
+  className,
+  numericOnly = false,
+  maxLength,
+  defaultCountryCode = 'US',
+  onBlur,
+}: PhoneInputProps) => {
+  const defaultCountry =
+    countries.find((c) => c.code === defaultCountryCode) || countries[0];
+  const [selectedCountry, setSelectedCountry] = useState<Country>(defaultCountry);
+  const [phoneNumber, setPhoneNumber] = useState(
+    value.replace(/^\+\d+\s*/, '') || ''
+  );
+
+  useEffect(() => {
+    if (!value) {
+      setSelectedCountry(defaultCountry);
+      setPhoneNumber('');
+      return;
+    }
+
+    const composed = `${selectedCountry.dial_code} ${phoneNumber}`.trim();
+    if (value === composed) return;
+
+    const matchedCountry = countries.find((country) =>
+      value.startsWith(country.dial_code)
+    );
+
+    if (matchedCountry) {
+      setSelectedCountry(matchedCountry);
+      setPhoneNumber(value.replace(matchedCountry.dial_code, '').trim());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const handleCountryChange = (countryCode: string) => {
     const country = countries.find(c => c.code === countryCode);
@@ -26,8 +64,11 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow only numbers, spaces, hyphens, and parentheses
-    const cleanedInput = input.replace(/[^\d\s\-\(\)]/g, '');
+    const pattern = numericOnly ? /[^\d]/g : /[^\d\s\-\(\)]/g;
+    let cleanedInput = input.replace(pattern, '');
+    if (maxLength) {
+      cleanedInput = cleanedInput.slice(0, maxLength);
+    }
     setPhoneNumber(cleanedInput);
     const fullNumber = cleanedInput ? `${selectedCountry.dial_code} ${cleanedInput}` : selectedCountry.dial_code;
     onChange?.(fullNumber);
@@ -61,7 +102,9 @@ export const PhoneInput = ({ value = '', onChange, placeholder = "Enter phone nu
         onChange={handlePhoneChange}
         placeholder={placeholder}
         className="flex-1 bg-white"
-        pattern="[0-9\s\-\(\)]*"
+        inputMode="numeric"
+        maxLength={maxLength}
+        onBlur={onBlur}
       />
     </div>
   );

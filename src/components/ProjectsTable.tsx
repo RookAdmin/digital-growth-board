@@ -43,6 +43,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
+import { pillClasses } from '@/constants/palette';
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -56,15 +57,15 @@ interface ProjectsTableProps {
 const getStatusColor = (status: ProjectStatus) => {
   switch (status) {
     case 'Not Started':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
     case 'In Progress':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
+      return pillClasses.dark;
     case 'Review':
-      return 'bg-amber-100 text-amber-700 border-amber-200';
+      return pillClasses.charcoal;
     case 'Completed':
-      return 'bg-green-100 text-green-700 border-green-200';
+      return pillClasses.soft;
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
   }
 };
 
@@ -516,7 +517,7 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-green-600 hover:bg-green-700 flex-1 sm:flex-none">
+                  <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222] flex-1 sm:flex-none">
                     {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </DialogFooter>
@@ -800,7 +801,7 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-green-600 hover:bg-green-700">
+                <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222]">
                   {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>

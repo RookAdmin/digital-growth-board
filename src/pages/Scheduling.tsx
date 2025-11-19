@@ -9,6 +9,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { AddMeetingSlotDialog } from '@/components/AddMeetingSlotDialog';
+import { DockNav } from '@/components/DockNav';
+import { LoadingState } from '@/components/LoadingState';
+import { PageHero } from '@/components/PageHero';
 
 const SchedulingPage = () => {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -33,9 +36,9 @@ const SchedulingPage = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
-        return 'bg-green-100 text-green-800';
+        return 'bg-[#F1F1F1] text-[#131313] border border-[#E0E0E0]';
       case 'booked':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#131313] text-[#FAF9F6] border border-[#131313]';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -44,36 +47,32 @@ const SchedulingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
       <Header isAuthenticated={true} />
-      
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-black">Scheduling</h1>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage your meeting slots and appointments.</p>
-          </div>
-          <Button onClick={() => setIsBookingDialogOpen(true)} className="bg-black hover:bg-gray-800 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Meeting Slot
-          </Button>
-        </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+        <PageHero
+          title="Scheduling"
+          description="Manage your meeting slots and appointments within a quiet, focused surface."
+          actions={
+            <Button onClick={() => setIsBookingDialogOpen(true)} className="rounded-full bg-[#131313] hover:bg-[#222222] text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Meeting Slot
+            </Button>
+          }
+        />
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            <div className="col-span-full flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-gray-500">Loading meeting slots...</p>
-              </div>
+            <div className="col-span-full">
+              <LoadingState message="Loading meeting slots..." fullHeight />
             </div>
           ) : meetingSlots && meetingSlots.length > 0 ? (
             meetingSlots.map((slot) => (
-              <Card key={slot.id} className="border border-gray-200 hover:shadow-md transition-shadow">
+              <Card key={slot.id} className="border border-white/70 bg-white hover:-translate-y-1 hover:shadow-[0_25px_80px_rgba(15,23,42,0.12)] transition-all duration-300">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-black" />
+                  <CardTitle className="text-lg flex items-center gap-2 text-[#131313]">
+                      <Calendar className="w-5 h-5 text-[#131313]" />
                       {format(new Date(slot.date_time), 'MMM dd, yyyy')}
                     </CardTitle>
                     <Badge className={getStatusColor(slot.status)}>
@@ -108,7 +107,7 @@ const SchedulingPage = () => {
             <div className="col-span-full text-center py-8">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">No meeting slots scheduled</p>
-              <Button onClick={() => setIsBookingDialogOpen(true)} className="bg-black hover:bg-gray-800 text-white">
+              <Button onClick={() => setIsBookingDialogOpen(true)} className="bg-[#131313] hover:bg-[#222222] text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Schedule Your First Meeting
               </Button>
@@ -122,6 +121,7 @@ const SchedulingPage = () => {
         onOpenChange={setIsBookingDialogOpen}
         onSuccess={() => refetch()}
       />
+      <DockNav />
     </div>
   );
 };

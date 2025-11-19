@@ -18,7 +18,7 @@ const PartnerProtectedRoute = ({ children }: PartnerProtectedRouteProps) => {
   }
 
   if (!partner) {
-    return <Navigate to="/partner/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;

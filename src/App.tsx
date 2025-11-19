@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
@@ -23,12 +23,23 @@ import ClientPortal from "./pages/ClientPortal";
 import Partners from "./pages/Partners";
 import PartnerSignup from "./pages/PartnerSignup";
 import PartnerDashboard from "./pages/PartnerDashboard";
+import PartnerAwards from "./pages/PartnerAwards";
+import PartnerAgreements from "./pages/PartnerAgreements";
 import PartnerProject from "./pages/PartnerProject";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientProtectedRoute from "./components/ClientProtectedRoute";
 import PartnerProtectedRoute from "./components/PartnerProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
@@ -51,6 +62,23 @@ function App() {
               element={
                 <PartnerProtectedRoute>
                   <PartnerDashboard />
+                </PartnerProtectedRoute>
+              }
+            />
+            <Route path="/partner-dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+            <Route
+              path="/partner/awards"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerAwards />
+                </PartnerProtectedRoute>
+              }
+            />
+            <Route
+              path="/partner/agreements"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerAgreements />
                 </PartnerProtectedRoute>
               }
             />

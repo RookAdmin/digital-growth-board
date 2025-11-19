@@ -50,9 +50,9 @@ export const ClientOnboardingProgress = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {isComplete ? (
-            <CheckCircle className="h-5 w-5 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-[#131313]" />
           ) : (
-            <Clock className="h-5 w-5 text-blue-500" />
+            <Clock className="h-5 w-5 text-[#222222]" />
           )}
           Onboarding Progress
         </CardTitle>

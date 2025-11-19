@@ -44,7 +44,7 @@ export const TaskActivityLog = ({ taskId }: TaskActivityLogProps) => {
       {activities.map((activity) => (
         <div key={activity.id} className="text-xs text-gray-600">
           <div className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5" />
+            <div className="w-1.5 h-1.5 bg-[#131313] rounded-full mt-1.5" />
             <div className="flex-1">
               <p>{activity.description}</p>
               <p className="text-gray-400 mt-0.5">

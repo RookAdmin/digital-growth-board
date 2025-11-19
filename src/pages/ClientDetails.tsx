@@ -8,19 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FolderOpen, Calendar, DollarSign, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { DockNav } from '@/components/DockNav';
+import { LoadingState } from '@/components/LoadingState';
+import { pillClasses } from '@/constants/palette';
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Not Started':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
     case 'In Progress':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
+      return pillClasses.dark;
     case 'Review':
-      return 'bg-amber-100 text-amber-700 border-amber-200';
+      return pillClasses.charcoal;
     case 'Completed':
-      return 'bg-green-100 text-green-700 border-green-200';
+      return pillClasses.soft;
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return pillClasses.light;
   }
 };
 
@@ -70,23 +73,19 @@ const ClientDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#FAF9F6] pb-32">
         <Header isAuthenticated={true} />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading client details...</p>
-            </div>
-          </div>
+          <LoadingState message="Loading client details..." fullHeight />
         </main>
+        <DockNav />
       </div>
     );
   }
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#FAF9F6] pb-32">
         <Header isAuthenticated={true} />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex items-center justify-center py-8">
@@ -101,12 +100,13 @@ const ClientDetails = () => {
             </div>
           </div>
         </main>
+        <DockNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAF9F6] pb-32">
       <Header isAuthenticated={true} />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -230,6 +230,7 @@ const ClientDetails = () => {
           </Card>
         </div>
       </main>
+      <DockNav />
     </div>
   );
 };

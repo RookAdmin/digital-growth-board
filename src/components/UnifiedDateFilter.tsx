@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Calendar, X } from 'lucide-react';
+import { Calendar, X, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 interface UnifiedDateFilterProps {
   startDate?: Date;
@@ -28,6 +29,12 @@ export const UnifiedDateFilter = ({
   const [tempEndDate, setTempEndDate] = useState<Date | undefined>(endDate);
   const [tempSingleDate, setTempSingleDate] = useState<Date | undefined>(singleDate);
 
+  useEffect(() => {
+    setTempStartDate(startDate);
+    setTempEndDate(endDate);
+    setTempSingleDate(singleDate);
+  }, [startDate, endDate, singleDate]);
+
   const handleApply = () => {
     if (activeTab === 'single') {
       onSingleDateChange(tempSingleDate);
@@ -48,6 +55,8 @@ export const UnifiedDateFilter = ({
     setIsOpen(false);
   };
 
+  const hasActiveFilter = singleDate || startDate || endDate;
+
   const getButtonText = () => {
     if (singleDate) {
       return format(singleDate, 'MMM dd, yyyy');
@@ -61,56 +70,59 @@ export const UnifiedDateFilter = ({
     if (endDate) {
       return `Until ${format(endDate, 'MMM dd, yyyy')}`;
     }
-    return 'Filter by date';
+    return 'Date';
   };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
-          <Calendar className="mr-2 h-4 w-4" />
-          {getButtonText()}
-        </Button>
+        <button
+          className={cn(
+            "h-12 px-4 rounded-xl border bg-white text-sm font-medium text-gray-900 transition-all duration-200 flex items-center gap-2 hover:border-[#131313] focus:outline-none focus:ring-2 focus:ring-[#131313] focus:ring-offset-0",
+            hasActiveFilter ? "border-[#131313] bg-[#FAF9F6]" : "border-gray-300"
+          )}
+        >
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <span>{getButtonText()}</span>
+          <ChevronDown className="h-4 w-4 text-gray-400" />
+        </button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3">
+      <PopoverContent className="w-auto p-0 border-gray-200 shadow-lg" align="start">
+        <div className="p-4">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'single' | 'range')}>
-            <TabsList className="grid w-full grid-cols-2 mb-3">
-              <TabsTrigger value="single">Single Date</TabsTrigger>
-              <TabsTrigger value="range">Date Range</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-4 bg-gray-50">
+              <TabsTrigger value="single" className="text-xs">Single</TabsTrigger>
+              <TabsTrigger value="range" className="text-xs">Range</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="single" className="space-y-3">
-              <div className="text-sm font-medium">Select Date</div>
+            <TabsContent value="single" className="space-y-3 mt-0">
               <CalendarComponent
                 mode="single"
                 selected={tempSingleDate}
                 onSelect={setTempSingleDate}
-                className="rounded-md border"
+                className="rounded-lg border-0"
               />
             </TabsContent>
             
-            <TabsContent value="range" className="space-y-3">
-              <div className="text-sm font-medium">Select Date Range</div>
-              
-              <div className="flex gap-4">
+            <TabsContent value="range" className="space-y-3 mt-0">
+              <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground">Start Date</label>
+                  <p className="text-xs font-medium text-gray-500 mb-2">Start</p>
                   <CalendarComponent
                     mode="single"
                     selected={tempStartDate}
                     onSelect={setTempStartDate}
-                    className="rounded-md border"
+                    className="rounded-lg border-0"
                   />
                 </div>
                 
                 <div className="flex-1">
-                  <label className="text-xs text-muted-foreground">End Date</label>
+                  <p className="text-xs font-medium text-gray-500 mb-2">End</p>
                   <CalendarComponent
                     mode="single"
                     selected={tempEndDate}
                     onSelect={setTempEndDate}
-                    className="rounded-md border"
+                    className="rounded-lg border-0"
                     disabled={(date) => tempStartDate ? date < tempStartDate : false}
                   />
                 </div>
@@ -118,12 +130,20 @@ export const UnifiedDateFilter = ({
             </TabsContent>
           </Tabs>
 
-          <div className="flex gap-2 pt-3 border-t">
-            <Button onClick={handleClear} variant="outline" size="sm" className="flex-1">
-              <X className="mr-2 h-4 w-4" />
+          <div className="flex gap-2 pt-3 border-t border-gray-100">
+            <Button 
+              onClick={handleClear} 
+              variant="ghost" 
+              size="sm" 
+              className="flex-1 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            >
               Clear
             </Button>
-            <Button onClick={handleApply} size="sm" className="flex-1">
+            <Button 
+              onClick={handleApply} 
+              size="sm" 
+              className="flex-1 bg-[#131313] text-white hover:bg-black"
+            >
               Apply
             </Button>
           </div>

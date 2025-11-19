@@ -326,7 +326,7 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
                         {pendingStatus && pendingStatus !== lead.status && (
                             <div className="flex gap-2 mt-4">
-                                <Button onClick={handleSaveStatus} size="sm" className="bg-green-600 hover:bg-green-700">
+                                <Button onClick={handleSaveStatus} size="sm" className="bg-[#131313] hover:bg-[#222222]">
                                     Save Status
                                 </Button>
                                 <Button onClick={handleCancelStatus} variant="outline" size="sm">

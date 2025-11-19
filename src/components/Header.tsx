@@ -11,12 +11,17 @@ import { toast } from "sonner";
 interface HeaderProps {
   isAuthenticated?: boolean;
   onLightBg?: boolean;
+  showPublicLinks?: boolean;
 }
 
-export const Header = ({ isAuthenticated = false, onLightBg = false }: HeaderProps) => {
+export const Header = ({
+  isAuthenticated = false,
+  onLightBg = false,
+  showPublicLinks = true,
+}: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const { partner } = usePartnerAuth();
 
   const handleSignOut = async () => {
@@ -44,262 +49,128 @@ export const Header = ({ isAuthenticated = false, onLightBg = false }: HeaderPro
 
   const isLoggedIn = session || partner || isAuthenticated;
   const isPartner = !!partner;
-  const textColor = onLightBg ? "text-gray-900" : "text-white";
-  const logoTextColor = onLightBg ? "text-black" : "text-white";
+  const navLinkClasses =
+    "text-sm font-medium text-gray-900 transition-colors hover:text-gray-950";
+  const infoTextColor = "text-gray-500";
+  const mobileBorderColor = onLightBg ? "border-gray-200" : "border-white/40";
+  const shouldShowNavLinks = showPublicLinks && !isLoggedIn && !authLoading;
 
   return (
-    <header className={`${onLightBg ? 'bg-white border-b border-gray-200' : 'bg-black'} relative z-50`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header
+      className={`relative z-50 ${
+        onLightBg ? "bg-white/80" : "bg-transparent"
+      } backdrop-blur-sm`}
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex w-full items-center justify-between rounded-[32px] border border-white/60 bg-white/80 px-5 py-3 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className={`text-xl font-bold tracking-tight ${logoTextColor}`}>
-              Rook
-            </span>
+              <img
+                src="/clogo.png"
+                alt="Rook logo"
+                className="h-9 w-auto object-contain"
+              />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {isLoggedIn ? (
-              <>
-                {isPartner ? (
-                  // Partner Navigation
-                  <>
-                    <Link 
-                      to="/partner/dashboard" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      My Projects
+            <div className="hidden md:flex flex-1 justify-center">
+              {shouldShowNavLinks && (
+                <nav className="flex items-center space-x-6">
+                  <Link to="/login" className={navLinkClasses}>
+                    Login
                     </Link>
-                  </>
-                ) : (
-                  // Admin Navigation
-                  <>
-                    <Link 
-                      to="/dashboard" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Dashboard
+                  <Link to="/register" className={navLinkClasses}>
+                    Get Started
                     </Link>
-                    <Link 
-                      to="/clients" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Clients
-                    </Link>
-                    <Link 
-                      to="/projects" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Projects
-                    </Link>
-                    <Link 
-                      to="/partners" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Partners
-                    </Link>
-                    <Link 
-                      to="/team" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Team
-                    </Link>
-                    <Link 
-                      to="/files" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Files
-                    </Link>
-                    <Link 
-                      to="/scheduling" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Scheduling
-                    </Link>
-                    <Link 
-                      to="/reporting" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                    >
-                      Reporting
-                    </Link>
-                  </>
-                )}
-                
-                {/* User Menu */}
-                <div className="flex items-center space-x-4">
-                  <div className={`flex items-center space-x-2 ${textColor}`}>
-                    <User className="w-4 h-4" />
-                    <span className="text-sm">
+                </nav>
+              )}
+            </div>
+
+            {/* User / CTA block */}
+            <div className="hidden md:flex items-center gap-4 pl-6 border-l border-white/60">
+              {isLoggedIn ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white text-sm font-semibold">
+                      {partner
+                        ? partner.full_name?.[0]?.toUpperCase()
+                        : session?.user?.email?.[0]?.toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900">
                       {partner ? partner.full_name : session?.user?.email}
                     </span>
+                      <span className={`text-xs ${infoTextColor}`}>
+                        {partner ? "Partner" : "Admin"}
+                      </span>
+                    </div>
                   </div>
                   <Button 
-                    variant="ghost" 
+                    variant="outline"
                     size="sm" 
                     onClick={handleSignOut}
-                    className={`${textColor} hover:bg-gray-800 hover:text-white`}
+                    className="rounded-full border-gray-300 px-4 text-gray-900 hover:bg-gray-900 hover:text-white"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
                   </Button>
-                </div>
               </>
             ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-gray-300 text-gray-900 hover:bg-gray-900 hover:text-white"
+                    onClick={() => navigate('/login')}
                 >
                   Login
-                </Link>
-                <Link 
-                  to="/register" 
-                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="rounded-full bg-gray-900 text-white hover:bg-black"
+                    onClick={() => navigate('/register')}
                 >
                   Get Started
-                </Link>
-                <Link 
-                  to="/partner/login" 
-                  className={`${textColor} hover:text-gray-300 transition-colors font-medium`}
-                >
-                  Partner Login
-                </Link>
-              </>
-            )}
-          </nav>
+                  </Button>
+                </div>
+              )}
+            </div>
 
           {/* Mobile Menu Button */}
+            {shouldShowNavLinks && (
           <Button
             variant="ghost"
             size="sm"
-            className={`md:hidden ${textColor}`}
+                className="md:hidden text-gray-900"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
+            )}
+          </div>
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className={`md:hidden py-4 border-t ${onLightBg ? 'border-gray-200' : 'border-gray-800'}`}>
-            <nav className="flex flex-col space-y-3">
-              {isLoggedIn ? (
-                <>
-                  {isPartner ? (
-                    <Link 
-                      to="/partner/dashboard" 
-                      className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      My Projects
-                    </Link>
-                  ) : (
-                    <>
-                      <Link 
-                        to="/dashboard" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Dashboard
-                      </Link>
-                      <Link 
-                        to="/clients" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Clients
-                      </Link>
-                      <Link 
-                        to="/projects" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Projects
-                      </Link>
-                      <Link 
-                        to="/partners" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Partners
-                      </Link>
-                      <Link 
-                        to="/team" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Team
-                      </Link>
-                      <Link 
-                        to="/files" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Files
-                      </Link>
-                      <Link 
-                        to="/scheduling" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Scheduling
-                      </Link>
-                      <Link 
-                        to="/reporting" 
-                        className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Reporting
-                      </Link>
-                    </>
-                  )}
-                  
-                  <div className="pt-2 border-t border-gray-800">
-                    <div className={`flex items-center space-x-2 ${textColor} py-2`}>
-                      <User className="w-4 h-4" />
-                      <span className="text-sm">
-                        {partner ? partner.full_name : session?.user?.email}
-                      </span>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        handleSignOut();
-                        setIsMenuOpen(false);
-                      }}
-                      className={`${textColor} hover:bg-gray-800 hover:text-white w-full justify-start`}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                </>
-              ) : (
+        {shouldShowNavLinks && isMenuOpen && (
+          <div className={`md:hidden mt-4 rounded-3xl border ${mobileBorderColor} bg-white/90 p-4 shadow-xl backdrop-blur-2xl`}>
+            <nav className="flex flex-col space-y-2 text-gray-900">
                 <>
                   <Link 
                     to="/login" 
-                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                  className="rounded-2xl px-4 py-3 text-base font-medium hover:bg-gray-100"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
                   </Link>
                   <Link 
                     to="/register" 
-                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
+                  className="rounded-2xl px-4 py-3 text-base font-medium hover:bg-gray-100"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Get Started
                   </Link>
-                  <Link 
-                    to="/partner/login" 
-                    className={`${textColor} hover:text-gray-300 transition-colors font-medium py-2`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Partner Login
-                  </Link>
                 </>
-              )}
             </nav>
           </div>
         )}

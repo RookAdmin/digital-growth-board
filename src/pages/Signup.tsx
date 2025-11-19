@@ -178,11 +178,11 @@ const SignupPage = () => {
     document.title = "Sign Up - Rook";
   }, []);
 
-  const getPasswordStrengthColor = (score: number) => {
-    if (score < 2) return "bg-red-500";
-    if (score < 4) return "bg-yellow-500";
-    return "bg-green-500";
-  };
+const getPasswordStrengthColor = (score: number) => {
+  if (score < 2) return "bg-[#131313]/30";
+  if (score < 4) return "bg-[#131313]/60";
+  return "bg-[#131313]";
+};
 
   const getPasswordStrengthText = (score: number) => {
     if (score < 2) return "Weak";
@@ -191,7 +191,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
@@ -218,11 +218,11 @@ const SignupPage = () => {
                             field.onChange(value);
                             handleFirstNameChange(e.target.value);
                           }}
-                          className={firstNameError ? "border-red-500" : ""}
+                          className={firstNameError ? "border-[#222222]" : ""}
                         />
                       </FormControl>
                       {firstNameError && (
-                        <p className="text-sm text-red-500">{firstNameError}</p>
+                        <p className="text-sm text-[#222222]">{firstNameError}</p>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -243,11 +243,11 @@ const SignupPage = () => {
                             field.onChange(value);
                             handleLastNameChange(e.target.value);
                           }}
-                          className={lastNameError ? "border-red-500" : ""}
+                          className={lastNameError ? "border-[#222222]" : ""}
                         />
                       </FormControl>
                       {lastNameError && (
-                        <p className="text-sm text-red-500">{lastNameError}</p>
+                        <p className="text-sm text-[#222222]">{lastNameError}</p>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -267,22 +267,22 @@ const SignupPage = () => {
                           type="email"
                           placeholder="john.doe@example.com"
                           {...field}
-                          className={emailExists ? "border-red-500" : ""}
+                          className={emailExists ? "border-[#222222]" : ""}
                         />
                         {isCheckingEmail && (
                           <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
                         )}
                         {!isCheckingEmail && field.value && (
                           emailExists ? (
-                            <XCircle className="absolute right-3 top-3 h-4 w-4 text-red-500" />
+                            <XCircle className="absolute right-3 top-3 h-4 w-4 text-[#222222]" />
                           ) : (
-                            <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                            <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-[#131313]" />
                           )
                         )}
                       </div>
                     </FormControl>
                     {emailExists && (
-                      <p className="text-sm text-red-500">Email already exists</p>
+                      <p className="text-sm text-[#222222]">Email already exists</p>
                     )}
                     <FormMessage />
                   </FormItem>
@@ -325,23 +325,23 @@ const SignupPage = () => {
                           </span>
                         </div>
                         <div className="text-xs space-y-1">
-                          <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-[#131313]' : 'text-[#222222] opacity-70'}`}>
                             {passwordStrength.hasMinLength ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                             At least 8 characters
                           </div>
-                          <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-[#131313]' : 'text-[#222222] opacity-70'}`}>
                             {passwordStrength.hasUppercase ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                             One uppercase letter
                           </div>
-                          <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-[#131313]' : 'text-[#222222] opacity-70'}`}>
                             {passwordStrength.hasLowercase ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                             One lowercase letter
                           </div>
-                          <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-[#131313]' : 'text-[#222222] opacity-70'}`}>
                             {passwordStrength.hasNumber ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                             One number
                           </div>
-                          <div className={`flex items-center gap-1 ${passwordStrength.hasSpecialChar ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`flex items-center gap-1 ${passwordStrength.hasSpecialChar ? 'text-[#131313]' : 'text-[#222222] opacity-70'}`}>
                             {passwordStrength.hasSpecialChar ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                             One special character
                           </div>

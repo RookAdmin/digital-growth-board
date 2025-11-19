@@ -34,9 +34,16 @@ interface ClientsTableProps {
   startDate?: Date;
   endDate?: Date;
   singleDate?: Date;
+  statusFilter?: string;
 }
 
-export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }: ClientsTableProps) => {
+export const ClientsTable = ({
+  searchTerm = '',
+  startDate,
+  endDate,
+  singleDate,
+  statusFilter = 'all',
+}: ClientsTableProps) => {
   const navigate = useNavigate();
   const { data: clients, isLoading, error } = useQuery({
     queryKey: ['clients'],
@@ -91,6 +98,21 @@ export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }
         (client.business_name && client.business_name.toLowerCase().includes(term))
       );
 
+      // Journey filter
+      const normalizedStatus = (client.onboarding_status || '').toLowerCase();
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && normalizedStatus.includes('active')) ||
+        (statusFilter === 'onboarding' && (normalizedStatus.includes('onboard') || normalizedStatus.includes('setup'))) ||
+        (statusFilter === 'paused' &&
+          (normalizedStatus.includes('pause') ||
+            normalizedStatus.includes('dormant') ||
+            normalizedStatus.includes('hold'))) ||
+        (statusFilter === 'completed' &&
+          (normalizedStatus.includes('complete') ||
+            normalizedStatus.includes('wrapped'))) ||
+        normalizedStatus === statusFilter.toLowerCase();
+
       // Single date filter (creation date)
       const matchesDate = !singleDate || 
         new Date(client.created_at).toDateString() === singleDate.toDateString();
@@ -109,9 +131,9 @@ export const ClientsTable = ({ searchTerm = '', startDate, endDate, singleDate }
         }
       }
 
-      return matchesSearch && matchesDate && matchesDateRange;
+      return matchesSearch && matchesStatus && matchesDate && matchesDateRange;
     });
-  }, [clients, searchTerm, startDate, endDate, singleDate]);
+  }, [clients, searchTerm, statusFilter, startDate, endDate, singleDate]);
 
   const getLocationDisplay = (client: any) => {
     const parts = [];

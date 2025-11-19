@@ -137,57 +137,74 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <Header onLightBg />
-      
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
+
+      <div className="container mx-auto px-4 py-12 lg:py-20">
+        <div className="grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16">
+          {/* Overview */}
+          <div className="space-y-8">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="mb-6 text-gray-900 hover:text-gray-700"
+              className="text-gray-700 hover:text-gray-500 px-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              Back to home
             </Button>
-            
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
-              <Star className="w-8 h-8 text-gray-900" />
+
+            <div className="rounded-[32px] border border-gray-100 bg-white p-8 shadow-[0_20px_80px_rgba(15,23,42,0.08)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2 text-xs uppercase tracking-[0.3em] text-gray-500 mb-6">
+                <Star className="w-4 h-4 text-gray-900" />
+                realm intake
+              </div>
+              <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-4">
+                Tell us what you’re building; we’ll shape the team around it.
+              </h1>
+              <p className="text-base text-gray-600 leading-relaxed mb-6">
+                This lightweight brief helps Realm align strategy, delivery, and concierge support
+                without long calls or drawn-out decks.
+              </p>
+
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle className="w-4 h-4 text-gray-900" />
+                    <span>Kickoff in 7 days</span>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Users className="w-4 h-4 text-gray-900" />
+                    <span>Dedicated PM</span>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Zap className="w-4 h-4 text-gray-900" />
+                    <span>24h response</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Start Your Digital Journey
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-              Tell us about your vision and we'll craft a custom proposal that brings your business to the next level.
-            </p>
-            
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-gray-900" />
-                <span>Free Consultation</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-900" />
-                <span>Dedicated Support</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-gray-900" />
-                <span>24h Response Time</span>
-              </div>
+
+            <div className="rounded-3xl border border-gray-200 bg-white/70 p-6">
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Prefer a guided walkthrough? Drop a note and we’ll schedule a concierge session to scope
+                your delivery plan, budget alignment, and expected milestones.
+              </p>
             </div>
           </div>
 
           {/* Main Form */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-primary p-8 text-primary-foreground">
-              <h2 className="text-2xl font-semibold mb-2">Project Details</h2>
-              <p className="opacity-90">Help us understand your needs better</p>
+          <div className="bg-white rounded-[36px] border border-gray-100 shadow-[0_25px_70px_rgba(15,23,42,0.09)] overflow-hidden">
+            <div className="border-b border-gray-100 px-8 py-6">
+              <p className="text-xs uppercase tracking-[0.4em] text-gray-400 mb-2">
+                Intake form
+              </p>
+              <h2 className="text-2xl font-semibold text-gray-900">Project details</h2>
             </div>
-            
+
             <div className="p-8">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -352,11 +369,11 @@ const RegisterPage = () => {
                   )} />
 
                   {/* Submit Button */}
-                  <div className="pt-6">
+                  <div className="pt-4">
                     <Button 
                       type="submit" 
                       disabled={isPending || isSubmitting}
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="w-full rounded-2xl bg-gray-900 text-white hover:bg-black py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       {isPending || isSubmitting ? (
                         <div className="flex items-center gap-2">

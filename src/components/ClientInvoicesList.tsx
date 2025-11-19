@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useClientAuth } from '@/hooks/useClientAuth';
 import { DollarSign, FileText } from 'lucide-react';
 import { format } from 'date-fns';
+import { pillClasses } from '@/constants/palette';
 
 export const ClientInvoicesList = () => {
   const { clientUser } = useClientAuth();
@@ -30,15 +31,15 @@ export const ClientInvoicesList = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Draft':
-        return 'bg-gray-100 text-gray-800';
+        return pillClasses.light;
       case 'Sent':
-        return 'bg-blue-100 text-blue-800';
+        return pillClasses.soft;
       case 'Paid':
-        return 'bg-green-100 text-green-800';
+        return pillClasses.dark;
       case 'Overdue':
-        return 'bg-red-100 text-red-800';
+        return pillClasses.charcoal;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return pillClasses.light;
     }
   };
 

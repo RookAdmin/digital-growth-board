@@ -49,22 +49,24 @@ const getActivityIcon = (activityType: string) => {
   }
 };
 
+import { pillClasses } from '@/constants/palette';
+
 const getActivityColor = (activityType: string) => {
   switch (activityType) {
     case 'lead_created':
-      return 'bg-blue-50 text-blue-700 border-blue-200';
+      return pillClasses.soft;
     case 'lead_updated':
-      return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      return pillClasses.light;
     case 'status_changed':
-      return 'bg-green-50 text-green-700 border-green-200';
+      return pillClasses.dark;
     case 'note_added':
-      return 'bg-purple-50 text-purple-700 border-purple-200';
+      return pillClasses.light;
     case 'file_uploaded':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      return pillClasses.soft;
     case 'comment_added':
-      return 'bg-orange-50 text-orange-700 border-orange-200';
+      return pillClasses.charcoal;
     default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+      return pillClasses.light;
   }
 };
 

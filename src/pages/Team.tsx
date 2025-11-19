@@ -4,6 +4,9 @@ import { Header } from '@/components/Header';
 import { TeamMembersTable } from '@/components/TeamMembersTable';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { DockNav } from '@/components/DockNav';
+import { LoadingState } from '@/components/LoadingState';
+import { PageHero } from '@/components/PageHero';
 
 const TeamPage = () => {
   const queryClient = useQueryClient();
@@ -31,34 +34,31 @@ const TeamPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
         <Header isAuthenticated={true} />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading team members...</p>
-            </div>
-          </div>
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+          <LoadingState message="Loading team members..." fullHeight />
         </main>
+        <DockNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
       <Header isAuthenticated={true} />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-black">Team</h1>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage your team members and their roles.</p>
-        </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+        <PageHero
+          title="Team"
+          description="Keep your crew organized, informed, and instantly deployable across every initiative."
+        />
         
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <section className="rounded-[32px] border border-white/80 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)] overflow-hidden animate-in fade-in duration-500">
           <TeamMembersTable teamMembers={teamMembers} onRefresh={handleRefresh} />
-        </div>
+        </section>
       </main>
+      <DockNav />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,49 +21,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { usePartnerAuth } from '@/hooks/usePartnerAuth';
 import { toast } from 'sonner';
-
-const serviceCategories = [
-  'Web Development',
-  'Mobile Development',
-  'UI/UX Design',
-  'Graphic Design',
-  'Content Writing',
-  'Digital Marketing',
-  'SEO Services',
-  'Social Media Management',
-  'Video Production',
-  'Photography',
-  'Consulting',
-  'Other'
-];
+import { PhoneInput } from '@/components/PhoneInput';
+import { Country, State, City } from 'country-state-city';
 
 const signupSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  firstName: z.string().min(2, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  phone: z.string().optional(),
+  phone: z.string().min(8, 'Phone number is required'),
   companyName: z.string().optional(),
-  serviceCategories: z.array(z.string()).optional(),
-  location: z.string().optional(),
+  country: z.string().min(1, 'Select a country'),
+  state: z.string().min(1, 'Select a state/province'),
+  city: z.string().min(1, 'Select a city'),
+  address: z.string().min(5, 'Provide a full address'),
 });
 
 type SignupForm = z.infer<typeof signupSchema>;
 
 const PartnerSignup = () => {
   const [loading, setLoading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const { signUp } = usePartnerAuth();
   const navigate = useNavigate();
 
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      serviceCategories: [],
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      phone: '',
+      companyName: '',
+      country: '',
+      state: '',
+      city: '',
+      address: '',
     },
   });
+
+  const selectedCountry = form.watch('country');
+  const selectedState = form.watch('state');
+
+  const countryOptions = useMemo(() => Country.getAllCountries(), []);
+  const stateOptions = useMemo(
+    () => (selectedCountry ? State.getStatesOfCountry(selectedCountry) : []),
+    [selectedCountry]
+  );
+  const cityOptions = useMemo(
+    () =>
+      selectedCountry && selectedState
+        ? City.getCitiesOfState(selectedCountry, selectedState)
+        : [],
+    [selectedCountry, selectedState]
+  );
 
   const onSubmit = async (data: SignupForm) => {
     setLoading(true);
@@ -71,18 +84,21 @@ const PartnerSignup = () => {
       const { error } = await signUp({
         email: data.email,
         password: data.password,
-        fullName: data.fullName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         phone: data.phone,
         companyName: data.companyName,
-        serviceCategories: selectedCategories,
-        location: data.location,
+        country: data.country,
+        state: data.state,
+        city: data.city,
+        address: data.address,
       });
       
       if (error) {
         toast.error(error.message);
       } else {
         toast.success('Registration successful! Please check your email to verify your account.');
-        navigate('/partner/login');
+        navigate('/login');
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -91,49 +107,71 @@ const PartnerSignup = () => {
     }
   };
 
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCategories(prev => [...prev, category]);
-    } else {
-      setSelectedCategories(prev => prev.filter(c => c !== category));
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Partner Signup
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Create a new partner account
-        </p>
-      </div>
+    <div className="min-h-screen bg-[#FAF9F6] py-12">
+      <div className="container px-4">
+        <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-[32px] border border-white/60 bg-white/80 p-8 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+            <p className="text-xs uppercase tracking-[0.4em] text-gray-500 mb-6">
+              Partner Program
+            </p>
+            <h1 className="text-3xl font-light text-gray-900 mb-4">
+              Join Realm’s concierge network.
+            </h1>
+            <p className="text-base text-gray-600 leading-relaxed mb-6">
+              Tell us who you are and where you operate. We’ll keep your record clean, structured,
+              and ready for fast onboarding into active projects.
+            </p>
+            <ul className="space-y-3 text-sm text-gray-600">
+              <li>• Verified contact and address details</li>
+              <li>• Response within 24 hours</li>
+              <li>• Unified login for partners and admins</li>
+            </ul>
+          </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input type="text" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="rounded-[32px] border border-gray-100 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.09)] p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">Create your profile</h2>
+              <p className="text-sm text-gray-500">All fields marked * are required</p>
+            </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name *</FormLabel>
+                      <FormControl>
+                        <Input type="text" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name *</FormLabel>
+                      <FormControl>
+                        <Input type="text" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email *</FormLabel>
                     <FormControl>
                       <Input type="email" {...field} />
                     </FormControl>
@@ -147,7 +185,7 @@ const PartnerSignup = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Password *</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
@@ -161,9 +199,17 @@ const PartnerSignup = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone (Optional)</FormLabel>
+                    <FormLabel>Phone Number *</FormLabel>
                     <FormControl>
-                      <Input type="tel" {...field} />
+                      <PhoneInput
+                        {...field}
+                        onChange={(value) => field.onChange(value)}
+                        onBlur={field.onBlur}
+                        numericOnly
+                        maxLength={15}
+                        defaultCountryCode="US"
+                        placeholder="1234567890"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,67 +232,135 @@ const PartnerSignup = () => {
 
               <FormField
                 control={form.control}
-                name="serviceCategories"
-                render={() => (
+                name="country"
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Service Categories (Optional)</FormLabel>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {serviceCategories.map((category) => (
-                        <div key={category} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={category}
-                            checked={selectedCategories.includes(category)}
-                            onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
-                          />
-                          <label
-                            htmlFor={category}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {category}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+                    <FormLabel>Country *</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue('state', '');
+                        form.setValue('city', '');
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countryOptions.map((country) => (
+                          <SelectItem key={country.isoCode} value={country.isoCode}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State / Province *</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          form.setValue('city', '');
+                        }}
+                        disabled={!selectedCountry || stateOptions.length === 0}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {stateOptions.map((state) => (
+                            <SelectItem key={state.isoCode} value={state.isoCode}>
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City *</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!selectedState || cityOptions.length === 0}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select city" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cityOptions.map((city) => (
+                            <SelectItem key={city.name} value={city.name}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="location"
+                name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location (Optional)</FormLabel>
+                    <FormLabel>Street Address *</FormLabel>
                     <FormControl>
-                      <Input type="text" {...field} />
+                      <Textarea rows={3} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? 'Signing Up...' : 'Sign Up'}
-              </Button>
-            </form>
-          </Form>
-
-          <div className="mt-6">
-            <div className="text-center">
-              <span className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link
-                  to="/partner/login"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
                 >
-                  Log in
-                </Link>
-              </span>
+                  {loading ? 'Submitting...' : 'Create Account'}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="mt-6">
+              <div className="text-center">
+                <span className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <Link
+                    to="/login"
+                    className="font-medium text-[#131313] hover:text-[#222222]"
+                  >
+                    Log in
+                  </Link>
+                </span>
+              </div>
             </div>
           </div>
         </div>

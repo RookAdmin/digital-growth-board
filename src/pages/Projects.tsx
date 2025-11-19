@@ -2,10 +2,16 @@
 import { useEffect, useState } from "react";
 import { Header } from '@/components/Header';
 import { ProjectsTable } from '@/components/ProjectsTable';
-import { FilterBar } from '@/components/FilterBar';
+import { DockNav } from '@/components/DockNav';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types';
+import { LoadingState } from '@/components/LoadingState';
+import { ChevronDown } from "lucide-react";
+import { PageHero } from "@/components/PageHero";
+import { SearchInput } from '@/components/SearchInput';
+import { UnifiedDateFilter } from '@/components/UnifiedDateFilter';
+import { Button } from '@/components/ui/button';
 
 const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,84 +82,92 @@ const ProjectsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#FAF9F6] pb-32">
         <Header isAuthenticated={true} />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading projects...</p>
-            </div>
-          </div>
+          <LoadingState message="Loading projects..." fullHeight />
         </main>
+        <DockNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
       <Header isAuthenticated={true} />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-black">Projects</h1>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage and track all your active projects.</p>
-        </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+        <PageHero
+          title="Projects"
+          description="Track delivery, approvals, and impact across every engagement."
+        />
         
-        <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200">
-          <div className="flex-1 flex gap-4">
-            <div className="flex-1">
-              <FilterBar
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                searchPlaceholder="Search projects by name, description, client, or status..."
+        <section className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur space-y-6">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-[0.3em] text-gray-400">Search</label>
+              <div className="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 shadow-inner shadow-white/40">
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Search name, description, client, status"
+                  className="border-none bg-transparent focus-visible:ring-0"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-[0.3em] text-gray-400">Status</label>
+              <div className="relative rounded-2xl border border-gray-200 bg-white px-4 py-2.5">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full appearance-none bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
+                >
+                  <option value="">All Status</option>
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Review">Review</option>
+                  <option value="Completed">Completed</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="text-sm text-gray-500">
+              Refine by creation date or specific day.
+            </div>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+              <UnifiedDateFilter
                 startDate={startDate}
                 endDate={endDate}
                 singleDate={singleDate}
                 onDateRangeChange={handleDateRangeChange}
                 onSingleDateChange={handleSingleDateChange}
-                showDateFilter={false}
               />
-            </div>
-            <div className="flex-shrink-0">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                style={{ backgroundColor: '#374151', color: 'white' }}
-              >
-                <option value="" style={{ backgroundColor: '#374151', color: 'white' }}>All Status</option>
-                <option value="Not Started" style={{ backgroundColor: '#374151', color: 'white' }}>Not Started</option>
-                <option value="In Progress" style={{ backgroundColor: '#374151', color: 'white' }}>In Progress</option>
-                <option value="Review" style={{ backgroundColor: '#374151', color: 'white' }}>Review</option>
-                <option value="Completed" style={{ backgroundColor: '#374151', color: 'white' }}>Completed</option>
-              </select>
+              {(statusFilter || searchTerm || startDate || endDate || singleDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter('');
+                    setSearchTerm('');
+                    setStartDate(undefined);
+                    setEndDate(undefined);
+                    setSingleDate(undefined);
+                  }}
+                  className="rounded-full text-gray-600 hover:text-gray-900"
+                >
+                  Reset filters
+                </Button>
+              )}
             </div>
           </div>
-          
-          <div className="flex gap-2 items-center">
-            <FilterBar
-              searchTerm=""
-              onSearchChange={() => {}}
-              showDateFilter={true}
-              startDate={startDate}
-              endDate={endDate}
-              singleDate={singleDate}
-              onDateRangeChange={handleDateRangeChange}
-              onSingleDateChange={handleSingleDateChange}
-            />
-            {statusFilter && (
-              <button
-                onClick={() => setStatusFilter('')}
-                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 underline"
-              >
-                Clear Status Filter
-              </button>
-            )}
-          </div>
-        </div>
+        </section>
         
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="rounded-[32px] border border-white/80 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)] overflow-hidden animate-in fade-in duration-500">
           <ProjectsTable 
             projects={projects} 
             searchTerm={searchTerm}
@@ -164,6 +178,7 @@ const ProjectsPage = () => {
           />
         </div>
       </main>
+      <DockNav />
     </div>
   );
 };

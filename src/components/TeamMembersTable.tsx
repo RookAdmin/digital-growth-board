@@ -18,6 +18,7 @@ import { Plus, Edit, UserX, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { pillClasses } from '@/constants/palette';
 
 type TeamMember = Tables<'team_members'>;
 
@@ -51,19 +52,19 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "CEO":
-        return "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200";
+        return pillClasses.dark;
       case "CTO / Director of Technology":
-        return "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200";
+        return pillClasses.charcoal;
       case "SME (Subject Matter Expert)":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200";
+        return pillClasses.soft;
       case "Project Manager":
-        return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200";
+        return pillClasses.light;
       case "Client Executive":
-        return "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200";
+        return pillClasses.light;
       case "Developer":
-        return "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200";
+        return pillClasses.light;
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return pillClasses.light;
     }
   };
 
@@ -148,10 +149,7 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
               <TableCell className="py-4 px-6">
                 <Badge 
                   variant="outline" 
-                  className={member.is_active ? 
-                    "bg-green-100 text-green-800 border-green-200" : 
-                    "bg-red-100 text-red-800 border-red-200"
-                  }
+                  className={member.is_active ? pillClasses.dark : pillClasses.light}
                 >
                   {member.is_active ? "Active" : "Inactive"}
                 </Badge>
@@ -162,10 +160,7 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
               <TableCell className="py-4 px-6">
                 <Badge 
                   variant="outline" 
-                  className={member.password_changed ? 
-                    "bg-green-100 text-green-800 border-green-200" : 
-                    "bg-yellow-100 text-yellow-800 border-yellow-200"
-                  }
+                  className={member.password_changed ? pillClasses.dark : pillClasses.soft}
                 >
                   {member.password_changed ? "Updated" : "Default"}
                 </Badge>
@@ -188,8 +183,8 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
                     disabled={toggleMemberStatusMutation.isPending}
                     className={`flex items-center gap-1 ${
                       member.is_active 
-                        ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
-                        : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                        ? 'text-[#131313] hover:bg-[#F1F1F1]' 
+                        : 'text-[#222222] hover:bg-[#F1F1F1]'
                     }`}
                   >
                     {member.is_active ? (

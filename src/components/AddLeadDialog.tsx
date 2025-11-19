@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -322,16 +322,27 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   );
 };
 
-export const AddLeadDialog = () => {
+interface AddLeadDialogProps {
+  trigger?: React.ReactNode;
+}
+
+export const AddLeadDialog = ({ trigger }: AddLeadDialogProps) => {
   const [open, setOpen] = useState(false);
+
+  const triggerNode =
+    trigger || (
+      <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+        <PlusCircle className="mr-2" />
+        Add New Lead
+      </Button>
+    );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
-          <PlusCircle className="mr-2" />
-          Add New Lead
-        </Button>
+        <span onClick={() => setOpen(true)} className="inline-flex">
+          {triggerNode}
+        </span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg bg-white border border-gray-200 rounded-xl shadow-lg">
         <DialogHeader>

@@ -38,6 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
+import { pillClasses } from '@/constants/palette';
 
 interface TaskTrackerProps {
   projectId: string;
@@ -46,30 +47,30 @@ interface TaskTrackerProps {
 const getStatusColor = (status: TaskStatus) => {
   switch (status) {
     case 'Not Started':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      return pillClasses.light;
     case 'In Progress':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      return pillClasses.dark;
     case 'Completed':
-      return 'bg-green-100 text-green-800 hover:bg-green-200';
+      return pillClasses.soft;
     case 'Blocked':
-      return 'bg-red-100 text-red-800 hover:bg-red-200';
+      return pillClasses.charcoal;
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      return pillClasses.light;
   }
 };
 
 const getPriorityColor = (priority: TaskPriority) => {
   switch (priority) {
     case 'urgent':
-      return 'text-red-600';
+      return 'text-[#131313]';
     case 'high':
-      return 'text-orange-600';
+      return 'text-[#222222]';
     case 'medium':
-      return 'text-yellow-600';
+      return 'text-[#222222] opacity-80';
     case 'low':
-      return 'text-green-600';
+      return 'text-[#131313] opacity-70';
     default:
-      return 'text-gray-600';
+      return 'text-[#222222]';
   }
 };
 
@@ -448,7 +449,7 @@ export const TaskTracker = ({ projectId }: TaskTrackerProps) => {
                           </div>
                         )}
                         {task.completed_at && (
-                          <div className="text-green-600">
+                          <div className="text-[#131313]">
                             Completed {format(new Date(task.completed_at), 'MMM dd, yyyy')}
                           </div>
                         )}

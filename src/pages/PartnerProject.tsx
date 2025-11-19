@@ -4,9 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, FileIcon, UserIcon, ClockIcon, CheckCircleIcon } from 'lucide-react';
+import { CalendarIcon, UserIcon, ClockIcon } from 'lucide-react';
 import { usePartnerAuth } from '@/hooks/usePartnerAuth';
 import { format } from 'date-fns';
+import { pillClasses } from '@/constants/palette';
+import { PartnerHeader } from '@/components/PartnerHeader';
+import { PartnerDock } from '@/components/PartnerDock';
+import { LoadingState } from '@/components/LoadingState';
 
 const PartnerProject = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,16 +61,33 @@ const PartnerProject = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-2xl">Loading project details...</div>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
+        <PartnerHeader />
+        <div className="max-w-5xl mx-auto px-4 py-16">
+          <LoadingState message="Loading project details..." fullHeight />
+        </div>
+        <PartnerDock />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl text-gray-600">Project not found</div>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
+        <PartnerHeader />
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="rounded-3xl border border-white/70 bg-white/90 p-10 text-center shadow-[0_25px_80px_rgba(15,23,42,0.15)]">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Project not found</h2>
+            <p className="text-gray-500">We couldn’t locate this assignment. Please head back to your dashboard.</p>
+            <Button
+              className="mt-6 rounded-full bg-gray-900 text-white hover:bg-black"
+              onClick={() => window.history.back()}
+            >
+              Return
+            </Button>
+          </div>
+        </div>
+        <PartnerDock />
       </div>
     );
   }
@@ -75,32 +96,33 @@ const PartnerProject = () => {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return pillClasses.soft;
       case 'in progress':
-        return 'bg-blue-100 text-blue-800';
+        return pillClasses.dark;
       case 'on hold':
-        return 'bg-yellow-100 text-yellow-800';
+        return pillClasses.charcoal;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return pillClasses.light;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'high':
-        return 'bg-red-100 text-red-800';
+        return pillClasses.dark;
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return pillClasses.charcoal;
       case 'low':
-        return 'bg-green-100 text-green-800';
+        return pillClasses.light;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return pillClasses.light;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
+      <PartnerHeader />
+      <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
         <div className="mb-8">
           <Button 
             variant="ghost" 
@@ -146,9 +168,9 @@ const PartnerProject = () => {
                 </p>
                 
                 {project.notes && (
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">Admin Notes</h4>
-                    <p className="text-blue-800">{project.notes}</p>
+                  <div className="mt-6 p-4 bg-[#F1F1F1] rounded-lg">
+                    <h4 className="font-medium text-[#131313] mb-2">Admin Notes</h4>
+                    <p className="text-[#222222]">{project.notes}</p>
                   </div>
                 )}
               </CardContent>
@@ -278,6 +300,7 @@ const PartnerProject = () => {
           </div>
         </div>
       </div>
+      <PartnerDock />
     </div>
   );
 };

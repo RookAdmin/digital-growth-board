@@ -26,13 +26,13 @@ interface KanbanCardProps {
 }
 
 const statusColors: { [key in Lead['status']]: string } = {
-  New: "bg-gray-500 hover:bg-gray-600 text-white",
-  Contacted: "bg-blue-500 hover:bg-blue-600 text-white",
-  Qualified: "bg-yellow-500 hover:bg-yellow-600 text-white",
-  "Proposal Sent": "bg-purple-500 hover:bg-purple-600 text-white",
-  Approvals: "bg-orange-500 hover:bg-orange-600 text-white",
-  Converted: "bg-green-500 hover:bg-green-600 text-white",
-  Dropped: "bg-red-500 hover:bg-red-600 text-white",
+  New: "bg-[#F1F1F1] text-[#131313] border border-[#E0E0E0]",
+  Contacted: "bg-[#131313] text-[#FAF9F6] border border-[#131313]",
+  Qualified: "bg-[#222222] text-[#FAF9F6] border border-[#222222]",
+  "Proposal Sent": "bg-[#FAF9F6] text-[#131313] border border-[#E0E0E0]",
+  Approvals: "bg-[#131313] text-[#FAF9F6] border border-[#131313]",
+  Converted: "bg-[#222222] text-[#FAF9F6] border border-[#222222]",
+  Dropped: "bg-[#F1F1F1] text-[#222222] border border-[#E0E0E0]",
 };
 
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
@@ -302,7 +302,7 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
               {lead.status === 'Approvals' && userRole === 'Admin' && (
                 <AlertDialog open={isApprovalConfirmOpen} onOpenChange={setIsApprovalConfirmOpen}>
                   <Button
-                    className="w-full mt-2 bg-green-600 text-white hover:bg-green-700 hover:text-white rounded-xl"
+                    className="w-full mt-2 bg-[#131313] text-white hover:bg-[#222222] hover:text-white rounded-xl"
                     size="sm"
                     onClick={handleOpenApprovalDialog}
                     disabled={convertToClientMutation.isPending}
@@ -322,7 +322,7 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                       </AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={handleConfirmConversion}
-                        className="bg-green-600 text-white hover:bg-green-700 hover:text-white rounded-xl"
+                        className="bg-[#131313] text-white hover:bg-[#222222] hover:text-white rounded-xl"
                       >
                         Approve & Convert
                       </AlertDialogAction>

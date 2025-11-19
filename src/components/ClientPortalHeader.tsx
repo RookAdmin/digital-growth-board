@@ -23,7 +23,7 @@ export const ClientPortalHeader = () => {
       <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/lovable-uploads/0adac0fd-b58d-4f5f-959a-b8d6a57c5c8c.png" 
+            src="/clogo.png" 
             alt="Rook Logo" 
             className="h-6 sm:h-7 object-contain"
           />

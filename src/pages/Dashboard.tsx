@@ -6,7 +6,9 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { FilterBar } from "@/components/FilterBar";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Sparkles } from "lucide-react";
+import { PageHero } from "@/components/PageHero";
+import { DockNav } from "@/components/DockNav";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -33,43 +35,57 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f8f5ef] via-[#f4f0ff] to-[#eef7ff] pb-32">
       <Header isAuthenticated={true} />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-black">Dashboard</h1>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 font-light">Manage your leads and track progress.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex items-center gap-2" onClick={handleReportsClick}>
-                <FileText className="h-4 w-4" />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+        <PageHero
+          title="Dashboard"
+          description="Pulse through every lead, follow-up, and milestone with a calmer command center."
+          actions={
+            <>
+              <Button
+                variant="ghost"
+                onClick={handleReportsClick}
+                className="rounded-full border border-white/70 bg-white/80 text-gray-900 hover:bg-white"
+              >
+                <FileText className="mr-2 h-4 w-4" />
                 Reports
               </Button>
-              <AddLeadDialog />
-            </div>
-          </div>
-        </div>
-        
-        <FilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          searchPlaceholder="Search leads by name, email, or phone..."
-          startDate={startDate}
-          endDate={endDate}
-          singleDate={singleDate}
-          onDateRangeChange={handleDateRangeChange}
-          onSingleDateChange={handleSingleDateChange}
+              <AddLeadDialog
+                trigger={
+                  <Button className="rounded-full bg-gray-900 text-white hover:bg-black">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Lead
+                  </Button>
+                }
+              />
+            </>
+          }
         />
-        
-        <KanbanBoard 
-          searchTerm={searchTerm}
-          startDateFilter={startDate}
-          endDateFilter={endDate}
-          dateFilter={singleDate}
-        />
+
+        <section className="rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-[0_15px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition hover:shadow-[0_25px_80px_rgba(15,23,42,0.12)]">
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search leads by name, email, or phone..."
+            startDate={startDate}
+            endDate={endDate}
+            singleDate={singleDate}
+            onDateRangeChange={handleDateRangeChange}
+            onSingleDateChange={handleSingleDateChange}
+          />
+        </section>
+
+        <section className="rounded-[32px] border border-white/80 bg-white p-4 shadow-[0_20px_70px_rgba(15,23,42,0.08)] animate-in fade-in duration-500">
+          <KanbanBoard
+            searchTerm={searchTerm}
+            startDateFilter={startDate}
+            endDateFilter={endDate}
+            dateFilter={singleDate}
+          />
+        </section>
       </main>
+      <DockNav />
     </div>
   );
 };

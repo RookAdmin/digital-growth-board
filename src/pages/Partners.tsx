@@ -6,17 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, UserPlus, MapPin, Phone, Mail, Building } from 'lucide-react';
+import { Search, UserPlus, Phone, Mail, Building, Award, ChevronDown } from 'lucide-react';
 import { AssignPartnerDialog } from '@/components/AssignPartnerDialog';
 import { AddPartnerDialog } from '@/components/AddPartnerDialog';
 import { Tables } from '@/integrations/supabase/types';
 import { Header } from '@/components/Header';
+import { pillClasses } from '@/constants/palette';
+import { DockNav } from '@/components/DockNav';
+import { LoadingState } from '@/components/LoadingState';
+import { PageHero } from '@/components/PageHero';
+import { PARTNER_TIERS, getPartnerTier } from '@/utils/partnerTiers';
+import { getCurrentFiscalYearRange, getFiscalYearRangeForDate } from '@/utils/fiscalYear';
+import { FiscalYearFilter } from '@/components/FiscalYearFilter';
 
 type Partner = Tables<'partners'>;
 
 const Partners = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('');
+  const [selectedTier, setSelectedTier] = useState<string>('all');
+  const [selectedFY, setSelectedFY] = useState<string | undefined>();
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
@@ -37,7 +45,8 @@ const Partners = () => {
             projects:project_id (
               id,
               name,
-              status
+              status,
+              budget
             )
           )
         `)
@@ -49,18 +58,56 @@ const Partners = () => {
     }
   });
 
-  const serviceCategories = ['design', 'development', 'content', 'marketing', 'seo', 'social-media'];
+  const currentFY = getCurrentFiscalYearRange();
 
-  const filteredPartners = partners.filter(partner => {
-    const matchesSearch = !searchTerm || 
-      partner.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (partner.company_name && partner.company_name.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = !selectedServiceCategory || 
-      (partner.service_categories && partner.service_categories.includes(selectedServiceCategory));
-    
-    return matchesSearch && matchesCategory;
+  const partnersWithMeta = partners.map((partner: any) => {
+    const fyTotals: Record<string, { amount: number; start: number }> = {};
+
+    partner.partner_project_assignments?.forEach((assignment: any) => {
+      const project = assignment.projects;
+      if (!project || project.status !== 'Completed') return;
+      const budget = project.budget || 0;
+      const referenceDate = project.updated_at ? new Date(project.updated_at) : new Date(project.created_at);
+      const fy = getFiscalYearRangeForDate(referenceDate);
+      fyTotals[fy.label] = {
+        amount: (fyTotals[fy.label]?.amount || 0) + budget,
+        start: fy.start.getTime(),
+      };
+    });
+
+    const revenueFY = selectedFY || currentFY.label;
+    const currentRevenue = fyTotals[revenueFY]?.amount || 0;
+
+    return {
+      raw: partner,
+      revenue: currentRevenue,
+      fyHistory: Object.entries(fyTotals)
+        .map(([label, meta]) => ({
+          label,
+          amount: meta.amount,
+          start: meta.start,
+        }))
+        .sort((a, b) => b.start - a.start),
+      tierInfo: getPartnerTier(currentRevenue),
+    };
+  });
+
+  const filteredPartners = partnersWithMeta.filter(({ raw, tierInfo }) => {
+    const matchesSearch =
+      !searchTerm ||
+      raw.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      raw.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (raw.company_name && raw.company_name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesTier = selectedTier === 'all' || tierInfo.tier.name === selectedTier;
+    return matchesSearch && matchesTier;
+  });
+
+  const sortedPartners = filteredPartners.sort((a, b) => {
+    const tierIndexA = PARTNER_TIERS.findIndex((t) => t.name === a.tierInfo.tier.name);
+    const tierIndexB = PARTNER_TIERS.findIndex((t) => t.name === b.tierInfo.tier.name);
+    if (tierIndexA !== tierIndexB) return tierIndexA - tierIndexB;
+    return b.revenue - a.revenue;
   });
 
   const handleAssignProject = (partner: Partner) => {
@@ -70,74 +117,92 @@ const Partners = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-2xl">Loading partners...</div>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
+        <Header isAuthenticated={true} />
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+          <LoadingState message="Loading partners..." fullHeight />
+        </main>
+        <DockNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f4ef] via-[#f4f1ff] to-[#eef7ff] pb-32">
       <Header isAuthenticated={true} />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Partners</h1>
-          <p className="text-gray-600">Manage external partners and freelancers</p>
-        </div>
-        <Button onClick={() => setAddDialogOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+        <PageHero
+          title="Partners"
+          description="Curate world-class collaborators, celebrate their wins, and keep every brief on rhythm."
+          actions={
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              className="rounded-full bg-gray-900 text-white hover:bg-black"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
           Add Partner
         </Button>
-      </div>
+          }
+        />
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[300px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <section className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur space-y-6">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-[0.3em] text-gray-400">Search</label>
+              <div className="relative rounded-2xl border border-gray-200 bg-white px-4 py-2.5 shadow-inner shadow-white/40">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Search by name, email, or company..."
+                  placeholder="Search by name, email, or company"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-none bg-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
-            <select
-              value={selectedServiceCategory}
-              onChange={(e) => setSelectedServiceCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Categories</option>
-              {serviceCategories.map(category => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
-              ))}
-            </select>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-[0.3em] text-gray-400">Tier</label>
+              <div className="relative rounded-2xl border border-gray-200 bg-white px-4 py-2.5">
+                <select
+                  value={selectedTier}
+                  onChange={(e) => setSelectedTier(e.target.value)}
+                  className="w-full appearance-none bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
+                >
+                  <option value="all">All Tiers</option>
+                  {PARTNER_TIERS.map((tier) => (
+                    <option key={tier.name} value={tier.name}>
+                      {tier.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-[0.3em] text-gray-400">Fiscal Year</label>
+              <FiscalYearFilter
+                selectedFY={selectedFY}
+                onFYChange={setSelectedFY}
+              />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
       {/* Partners Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPartners.map((partner: any) => {
+        {sortedPartners.map(({ raw: partner, revenue, tierInfo, fyHistory }) => {
           const activeProjects = partner.partner_project_assignments?.filter(
             (assignment: any) => assignment.projects?.status !== 'Completed'
           ).length || 0;
+          const nextTier = tierInfo.nextTier;
 
           return (
-            <Card key={partner.id} className="hover:shadow-md transition-shadow">
+            <Card key={partner.id} className="hover:-translate-y-1 hover:shadow-[0_25px_80px_rgba(15,23,42,0.12)] transition-all duration-300 border border-white/70 bg-white">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div>
                     <CardTitle className="text-lg">{partner.full_name}</CardTitle>
                     {partner.company_name && (
                       <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
@@ -145,63 +210,75 @@ const Partners = () => {
                         {partner.company_name}
                       </p>
                     )}
+                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mt-2">
+                      {tierInfo.tier.name} tier
+                    </p>
                   </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Active
+                  <Badge className="rounded-full bg-gray-900 text-white">
+                    ${revenue.toLocaleString()}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
                     <Mail className="h-3 w-3" />
                     {partner.email}
                   </div>
                   {partner.phone && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
                       <Phone className="h-3 w-3" />
                       {partner.phone}
                     </div>
                   )}
                   {partner.location && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="h-3 w-3" />
+                    <div className="flex items-center gap-2">
+                      <Building className="h-3 w-3" />
                       {partner.location}
                     </div>
                   )}
                 </div>
 
-                {/* Service Categories */}
-                {partner.service_categories && partner.service_categories.length > 0 && (
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      Services
-                    </label>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {partner.service_categories.map((category: string) => (
-                        <Badge key={category} variant="outline" className="text-xs">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Project Stats */}
-                <div className="pt-3 border-t border-gray-100">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Active Projects</span>
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-2">
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>Active Projects</span>
                     <Badge variant="secondary">{activeProjects}</Badge>
                   </div>
-                  <div className="flex justify-between items-center text-sm mt-1">
-                    <span className="text-gray-600">Total Projects</span>
-                    <Badge variant="secondary">
-                      {partner.partner_project_assignments?.length || 0}
-                    </Badge>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>Tier Progress</span>
+                    <span>{nextTier ? `${Math.round(tierInfo.progressToNext * 100)}%` : 'Maxed'}</span>
                   </div>
+                  <div className="h-2 w-full rounded-full bg-white">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#7f5dff] to-[#ff8bd8]"
+                      style={{ width: `${nextTier ? tierInfo.progressToNext * 100 : 100}%` }}
+                    />
+                  </div>
+                  {nextTier ? (
+                    <p className="text-xs text-gray-500">
+                      Reach ${nextTier.minRevenue.toLocaleString()} to unlock {nextTier.name}.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500">Top tier achieved.</p>
+                  )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Award className="h-4 w-4 text-gray-400" />
+                  Rewards and communications stored in Agreements folder.
                 </div>
 
-                {/* Actions */}
+                  {fyHistory.length > 0 && (
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p className="font-semibold text-gray-600">Fiscal History:</p>
+                      {fyHistory.slice(0, 2).map((fy) => (
+                        <p key={fy.label}>
+                          {fy.label}: ${fy.amount.toLocaleString()}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
@@ -227,7 +304,7 @@ const Partners = () => {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No partners found</h3>
             <p className="text-gray-500">
-              {searchTerm || selectedServiceCategory 
+              {searchTerm || selectedTier !== 'all'
                 ? "Try adjusting your search filters."
                 : "Partners will appear here once they register."}
             </p>
@@ -257,6 +334,7 @@ const Partners = () => {
         />
       )}
       </main>
+      <DockNav />
     </div>
   );
 };
