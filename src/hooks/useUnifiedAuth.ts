@@ -18,6 +18,12 @@ export const useUnifiedAuth = () => {
   });
 
   const detectUserType = async (userId: string): Promise<UserType> => {
+    // Check cache first
+    const cachedType = sessionStorage.getItem(`userType_${userId}`);
+    if (cachedType && (cachedType === 'client' || cachedType === 'partner' || cachedType === 'admin')) {
+      return cachedType as UserType;
+    }
+
     // Run all queries in parallel for better performance
     const [clientResult, partnerResult, teamResult] = await Promise.all([
       supabase.from('client_users').select('id').eq('id', userId).maybeSingle(),
@@ -25,18 +31,23 @@ export const useUnifiedAuth = () => {
       supabase.from('team_members').select('id').eq('user_id', userId).maybeSingle(),
     ]);
 
-    if (clientResult.data) return 'client';
-    if (partnerResult.data) return 'partner';
-    if (teamResult.data) return 'admin';
+    let userType: UserType = null;
+    if (clientResult.data) userType = 'client';
+    else if (partnerResult.data) userType = 'partner';
+    else if (teamResult.data) userType = 'admin';
 
-    return null;
+    // Cache the result
+    if (userType) {
+      sessionStorage.setItem(`userType_${userId}`, userType);
+    }
+
+    return userType;
   };
 
   useEffect(() => {
     let mounted = true;
-    let initialCheckDone = false;
 
-    // Check for existing session FIRST
+    // Check for existing session
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -54,16 +65,17 @@ export const useUnifiedAuth = () => {
       } else {
         setAuthState({ user: null, userType: null, loading: false });
       }
-      initialCheckDone = true;
     };
 
     initAuth();
 
-    // Set up auth state listener
+    // Set up auth state listener (only for actual auth changes, not initial state)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Skip if initial check hasn't completed to avoid duplicate calls
-        if (!initialCheckDone || !mounted) return;
+        if (!mounted) return;
+        
+        // Only process actual auth events (sign in, sign out, token refresh)
+        if (event === 'INITIAL_SESSION') return;
         
         if (session?.user) {
           const userType = await detectUserType(session.user.id);
@@ -75,6 +87,8 @@ export const useUnifiedAuth = () => {
             });
           }
         } else {
+          // Clear cache on sign out
+          sessionStorage.clear();
           setAuthState({ user: null, userType: null, loading: false });
         }
       }
@@ -113,6 +127,7 @@ export const useUnifiedAuth = () => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (!error) {
+      sessionStorage.clear();
       setAuthState({ user: null, userType: null, loading: false });
     }
     return { error };

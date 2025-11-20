@@ -26,7 +26,7 @@ export const useClientAuth = () => {
             .from('client_users')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
           
           if (clientUserData) {
             setClientUser(clientUserData);
@@ -44,12 +44,14 @@ export const useClientAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (event === 'INITIAL_SESSION') return; // Skip initial session
+        
         if (session?.user) {
           const { data: clientUserData } = await supabase
             .from('client_users')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
           
           if (clientUserData) {
             setClientUser(clientUserData);
