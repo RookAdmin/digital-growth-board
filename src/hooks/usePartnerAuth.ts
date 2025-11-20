@@ -22,10 +22,45 @@ export const usePartnerAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        if (session?.user) {
+          // Use setTimeout to avoid blocking the auth callback
+          setTimeout(async () => {
+            if (!mounted) return;
+            try {
+              const { data: partnerData } = await supabase
+                .from('partners')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (mounted && partnerData) {
+                setPartner(partnerData);
+              }
+            } catch (error) {
+              console.error('Error fetching partner:', error);
+            } finally {
+              if (mounted) setLoading(false);
+            }
+          }, 0);
+        } else {
+          setPartner(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // Then check for existing session
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
+        if (mounted && session?.user) {
           const { data: partnerData } = await supabase
             .from('partners')
             .select('*')
@@ -39,34 +74,16 @@ export const usePartnerAuth = () => {
       } catch (error) {
         console.error('Error checking session:', error);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'INITIAL_SESSION') return; // Skip initial session
-        
-        if (session?.user) {
-          const { data: partnerData } = await supabase
-            .from('partners')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (partnerData) {
-            setPartner(partnerData);
-          }
-        } else {
-          setPartner(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (signUpData: {

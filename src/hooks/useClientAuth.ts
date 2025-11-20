@@ -16,12 +16,45 @@ export const useClientAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    let mounted = true;
+
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        if (session?.user) {
+          // Use setTimeout to avoid blocking the auth callback
+          setTimeout(async () => {
+            if (!mounted) return;
+            try {
+              const { data: clientUserData } = await supabase
+                .from('client_users')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (mounted && clientUserData) {
+                setClientUser(clientUserData);
+              }
+            } catch (error) {
+              console.error('Error fetching client user:', error);
+            } finally {
+              if (mounted) setLoading(false);
+            }
+          }, 0);
+        } else {
+          setClientUser(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // Then check for existing session
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          // Check if this is a client user
+        if (mounted && session?.user) {
           const { data: clientUserData } = await supabase
             .from('client_users')
             .select('*')
@@ -35,35 +68,16 @@ export const useClientAuth = () => {
       } catch (error) {
         console.error('Error checking session:', error);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     checkSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'INITIAL_SESSION') return; // Skip initial session
-        
-        if (session?.user) {
-          const { data: clientUserData } = await supabase
-            .from('client_users')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          if (clientUserData) {
-            setClientUser(clientUserData);
-          }
-        } else {
-          setClientUser(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
