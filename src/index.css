@@ -41,14 +41,14 @@
     --chart-4: 0 0% 50%;
     --chart-5: 0 0% 60%;
     
-    --color-leads: hsl(var(--chart-1));
-    --color-clients: hsl(var(--chart-2));
-    --color-revenue: hsl(var(--chart-5));
-    --color-not-started: hsl(var(--chart-1));
-    --color-in-progress: hsl(var(--chart-2));
-    --color-review: hsl(var(--chart-3));
-    --color-completed: hsl(var(--chart-4));
-    --color-unknown: hsl(var(--chart-5));
+    --color-leads: 0 0% 20%;
+    --color-clients: 0 0% 30%;
+    --color-revenue: 0 0% 60%;
+    --color-not-started: 0 0% 20%;
+    --color-in-progress: 0 0% 30%;
+    --color-review: 0 0% 40%;
+    --color-completed: 0 0% 50%;
+    --color-unknown: 0 0% 60%;
   }
 
   .dark {
@@ -86,14 +86,14 @@
     --chart-4: 0 0% 50%;
     --chart-5: 0 0% 60%;
     
-    --color-leads: hsl(var(--chart-1));
-    --color-clients: hsl(var(--chart-2));
-    --color-revenue: hsl(var(--chart-5));
-    --color-not-started: hsl(var(--chart-1));
-    --color-in-progress: hsl(var(--chart-2));
-    --color-review: hsl(var(--chart-3));
-    --color-completed: hsl(var(--chart-4));
-    --color-unknown: hsl(var(--chart-5));
+    --color-leads: 0 0% 20%;
+    --color-clients: 0 0% 30%;
+    --color-revenue: 0 0% 60%;
+    --color-not-started: 0 0% 20%;
+    --color-in-progress: 0 0% 30%;
+    --color-review: 0 0% 40%;
+    --color-completed: 0 0% 50%;
+    --color-unknown: 0 0% 60%;
   }
 }
 
