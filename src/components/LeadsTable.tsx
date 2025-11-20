@@ -1,0 +1,290 @@
+import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Lead, LeadStatus } from "@/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LeadDetailsModal } from "@/components/LeadDetailsModal";
+import { format } from "date-fns";
+import { Users } from "lucide-react";
+
+const fetchLeads = async (): Promise<Lead[]> => {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data as Lead[];
+};
+
+interface LeadsTableProps {
+  searchTerm?: string;
+  startDate?: Date;
+  endDate?: Date;
+  singleDate?: Date;
+  statusFilter?: string;
+}
+
+const statusStyles: Record<LeadStatus, string> = {
+  New: "bg-gray-100 text-gray-900",
+  Contacted: "bg-blue-100 text-blue-800",
+  Qualified: "bg-emerald-100 text-emerald-800",
+  "Proposal Sent": "bg-purple-100 text-purple-800",
+  Approvals: "bg-amber-100 text-amber-800",
+  Converted: "bg-black text-white",
+  Dropped: "bg-red-100 text-red-700",
+};
+
+export const LeadsTable = ({
+  searchTerm = "",
+  startDate,
+  endDate,
+  singleDate,
+  statusFilter = "all",
+}: LeadsTableProps) => {
+  const { data: leads, isLoading, error } = useQuery({
+    queryKey: ["leads"],
+    queryFn: fetchLeads,
+  });
+
+  const queryClient = useQueryClient();
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
+      const { data: currentLead, error: fetchError } = await supabase
+        .from("leads")
+        .select("status")
+        .eq("id", leadId)
+        .single();
+
+      if (fetchError) throw new Error(fetchError.message);
+
+      const { error: updateError } = await supabase
+        .from("leads")
+        .update({ status })
+        .eq("id", leadId);
+
+      if (updateError) throw new Error(updateError.message);
+
+      if (currentLead?.status !== status) {
+        const { data: { user } } = await supabase.auth.getUser();
+        await supabase.from("lead_status_history").insert({
+          lead_id: leadId,
+          old_status: currentLead?.status ?? null,
+          new_status: status,
+          changed_by: user?.id,
+          changed_at: new Date().toISOString(),
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["leads-with-history"] });
+    },
+  });
+
+  const handleUpdateLeadStatus = (leadId: string, status: LeadStatus) => {
+    updateStatusMutation.mutate({ leadId, status });
+  };
+
+  const filteredLeads = useMemo(() => {
+    if (!leads) return [];
+    const term = searchTerm.toLowerCase().trim();
+
+    return leads.filter((lead) => {
+      if (lead.status === "Converted") return false;
+
+      const matchesSearch =
+        !term ||
+        lead.name.toLowerCase().includes(term) ||
+        lead.email.toLowerCase().includes(term) ||
+        (lead.phone && lead.phone.toLowerCase().includes(term)) ||
+        (lead.business_name && lead.business_name.toLowerCase().includes(term)) ||
+        (lead.lead_source && lead.lead_source.toLowerCase().includes(term));
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        lead.status.toLowerCase() === statusFilter.toLowerCase();
+
+      const createdDate = new Date(lead.created_at);
+      const matchesSingleDate =
+        !singleDate || createdDate.toDateString() === singleDate.toDateString();
+
+      let matchesRange = true;
+      if (startDate || endDate) {
+        if (startDate) {
+          matchesRange = matchesRange && createdDate >= startDate;
+        }
+        if (endDate) {
+          const endOfDay = new Date(endDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          matchesRange = matchesRange && createdDate <= endOfDay;
+        }
+      }
+
+      return matchesSearch && matchesStatus && matchesSingleDate && matchesRange;
+    });
+  }, [leads, searchTerm, statusFilter, startDate, endDate, singleDate]);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-12 w-full bg-gray-100" />
+        <Skeleton className="h-12 w-full bg-gray-100" />
+        <Skeleton className="h-12 w-full bg-gray-100" />
+      </div>
+    );
+  }
+
+  if (error instanceof Error) {
+    return (
+      <div className="p-6">
+        <div className="text-red-600 bg-red-50 p-4 rounded-xl border border-red-200">
+          Error fetching leads: {error.message}
+        </div>
+      </div>
+    );
+  }
+
+  if (!leads || leads.length === 0) {
+    return (
+      <div className="p-8 text-center bg-white">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <Users className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
+        <p className="text-gray-500">
+          Capture your first lead to start building relationships.
+        </p>
+      </div>
+    );
+  }
+
+  if (
+    filteredLeads.length === 0 &&
+    (searchTerm || startDate || endDate || singleDate || statusFilter !== "all")
+  ) {
+    return (
+      <div className="p-8 text-center bg-white">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <Users className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
+        <p className="text-gray-500">
+          No leads match your current filters. Try adjusting your search criteria.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="overflow-hidden rounded-xl bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-0 bg-gray-50">
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Name
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Email
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Phone
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Business
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Status
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Source
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6">
+                Added
+              </TableHead>
+              <TableHead className="font-semibold text-gray-900 py-4 px-6 text-right">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredLeads.map((lead) => (
+              <TableRow
+                key={lead.id}
+                className="border-0 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-0"
+                onClick={() => {
+                  setSelectedLead(lead);
+                  setIsModalOpen(true);
+                }}
+              >
+                <TableCell className="font-medium text-gray-900 py-4 px-6">
+                  {lead.name}
+                </TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">
+                  {lead.email}
+                </TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">
+                  {lead.phone || "-"}
+                </TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">
+                  {lead.business_name || "-"}
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <Badge
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[lead.status]}`}
+                  >
+                    {lead.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">
+                  {lead.lead_source || "-"}
+                </TableCell>
+                <TableCell className="text-gray-600 py-4 px-6">
+                  {format(new Date(lead.created_at), "MMM d, yyyy")}
+                </TableCell>
+                <TableCell className="text-right py-4 px-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedLead(lead);
+                      setIsModalOpen(true);
+                    }}
+                    className="rounded-xl border-gray-200 text-gray-900 hover:bg-gray-900 hover:text-white"
+                  >
+                    View lead
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <LeadDetailsModal
+        lead={selectedLead}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedLead(null);
+        }}
+        onUpdateLeadStatus={handleUpdateLeadStatus}
+      />
+    </>
+  );
+};
+

@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
+  UserPlus2,
   FolderKanban,
   Handshake,
   UserCircle2,
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 const dockItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Clients", href: "/clients", icon: Users },
+  { label: "Leads", href: "/leads", icon: UserPlus2 },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Partners", href: "/partners", icon: Handshake },
   { label: "Team", href: "/team", icon: UserCircle2 },

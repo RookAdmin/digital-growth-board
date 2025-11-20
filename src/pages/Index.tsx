@@ -5,10 +5,13 @@ import { About } from "@/components/About";
 import { ContactPrompt } from "@/components/ContactPrompt";
 import { Footer } from "@/components/Footer";
 import { DockNav } from "@/components/DockNav";
+import { PartnerDock } from "@/components/PartnerDock";
 import { useAuth } from "@/hooks/useAuth";
+import { usePartnerAuth } from "@/hooks/usePartnerAuth";
 
 const Index = () => {
   const { session } = useAuth();
+  const { partner } = usePartnerAuth();
 
   return (
     <div className="min-h-screen bg-white">
@@ -19,7 +22,7 @@ const Index = () => {
         <ContactPrompt />
       </main>
       <Footer />
-      {session && <DockNav />}
+      {partner ? <PartnerDock /> : session && <DockNav />}
     </div>
   );
 };

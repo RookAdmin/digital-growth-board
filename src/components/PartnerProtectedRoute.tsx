@@ -1,6 +1,7 @@
 
 import { Navigate } from 'react-router-dom';
 import { usePartnerAuth } from '@/hooks/usePartnerAuth';
+import { PartnerDock } from './PartnerDock';
 
 interface PartnerProtectedRouteProps {
   children: React.ReactNode;
@@ -21,7 +22,12 @@ const PartnerProtectedRoute = ({ children }: PartnerProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <PartnerDock />
+    </>
+  );
 };
 
 export default PartnerProtectedRoute;

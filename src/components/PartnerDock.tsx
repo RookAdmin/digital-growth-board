@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Award, FileText } from "lucide-react";
+import { LayoutDashboard, Award, FileText, FolderKanban, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const partnerDockItems = [
   { label: "Dashboard", href: "/partner/dashboard", icon: LayoutDashboard },
+  { label: "My Projects", href: "/partner/dashboard#projects", icon: FolderKanban },
+  { label: "My Clients", href: "/partner/dashboard#clients", icon: Users },
   { label: "Awards", href: "/partner/awards", icon: Award },
   { label: "Agreements", href: "/partner/agreements", icon: FileText },
 ];
@@ -16,7 +18,11 @@ export const PartnerDock = () => {
       <div className="pointer-events-auto flex items-center gap-4 rounded-[28px] border border-white/70 bg-white/90 px-6 py-3 shadow-[0_25px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl">
         {partnerDockItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.href;
+          const [path, hash] = item.href.split("#");
+          const isAnchor = Boolean(hash);
+          const isActive = isAnchor
+            ? location.pathname === path && location.hash === `#${hash}`
+            : location.pathname === item.href;
 
           return (
             <Link

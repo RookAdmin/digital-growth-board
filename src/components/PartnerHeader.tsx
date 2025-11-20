@@ -1,19 +1,10 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePartnerAuth } from "@/hooks/usePartnerAuth";
-import { cn } from "@/lib/utils";
-
-const partnerNavItems = [
-  { label: "Dashboard", href: "/partner/dashboard" },
-  { label: "My Projects", href: "/partner/dashboard#projects" },
-  { label: "Awards", href: "/partner/awards" },
-  { label: "Agreements", href: "/partner/agreements" },
-];
 
 export const PartnerHeader = () => {
   const { partner, signOut } = usePartnerAuth();
-  const location = useLocation();
 
   const initials =
     partner?.full_name
@@ -46,30 +37,7 @@ export const PartnerHeader = () => {
             </div>
           </div>
 
-          <div className="flex flex-1 items-center justify-center gap-1 overflow-x-auto rounded-full bg-gray-50/70 px-3 py-1 text-sm text-gray-600 md:justify-start">
-            {partnerNavItems.map((item) => {
-              const [path, hash] = item.href.split("#");
-              const isAnchor = Boolean(hash);
-              const isActive = isAnchor
-                ? location.pathname === path && location.hash === `#${hash}`
-                : location.pathname === item.href;
-
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                    isActive ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-white"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 md:ml-auto">
             <div className="hidden h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white md:flex">
               {initials}
             </div>

@@ -42,6 +42,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (userType === 'partner') {
+    return <Navigate to="/partner/dashboard" replace />;
+  }
+
   // Check role-based access control
   if (userRole) {
     const allowedPaths = ['/projects'];

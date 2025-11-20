@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import Projects from "./pages/Projects";
+import Leads from "./pages/Leads";
 import ProjectDetails from "./pages/ProjectDetails";
 import Team from "./pages/Team";
 import UnifiedLogin from "./pages/UnifiedLogin";
@@ -123,6 +124,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClientDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leads"
+              element={
+                <ProtectedRoute>
+                  <Leads />
                 </ProtectedRoute>
               }
             />
