@@ -18,10 +18,14 @@ export const useUnifiedAuth = () => {
   });
 
   const detectUserType = async (userId: string): Promise<UserType> => {
-    // Check cache first
-    const cachedType = sessionStorage.getItem(`userType_${userId}`);
-    if (cachedType && (cachedType === 'client' || cachedType === 'partner' || cachedType === 'admin')) {
-      return cachedType as UserType;
+    // Check cache first (use localStorage for persistence across sessions)
+    try {
+      const cachedType = localStorage.getItem(`userType_${userId}`);
+      if (cachedType && (cachedType === 'client' || cachedType === 'partner' || cachedType === 'admin')) {
+        return cachedType as UserType;
+      }
+    } catch (e) {
+      // Ignore storage errors
     }
 
     // Run all queries in parallel for better performance
@@ -36,9 +40,13 @@ export const useUnifiedAuth = () => {
     else if (partnerResult.data) userType = 'partner';
     else if (teamResult.data) userType = 'admin';
 
-    // Cache the result
+    // Cache the result (use localStorage for persistence)
     if (userType) {
-      sessionStorage.setItem(`userType_${userId}`, userType);
+      try {
+        localStorage.setItem(`userType_${userId}`, userType);
+      } catch (e) {
+        // Ignore storage errors
+      }
     }
 
     return userType;
@@ -47,7 +55,42 @@ export const useUnifiedAuth = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Check for existing session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        // Handle all auth events including initial session
+        if (session?.user) {
+          // Use setTimeout to avoid blocking the auth callback
+          setTimeout(async () => {
+            if (!mounted) return;
+            const userType = await detectUserType(session.user.id);
+            if (mounted) {
+              setAuthState({
+                user: session.user,
+                userType,
+                loading: false,
+              });
+            }
+          }, 0);
+        } else {
+          // Clear cache on sign out
+          try {
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('userType_')) {
+                localStorage.removeItem(key);
+              }
+            });
+          } catch (e) {
+            // Ignore storage errors
+          }
+          setAuthState({ user: null, userType: null, loading: false });
+        }
+      }
+    );
+
+    // Then check for existing session
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -68,31 +111,6 @@ export const useUnifiedAuth = () => {
     };
 
     initAuth();
-
-    // Set up auth state listener (only for actual auth changes, not initial state)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        // Only process actual auth events (sign in, sign out, token refresh)
-        if (event === 'INITIAL_SESSION') return;
-        
-        if (session?.user) {
-          const userType = await detectUserType(session.user.id);
-          if (mounted) {
-            setAuthState({
-              user: session.user,
-              userType,
-              loading: false,
-            });
-          }
-        } else {
-          // Clear cache on sign out
-          sessionStorage.clear();
-          setAuthState({ user: null, userType: null, loading: false });
-        }
-      }
-    );
 
     return () => {
       mounted = false;
@@ -127,7 +145,16 @@ export const useUnifiedAuth = () => {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (!error) {
-      sessionStorage.clear();
+      // Clear user type cache
+      try {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('userType_')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (e) {
+        // Ignore storage errors
+      }
       setAuthState({ user: null, userType: null, loading: false });
     }
     return { error };
