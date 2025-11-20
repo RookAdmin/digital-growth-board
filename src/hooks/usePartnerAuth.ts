@@ -30,7 +30,7 @@ export const usePartnerAuth = () => {
             .from('partners')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
           
           if (partnerData) {
             setPartner(partnerData);
@@ -47,12 +47,14 @@ export const usePartnerAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (event === 'INITIAL_SESSION') return; // Skip initial session
+        
         if (session?.user) {
           const { data: partnerData } = await supabase
             .from('partners')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
           
           if (partnerData) {
             setPartner(partnerData);

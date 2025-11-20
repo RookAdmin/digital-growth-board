@@ -26,8 +26,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       return data?.role || null;
     },
     enabled: !!user && userType === 'admin',
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 30 * 60 * 1000, // Cache for 30 minutes
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
   });
 
   if (loading || (userType === 'admin' && roleLoading)) {
