@@ -27,7 +27,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
     business_name: client.business_name || '',
     legal_name: '',
     gst_no: '',
-    industry: '',
+    industry: (client as any).industry || '',
     facebook_url: '',
     instagram_url: '',
     linkedin_url: '',
@@ -36,6 +36,39 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
     city: (client as any).city || '',
     pincode: (client as any).pincode || '',
   });
+
+  const industries = [
+    'Information Technology (IT)',
+    'E-Commerce',
+    'Healthcare',
+    'Education & E-Learning',
+    'Finance & Banking',
+    'Real Estate',
+    'Manufacturing',
+    'Retail',
+    'Food & Beverages',
+    'Hospitality & Tourism',
+    'Construction',
+    'Logistics & Transportation',
+    'Automotive',
+    'Media & Entertainment',
+    'Marketing & Advertising',
+    'Telecommunications',
+    'Agriculture',
+    'Pharmaceuticals',
+    'Insurance',
+    'Energy & Utilities',
+    'Fashion & Apparel',
+    'Beauty & Personal Care',
+    'Legal Services',
+    'Human Resources & Staffing',
+    'Consulting',
+    'Sports & Fitness',
+    'Non-Profit & NGOs',
+    'Government & Public Sector',
+    'Electronics & Hardware',
+    'Cleaning & Facility Management'
+  ];
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,6 +87,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           email: data.email,
           phone: data.phone,
           business_name: data.business_name,
+          industry: data.industry,
           country: data.country,
           state: data.state,
           city: data.city,
@@ -186,7 +220,7 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           </div>
 
           <div>
-            <Label htmlFor="gst_no" className="text-black">GST No.</Label>
+            <Label htmlFor="gst_no" className="text-black">GST No./Tax No.</Label>
             <Input
               id="gst_no"
               value={formData.gst_no}
@@ -198,13 +232,18 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
 
           <div>
             <Label htmlFor="industry" className="text-black">Industry</Label>
-            <Input
-              id="industry"
-              value={formData.industry}
-              onChange={(e) => handleInputChange('industry', e.target.value)}
-              maxLength={18}
-              className="bg-white border border-gray-300 text-black rounded-xl"
-            />
+            <Select value={formData.industry} onValueChange={(value) => handleInputChange('industry', value)}>
+              <SelectTrigger className="bg-white border-gray-300 text-black">
+                <SelectValue placeholder="Select industry" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-300">
+                {industries.map((industry) => (
+                  <SelectItem key={industry} value={industry} className="text-black hover:bg-gray-100">
+                    {industry}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

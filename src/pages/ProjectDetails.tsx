@@ -7,18 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, DollarSign, Users, CheckSquare, FolderOpen, Plus, MessageSquare, Upload, Activity, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, DollarSign, Users, FolderOpen, Plus, Edit, Flag, ReceiptText, FileText } from 'lucide-react';
 import { format } from 'date-fns';
-import { Project, Task } from '@/types';
+import { Project, Task, Invoice } from '@/types';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { ProjectFileManager } from '@/components/ProjectFileManager';
-import { ProjectMessaging } from '@/components/ProjectMessaging';
+import { ProjectAgreements } from '@/components/ProjectAgreements';
 import { ProjectActivityLog } from '@/components/ProjectActivityLog';
 import { ProjectTeamManager } from '@/components/ProjectTeamManager';
 import { EditTaskDialog } from '@/components/EditTaskDialog';
 import { pillClasses } from '@/constants/palette';
 import { DockNav } from '@/components/DockNav';
 import { LoadingState } from '@/components/LoadingState';
+import { AddInvoiceForm } from '@/components/AddInvoiceForm';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -35,17 +36,58 @@ const getStatusColor = (status: string) => {
   }
 };
 
+interface ProjectTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+type ProjectDetailsProject = Project & {
+  tasks: Task[];
+  team_members: ProjectTeamMember[];
+  invoices: Invoice[];
+};
+
+const getInvoiceStatusColor = (status: string) => {
+  switch (status) {
+    case 'Paid':
+      return pillClasses.soft;
+    case 'Sent':
+      return pillClasses.dark;
+    case 'Overdue':
+      return pillClasses.charcoal;
+    case 'Draft':
+    default:
+      return pillClasses.light;
+  }
+};
+
+const formatCurrency = (value: number, currency: string) => {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency || 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value || 0);
+  } catch {
+    return `$${(value || 0).toFixed(2)}`;
+  }
+};
+
 const ProjectDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [showAddTask, setShowAddTask] = useState(false);
+  const [showAddMilestone, setShowAddMilestone] = useState(false);
+  const [showAddInvoice, setShowAddInvoice] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
   useEffect(() => {
     document.title = "Project Details - Rook";
   }, []);
 
-  const { data: project, isLoading } = useQuery({
+  const { data: projectData, isLoading } = useQuery<any>({
     queryKey: ['project', id],
     queryFn: async () => {
       if (!id) throw new Error('Project ID is required');
@@ -72,11 +114,19 @@ const ProjectDetails = () => {
         .from('team_members')
         .select('id, name, email, role')
         .in('id', data?.assigned_team_members || []);
+
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('project_id', id)
+        .order('created_at', { ascending: false });
       
-      return data ? { ...data, tasks: tasks || [], team_members: teamMembers || [] } as any : null;
+      return data ? ({ ...data, tasks: tasks || [], team_members: teamMembers || [], invoices: invoices || [] } as ProjectDetailsProject) : null;
     },
     enabled: !!id,
   });
+
+  const project = projectData as ProjectDetailsProject | null;
 
   if (isLoading) {
     return (
@@ -112,6 +162,11 @@ const ProjectDetails = () => {
     );
   }
 
+  const milestoneTasks = project.tasks?.filter((task) => task.type === 'milestone') || [];
+  const completedMilestones = milestoneTasks.filter((milestone) => milestone.status === 'Completed').length;
+  const linkedMilestones = milestoneTasks.filter((milestone) => milestone.invoice_id).length;
+  const projectInvoices = project.invoices || [];
+
   return (
     <div className="min-h-screen bg-[#FAF9F6] pb-32">
       <Header isAuthenticated={true} />
@@ -144,9 +199,9 @@ const ProjectDetails = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="milestones">Milestones & Finance</TabsTrigger>
             <TabsTrigger value="files">Files</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="agreements">Agreements/Documents</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
@@ -191,118 +246,184 @@ const ProjectDetails = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="tasks" className="space-y-6">
-                {/* Add Task Form */}
-                {showAddTask && (
-                  <AddTaskForm 
-                    projectId={id!} 
-                    onCancel={() => setShowAddTask(false)} 
-                  />
-                )}
-
-                {/* Tasks */}
+              <TabsContent value="milestones" className="space-y-6">
+                {/* Milestone & Finance Section */}
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckSquare className="w-5 h-5" />
-                        Tasks
-                        {project.tasks && (
-                          <Badge variant="secondary">
-                            {project.tasks.filter(t => t.status === 'Completed').length}/{project.tasks.length} completed
-                          </Badge>
-                        )}
+                        <Flag className="w-5 h-5" />
+                        Milestones & Finance
                       </CardTitle>
-                      <Button onClick={() => setShowAddTask(true)} size="sm">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Task
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {project.tasks && project.tasks.length > 0 ? (
-                      <div className="space-y-3">
-                        {project.tasks.map((task: any) => (
-                          <div key={task.id} className="border border-gray-200 rounded-lg">
-                            <div className="flex items-start gap-3 p-3">
-                              <div className={`w-2 h-2 rounded-full mt-2 ${
-                                task.status === 'Completed' ? 'bg-[#131313]' : 
-                                task.status === 'In Progress' ? 'bg-[#222222]' : 'bg-[#F1F1F1]'
-                              }`} />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start gap-2">
-                                  <h5 className="font-medium text-gray-900">{task.title}</h5>
-                                  <Badge variant="outline" className="text-xs">
-                                    {task.type}
-                                  </Badge>
-                                </div>
-                                {task.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                                )}
-                                {task.description_image_url && (
-                                  <img 
-                                    src={task.description_image_url} 
-                                    alt="Task description" 
-                                    className="mt-2 max-w-xs rounded border"
-                                  />
-                                )}
-                                {task.remarks && (
-                                  <div className="mt-2">
-                                    <span className="text-xs font-medium text-gray-700">Remarks: </span>
-                                    <span className="text-sm text-gray-600">{task.remarks}</span>
-                                  </div>
-                                )}
-                                {task.remarks_image_url && (
-                                  <img 
-                                    src={task.remarks_image_url} 
-                                    alt="Task remarks" 
-                                    className="mt-2 max-w-xs rounded border"
-                                  />
-                                )}
-                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                  <span>Status: {task.status}</span>
-                                  {task.due_date && (
-                                    <span>Due: {format(new Date(task.due_date), 'MMM dd, yyyy')}</span>
-                                  )}
-                                  {task.priority && (
-                                    <span className={`px-2 py-1 rounded ${
-                                      task.priority === 'high' || task.priority === 'urgent' ? 'bg-[#131313] text-[#FAF9F6]' :
-                                      task.priority === 'medium' ? 'bg-[#222222] text-[#FAF9F6]' :
-                                      'bg-[#F1F1F1] text-[#131313]'
-                                    }`}>
-                                      {task.priority}
-                                    </span>
-                                  )}
-                                  {task.assigned_team_members && task.assigned_team_members.length > 0 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      <Users className="w-3 h-3 mr-1" />
-                                      {task.assigned_team_members.length} assigned
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingTask(task)}
-                                className="mt-1"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <CheckSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-2">No tasks assigned to this project yet.</p>
-                        <Button onClick={() => setShowAddTask(true)} variant="outline">
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          setShowAddMilestone((prev) => !prev);
+                          if (showAddInvoice) setShowAddInvoice(false);
+                        }}>
                           <Plus className="w-4 h-4 mr-2" />
-                          Add First Task
+                          {showAddMilestone ? 'Close Milestone Form' : 'Add Milestone'}
+                        </Button>
+                        <Button size="sm" onClick={() => {
+                          setShowAddInvoice((prev) => !prev);
+                          if (showAddMilestone) setShowAddMilestone(false);
+                        }}>
+                          <ReceiptText className="w-4 h-4 mr-2" />
+                          {showAddInvoice ? 'Close Invoice Form' : 'Create Invoice'}
                         </Button>
                       </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {showAddMilestone && (
+                      <AddTaskForm
+                        projectId={id!}
+                        onCancel={() => setShowAddMilestone(false)}
+                        defaultType="milestone"
+                        hideTypeField
+                        typeLabel="Milestone Type"
+                        submitLabel="Add Milestone"
+                      />
                     )}
+
+                    {showAddInvoice && (
+                      <AddInvoiceForm
+                        projectId={id!}
+                        clientId={project.client_id}
+                        milestones={milestoneTasks}
+                        onCancel={() => setShowAddInvoice(false)}
+                      />
+                    )}
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <Flag className="w-4 h-4" />
+                            Project Milestones
+                          </h4>
+                          <Badge variant="secondary">
+                            {milestoneTasks.length} total
+                          </Badge>
+                        </div>
+
+                        {milestoneTasks.length > 0 ? (
+                          <div className="space-y-3">
+                            {milestoneTasks.map((milestone) => {
+                              const linkedInvoice = projectInvoices.find((invoice) => invoice.id === milestone.invoice_id);
+                              return (
+                              <div key={milestone.id} className="border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="space-y-2">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-gray-900">{milestone.title}</span>
+                                      <span className="text-xs text-gray-500 capitalize">{milestone.priority} priority</span>
+                                    </div>
+                                    {milestone.description && (
+                                      <p className="text-sm text-gray-600">{milestone.description}</p>
+                                    )}
+                                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                                      <Badge variant="outline" className="text-xs">
+                                        {milestone.status}
+                                      </Badge>
+                                      {milestone.due_date && (
+                                        <span>Due {format(new Date(milestone.due_date), 'MMM dd, yyyy')}</span>
+                                      )}
+                                      {linkedInvoice && (
+                                        <span className="text-gray-600">
+                                          Linked Invoice #{linkedInvoice.invoice_number}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setEditingTask(milestone)}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            No milestones created yet. Use “Add Milestone” to define delivery checkpoints.
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <ReceiptText className="w-4 h-4" />
+                            Project Invoices
+                          </h4>
+                          <Badge variant="secondary">
+                            {projectInvoices.length} total
+                          </Badge>
+                        </div>
+
+                        {projectInvoices.length > 0 ? (
+                          <div className="space-y-3">
+                            {projectInvoices.map((invoice) => {
+                              const linkedMilestone = milestoneTasks.find((milestone) => milestone.invoice_id === invoice.id);
+                              return (
+                              <div key={invoice.id} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2">
+                                {linkedMilestone && (
+                                  <Badge variant="secondary" className="self-start text-xs">
+                                    Linked Milestone: {linkedMilestone.title}
+                                  </Badge>
+                                )}
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <p className="font-medium text-gray-900">{invoice.title}</p>
+                                    <p className="text-xs text-gray-500">#{invoice.invoice_number}</p>
+                                  </div>
+                                  <Badge className={`${getInvoiceStatusColor(invoice.status)} text-xs`} variant="secondary">
+                                    {invoice.status}
+                                  </Badge>
+                                </div>
+                                <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                                  <span>Issued {format(new Date(invoice.issued_date), 'MMM dd, yyyy')}</span>
+                                  <span>Due {format(new Date(invoice.due_date), 'MMM dd, yyyy')}</span>
+                                </div>
+                                <div className="text-lg font-semibold text-gray-900">
+                                  {formatCurrency(invoice.total_amount || invoice.amount, invoice.currency || 'USD')}
+                                </div>
+                                {invoice.description && (
+                                  <p className="text-sm text-gray-600">{invoice.description}</p>
+                                )}
+                                {invoice.pdf_url && (
+                                  <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-2 w-fit"
+                                  >
+                                    <a
+                                      href={invoice.pdf_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View PDF
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            No invoices yet. Use “Create Invoice” to bill milestones or project work.
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -311,8 +432,8 @@ const ProjectDetails = () => {
                 <ProjectFileManager projectId={id!} projectName={project.name} />
               </TabsContent>
 
-              <TabsContent value="messages" className="space-y-6">
-                <ProjectMessaging projectId={id!} />
+              <TabsContent value="agreements" className="space-y-6">
+                <ProjectAgreements projectId={id!} />
               </TabsContent>
 
               <TabsContent value="activity" className="space-y-6">
@@ -357,12 +478,20 @@ const ProjectDetails = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-gray-400" />
+                  <Flag className="w-4 h-4 text-gray-400" />
                   <div>
-                    <div className="text-sm text-gray-500">Tasks</div>
+                    <div className="text-sm text-gray-500">Milestones Completed</div>
                     <div className="font-medium">
-                      {project.tasks ? `${project.tasks.filter(t => t.status === 'Completed').length}/${project.tasks.length}` : '0'}
+                      {milestoneTasks.length > 0 ? `${completedMilestones}/${milestoneTasks.length}` : '0'}
                     </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <ReceiptText className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <div className="text-sm text-gray-500">Milestones Linked to Invoices</div>
+                    <div className="font-medium">{linkedMilestones}</div>
                   </div>
                 </div>
               </CardContent>

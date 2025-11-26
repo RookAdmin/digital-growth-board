@@ -330,6 +330,7 @@ export type Database = {
           issued_date: string
           notes: string | null
           payment_terms: string | null
+          pdf_url: string | null
           project_id: string | null
           status: string
           tax_amount: number | null
@@ -349,6 +350,7 @@ export type Database = {
           issued_date?: string
           notes?: string | null
           payment_terms?: string | null
+          pdf_url?: string | null
           project_id?: string | null
           status?: string
           tax_amount?: number | null
@@ -368,6 +370,7 @@ export type Database = {
           issued_date?: string
           notes?: string | null
           payment_terms?: string | null
+          pdf_url?: string | null
           project_id?: string | null
           status?: string
           tax_amount?: number | null
@@ -466,6 +469,7 @@ export type Database = {
         Row: {
           budget_range: string | null
           business_name: string | null
+          client_id: string | null
           created_at: string
           email: string
           first_name: string | null
@@ -474,6 +478,7 @@ export type Database = {
           lead_source: string | null
           name: string
           notes: string | null
+          partner_id: string | null
           phone: string | null
           services_interested: string[] | null
           status: string
@@ -482,6 +487,7 @@ export type Database = {
         Insert: {
           budget_range?: string | null
           business_name?: string | null
+          client_id?: string | null
           created_at?: string
           email: string
           first_name?: string | null
@@ -490,6 +496,7 @@ export type Database = {
           lead_source?: string | null
           name: string
           notes?: string | null
+          partner_id?: string | null
           phone?: string | null
           services_interested?: string[] | null
           status?: string
@@ -498,6 +505,7 @@ export type Database = {
         Update: {
           budget_range?: string | null
           business_name?: string | null
+          client_id?: string | null
           created_at?: string
           email?: string
           first_name?: string | null
@@ -506,12 +514,28 @@ export type Database = {
           lead_source?: string | null
           name?: string
           notes?: string | null
+          partner_id?: string | null
           phone?: string | null
           services_interested?: string[] | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_audit: {
         Row: {
@@ -1040,6 +1064,7 @@ export type Database = {
           description_image_url: string | null
           due_date: string | null
           id: string
+          invoice_id: string | null
           priority: string
           project_id: string
           remarks: string | null
@@ -1057,6 +1082,7 @@ export type Database = {
           description_image_url?: string | null
           due_date?: string | null
           id?: string
+          invoice_id?: string | null
           priority?: string
           project_id: string
           remarks?: string | null
@@ -1074,6 +1100,7 @@ export type Database = {
           description_image_url?: string | null
           due_date?: string | null
           id?: string
+          invoice_id?: string | null
           priority?: string
           project_id?: string
           remarks?: string | null

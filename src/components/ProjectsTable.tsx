@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Users, Eye, CheckSquare, Trash2, Pencil, Calendar as CalendarIcon, FolderOpen } from 'lucide-react';
+import { DollarSign, Users, Eye, Trash2, Pencil, Calendar as CalendarIcon, FolderOpen, Flag } from 'lucide-react';
 import { Project, ProjectStatus } from '@/types';
 import { ProjectDetailsModal } from './ProjectDetailsModal';
 import { format } from 'date-fns';
@@ -74,7 +74,10 @@ const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}) => (
+}) => {
+  const milestones = (project.tasks || []).filter((task: any) => task.type === 'milestone');
+  const completedMilestones = milestones.filter((milestone: any) => milestone.status === 'Completed');
+  return (
   <div className="modern-card p-4 mb-4">
     <div className="flex justify-between items-start mb-3">
       <div className="flex-1 min-w-0">
@@ -94,9 +97,9 @@ const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
 
     <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
       <div className="flex items-center gap-1 text-gray-600">
-        <CheckSquare className="h-3 w-3" />
+        <Flag className="h-3 w-3" />
         <span>
-          {project.tasks ? `${project.tasks.filter((t) => t.status === 'Completed').length}/${project.tasks.length}` : '0'} tasks
+          {milestones.length > 0 ? `${completedMilestones.length}/${milestones.length} milestones` : 'No milestones yet'}
         </span>
       </div>
       
@@ -148,7 +151,8 @@ const MobileProjectCard = ({ project, onView, onEdit, onDelete }: {
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, singleDate, statusFilter = '' }: ProjectsTableProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -418,14 +422,14 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
 
         {projectToEdit && (
           <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
-            <DialogContent className="sm:max-w-[600px] modern-card mx-4 max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Edit Project Details</DialogTitle>
-                <DialogDescription>
+            <DialogContent className="w-[95vw] max-w-[600px] modern-card max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+              <DialogHeader className="pb-2 sm:pb-4">
+                <DialogTitle className="text-lg sm:text-xl">Edit Project Details</DialogTitle>
+                <DialogDescription className="text-sm">
                   Update all project information including name, description, status, deadline, and budget.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleEditProject} className="space-y-4 py-4">
+              <form onSubmit={handleEditProject} className="space-y-4 py-2 sm:py-4">
                 <div className="space-y-2">
                   <Label htmlFor="project-name">Project Name</Label>
                   <Input
@@ -511,13 +515,13 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                   <p className="text-xs text-gray-500">Enter the project budget in US dollars</p>
                 </div>
                 
-                <DialogFooter className="gap-2">
+                <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 pt-2 sm:pt-4">
                   <DialogClose asChild>
-                    <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button flex-1 sm:flex-none">
+                    <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button w-full sm:w-auto">
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222] flex-1 sm:flex-none">
+                  <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222] w-full sm:w-auto">
                     {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </DialogFooter>
@@ -545,7 +549,6 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                   <TableHead className="w-[250px] font-medium text-gray-700">Project</TableHead>
                   <TableHead className="w-[200px] font-medium text-gray-700">Client</TableHead>
                   <TableHead className="w-[120px] font-medium text-gray-700">Status</TableHead>
-                  <TableHead className="w-[80px] font-medium text-gray-700">Tasks</TableHead>
                   <TableHead className="w-[120px] font-medium text-gray-700">Deadline</TableHead>
                   <TableHead className="w-[100px] font-medium text-gray-700">Team</TableHead>
                   <TableHead className="w-[120px] font-medium text-gray-700">Budget</TableHead>
@@ -564,11 +567,11 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                     <TableCell className="py-4">
                       <div className="space-y-1">
                         <div className="font-medium text-sm leading-tight text-gray-900">{project.name}</div>
-                        {project.description && (
+                        {/* {project.description && (
                           <div className="text-xs text-gray-500 line-clamp-2 max-w-[230px]">
                             {project.description}
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
@@ -583,18 +586,6 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                       <Badge className={`${getStatusColor(project.status)} text-xs font-medium px-3 py-1 rounded-full`} variant="outline">
                         {project.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      {project.tasks && project.tasks.length > 0 ? (
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <CheckSquare className="h-3 w-3" />
-                          <span>
-                            {project.tasks.filter((t) => t.status === 'Completed').length}/{project.tasks.length}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-xs">None</span>
-                      )}
                     </TableCell>
                     <TableCell className="py-4">
                       {project.deadline ? (
@@ -702,14 +693,14 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
 
       {projectToEdit && (
         <Dialog open={!!projectToEdit} onOpenChange={(open) => !open && setProjectToEdit(null)}>
-          <DialogContent className="sm:max-w-[600px] modern-card">
-            <DialogHeader>
-              <DialogTitle>Edit Project Details</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="w-[95vw] max-w-[600px] modern-card max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader className="pb-2 sm:pb-4">
+              <DialogTitle className="text-lg sm:text-xl">Edit Project Details</DialogTitle>
+              <DialogDescription className="text-sm">
                 Update all project information including name, description, status, deadline, and budget.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleEditProject} className="space-y-6 py-4">
+            <form onSubmit={handleEditProject} className="space-y-4 sm:space-y-6 py-2 sm:py-4">
               <div className="space-y-2">
                 <Label htmlFor="project-name">Project Name</Label>
                 <Input
@@ -795,13 +786,13 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                 <p className="text-xs text-gray-500">Enter the project budget in US dollars</p>
               </div>
               
-              <DialogFooter>
+              <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 pt-2 sm:pt-4">
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button">
+                  <Button type="button" variant="outline" onClick={() => setProjectToEdit(null)} className="modern-button w-full sm:w-auto">
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222]">
+                <Button type="submit" disabled={editProjectMutation.isPending} className="modern-button bg-[#131313] hover:bg-[#222222] w-full sm:w-auto">
                   {editProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>

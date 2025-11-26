@@ -82,6 +82,11 @@ const leadFormSchema = z.object({
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
 
+const sanitizePhoneNumber = (value?: string | null) => {
+  if (!value) return '';
+  return value.replace(/[\s\-()]/g, '');
+};
+
 const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   const queryClient = useQueryClient();
   const form = useForm<LeadFormValues>({
@@ -100,26 +105,105 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (newLead: LeadFormValues) => {
+      const normalizedEmail = newLead.email.trim();
+      const sanitizedPhone = sanitizePhoneNumber(newLead.phone)?.trim();
+      const normalizedPhone = sanitizedPhone ? sanitizedPhone : null;
       const fullName = `${newLead.first_name}${newLead.last_name ? ' ' + newLead.last_name : ''}`.trim();
+
+      const findExistingClientId = async () => {
+        if (normalizedEmail) {
+          const { data, error } = await supabase
+            .from('clients')
+            .select('id')
+            .ilike('email', normalizedEmail)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (error) {
+            throw new Error(error.message);
+          }
+          if (data && data.length > 0) return data[0].id;
+        }
+        if (normalizedPhone) {
+          const { data, error } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('phone', normalizedPhone)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (error) {
+            throw new Error(error.message);
+          }
+          if (data && data.length > 0) return data[0].id;
+        }
+        return null;
+      };
+
+      const findExistingPartnerId = async () => {
+        if (normalizedEmail) {
+          const { data, error } = await supabase
+            .from('partners')
+            .select('id')
+            .ilike('email', normalizedEmail)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (error) {
+            throw new Error(error.message);
+          }
+          if (data && data.length > 0) return data[0].id;
+        }
+        if (normalizedPhone) {
+          const { data: partnerPhoneMatch, error: phoneError } = await supabase
+            .from('partners')
+            .select('id')
+            .eq('phone', normalizedPhone)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (phoneError) {
+            throw new Error(phoneError.message);
+          }
+          if (partnerPhoneMatch && partnerPhoneMatch.length > 0) {
+            return partnerPhoneMatch[0].id;
+          }
+
+          const { data: officePhoneMatch, error: officeError } = await supabase
+            .from('partners')
+            .select('id')
+            .eq('office_phone_no', normalizedPhone)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (officeError) {
+            throw new Error(officeError.message);
+          }
+          if (officePhoneMatch && officePhoneMatch.length > 0) {
+            return officePhoneMatch[0].id;
+          }
+        }
+        return null;
+      };
+
+      const [matchedClientId, matchedPartnerId] = await Promise.all([
+        findExistingClientId(),
+        findExistingPartnerId()
+      ]);
+
       const leadData = {
         name: fullName,
         first_name: newLead.first_name,
         last_name: newLead.last_name || null,
-        email: newLead.email,
-        phone: newLead.phone || null,
+        email: normalizedEmail,
+        phone: normalizedPhone,
         business_name: newLead.business_name || null,
         services_interested: newLead.services_interested || [],
         budget_range: newLead.budget_range || null,
         lead_source: newLead.lead_source,
         notes: newLead.notes || null,
-        status: 'New'
+        status: 'New',
+        client_id: matchedClientId,
+        partner_id: matchedPartnerId
       };
       
       const { data, error } = await supabase.from("leads").insert(leadData).select().single();
       if (error) {
-        if (error.message.includes('duplicate') || error.message.includes('unique')) {
-          throw new Error("Unable to add lead, please double check the email");
-        }
         throw new Error(error.message);
       }
       

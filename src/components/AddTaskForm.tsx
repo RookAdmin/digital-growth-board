@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { CalendarIcon, Upload, X, Users, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { TaskType } from '@/types';
 
 const addTaskSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(18, { message: "Title must be at most 18 characters." }),
@@ -33,9 +34,20 @@ type AddTaskFormValues = z.infer<typeof addTaskSchema>;
 interface AddTaskFormProps {
   projectId: string;
   onCancel: () => void;
+  defaultType?: TaskType;
+  hideTypeField?: boolean;
+  typeLabel?: string;
+  submitLabel?: string;
 }
 
-export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
+export const AddTaskForm = ({
+  projectId,
+  onCancel,
+  defaultType = "new",
+  hideTypeField = false,
+  typeLabel = "Task Type",
+  submitLabel = "Add Task"
+}: AddTaskFormProps) => {
   const queryClient = useQueryClient();
   const [descriptionImage, setDescriptionImage] = useState<File | null>(null);
   const [descriptionImagePreview, setDescriptionImagePreview] = useState<string | null>(null);
@@ -48,7 +60,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
     resolver: zodResolver(addTaskSchema),
     defaultValues: {
       title: "",
-      type: "new",
+      type: defaultType,
       description: "",
       remarks: "",
       priority: "medium",
@@ -265,30 +277,32 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-black">Task Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="bg-white border-gray-300 text-black">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white border-gray-300">
-                    <SelectItem value="new" className="text-black hover:bg-gray-100">New</SelectItem>
-                    <SelectItem value="bug" className="text-black hover:bg-gray-100">Bug</SelectItem>
-                    <SelectItem value="testing" className="text-black hover:bg-gray-100">Testing</SelectItem>
-                    <SelectItem value="task" className="text-black hover:bg-gray-100">Task</SelectItem>
-                    <SelectItem value="milestone" className="text-black hover:bg-gray-100">Milestone</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!hideTypeField && (
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-black">{typeLabel}</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-white border-gray-300 text-black">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white border-gray-300">
+                      <SelectItem value="new" className="text-black hover:bg-gray-100">New</SelectItem>
+                      <SelectItem value="bug" className="text-black hover:bg-gray-100">Bug</SelectItem>
+                      <SelectItem value="testing" className="text-black hover:bg-gray-100">Testing</SelectItem>
+                      <SelectItem value="task" className="text-black hover:bg-gray-100">Task</SelectItem>
+                      <SelectItem value="milestone" className="text-black hover:bg-gray-100">Milestone</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
         <FormField
           control={form.control}
@@ -545,7 +559,7 @@ export const AddTaskForm = ({ projectId, onCancel }: AddTaskFormProps) => {
               disabled={addTaskMutation.isPending}
               className="bg-gray-900 text-white hover:bg-gray-800 hover:text-white rounded-xl"
             >
-              {addTaskMutation.isPending ? 'Adding Task...' : 'Add Task'}
+              {addTaskMutation.isPending ? `${submitLabel}...` : submitLabel}
             </Button>
         </div>
       </form>

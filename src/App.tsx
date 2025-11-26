@@ -27,6 +27,8 @@ import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerAwards from "./pages/PartnerAwards";
 import PartnerAgreements from "./pages/PartnerAgreements";
 import PartnerProject from "./pages/PartnerProject";
+import PartnerProjects from "./pages/PartnerProjects";
+import PartnerLeads from "./pages/PartnerLeads";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientProtectedRoute from "./components/ClientProtectedRoute";
 import PartnerProtectedRoute from "./components/PartnerProtectedRoute";
@@ -72,6 +74,22 @@ function App() {
               element={
                 <PartnerProtectedRoute>
                   <PartnerAwards />
+                </PartnerProtectedRoute>
+              }
+            />
+            <Route
+              path="/partner/projects"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerProjects />
+                </PartnerProtectedRoute>
+              }
+            />
+            <Route
+              path="/partner/leads"
+              element={
+                <PartnerProtectedRoute>
+                  <PartnerLeads />
                 </PartnerProtectedRoute>
               }
             />

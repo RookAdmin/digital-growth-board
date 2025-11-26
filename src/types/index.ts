@@ -11,6 +11,8 @@ export interface Lead {
   lead_source: string | null;
   notes: string | null;
   status: LeadStatus;
+  client_id?: string | null;
+  partner_id?: string | null;
   created_at: string;
 }
 
@@ -114,6 +116,7 @@ export type ProjectStatus = "Not Started" | "In Progress" | "Review" | "Complete
 export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Blocked";
 export type TaskType = "new" | "bug" | "testing" | "task" | "milestone";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type InvoiceStatus = "Draft" | "Sent" | "Paid" | "Overdue";
 
 export interface Project {
   id: string;
@@ -127,7 +130,8 @@ export interface Project {
   created_at: string;
   updated_at: string;
   clients?: { name: string; email: string; business_name: string | null };
-  tasks?: { id: string; status: TaskStatus }[];
+  tasks?: Task[];
+  invoices?: Invoice[];
 }
 
 export interface Task {
@@ -144,6 +148,28 @@ export interface Task {
   due_date: string | null;
   assigned_team_members: string[] | null;
   completed_at: string | null;
+  invoice_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  project_id: string | null;
+  client_id: string;
+  title: string;
+  description: string | null;
+  amount: number;
+  total_amount: number;
+  tax_amount: number | null;
+  currency: string;
+  status: InvoiceStatus;
+  invoice_number: string;
+  issued_date: string;
+  due_date: string;
+  payment_terms: string | null;
+  notes: string | null;
+  pdf_url: string | null;
   created_at: string;
   updated_at: string;
 }

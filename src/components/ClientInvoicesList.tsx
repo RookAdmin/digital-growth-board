@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useClientAuth } from '@/hooks/useClientAuth';
-import { DollarSign, FileText } from 'lucide-react';
+import { DollarSign, FileText, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { pillClasses } from '@/constants/palette';
 
@@ -101,6 +101,17 @@ export const ClientInvoicesList = () => {
                     <span>${invoice.total_amount.toLocaleString()}</span>
                   </div>
                 </div>
+                {invoice.pdf_url && (
+                  <a
+                    href={invoice.pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline"
+                  >
+                    <Download className="h-3 w-3" />
+                    View PDF
+                  </a>
+                )}
               </div>
             ))}
           </div>

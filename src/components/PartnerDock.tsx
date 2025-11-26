@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 
 const partnerDockItems = [
   { label: "Dashboard", href: "/partner/dashboard", icon: LayoutDashboard },
-  { label: "My Projects", href: "/partner/dashboard#projects", icon: FolderKanban },
-  { label: "My Clients", href: "/partner/dashboard#clients", icon: Users },
+  { label: "Projects", href: "/partner/projects", icon: FolderKanban },
+  { label: "Leads", href: "/partner/leads", icon: Users },
   { label: "Awards", href: "/partner/awards", icon: Award },
   { label: "Agreements", href: "/partner/agreements", icon: FileText },
 ];
