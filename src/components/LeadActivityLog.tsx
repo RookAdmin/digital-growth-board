@@ -81,15 +81,10 @@ export const LeadActivityLog = ({ leadId }: LeadActivityLogProps) => {
   const { data: activities = [], isLoading, error } = useQuery({
     queryKey: ['lead-activity-logs', leadId],
     queryFn: async () => {
-      // For now, we'll fetch from lead_status_history and lead_notes
-      // In a real implementation, you'd have a dedicated activity_logs table for leads
-      const [statusHistory, notes] = await Promise.all([
+      const [statusHistoryResponse, notesResponse] = await Promise.all([
         supabase
           .from('lead_status_history')
-          .select(`
-            *,
-            team_members!inner(name, email)
-          `)
+          .select('*')
           .eq('lead_id', leadId)
           .order('changed_at', { ascending: false }),
         supabase
@@ -99,49 +94,45 @@ export const LeadActivityLog = ({ leadId }: LeadActivityLogProps) => {
           .order('created_at', { ascending: false })
       ]);
 
+      if (statusHistoryResponse.error) throw statusHistoryResponse.error;
+      if (notesResponse.error) throw notesResponse.error;
+
       const activities: ActivityLogEntry[] = [];
+      const statusHistory = statusHistoryResponse.data || [];
+      const notes = notesResponse.data || [];
 
       // Add status changes
-      if (statusHistory.data) {
-        statusHistory.data.forEach(history => {
-          activities.push({
-            id: `status_${history.id}`,
-            activity_type: 'status_changed',
-            description: history.old_status 
-              ? `Changed status from ${history.old_status} to ${history.new_status}`
-              : `Set status to ${history.new_status}`,
-            user_name: (history as any).team_members?.name || 'Unknown User',
-            user_email: (history as any).team_members?.email || '',
-            created_at: history.changed_at,
-            metadata: { notes: history.notes }
-          });
+      statusHistory.forEach(history => {
+        activities.push({
+          id: `status_${history.id}`,
+          activity_type: 'status_changed',
+          description: history.old_status 
+            ? `Changed status from ${history.old_status} to ${history.new_status}`
+            : `Set status to ${history.new_status}`,
+          user_name: history.changed_by ? `User ${history.changed_by.slice(0, 6)}` : 'System',
+          user_email: '',
+          created_at: history.changed_at,
+          metadata: history.notes ? { notes: history.notes } : undefined
         });
-      }
+      });
 
       // Add notes
-      if (notes.data) {
-        notes.data.forEach(note => {
-          activities.push({
-            id: `note_${note.id}`,
-            activity_type: 'note_added',
-            description: `Added a new note: ${note.note.substring(0, 50)}${note.note.length > 50 ? '...' : ''}`,
-            user_name: 'System User', // You'd get this from the actual user who added the note
-            user_email: '',
-            created_at: note.created_at
-          });
+      notes.forEach(note => {
+        activities.push({
+          id: `note_${note.id}`,
+          activity_type: 'note_added',
+          description: `Added a new note: ${note.note.substring(0, 50)}${note.note.length > 50 ? '...' : ''}`,
+          user_name: 'System',
+          user_email: '',
+          created_at: note.created_at
         });
-      }
+      });
 
       // Sort by date
       return activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     },
     enabled: !!leadId
   });
-
-  console.log('LeadActivityLog - leadId:', leadId);
-  console.log('LeadActivityLog - activities:', activities);
-  console.log('LeadActivityLog - isLoading:', isLoading);
-  console.log('LeadActivityLog - error:', error);
 
   if (isLoading) {
     return (

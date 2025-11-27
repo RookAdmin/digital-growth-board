@@ -16,9 +16,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LeadStatusHistoryComponent } from './LeadStatusHistory';
 import { LeadActivityLog } from './LeadActivityLog';
 import { PhoneInput } from '@/components/PhoneInput';
+import { LeadProposals } from './LeadProposals';
 
 interface LeadDetailsModalProps {
   lead: Lead | null;
@@ -344,13 +344,12 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
                             </div>
                         )}
                     </ScrollArea>
-                    
                     <div className="h-full overflow-hidden bg-white">
-                        <LeadStatusHistoryComponent leadId={lead.id} />
+                        <LeadActivityLog leadId={lead.id} />
                     </div>
                     
                     <div className="h-full overflow-hidden bg-white">
-                        <LeadActivityLog leadId={lead.id} />
+                        <LeadProposals leadId={lead.id} clientId={lead.client_id ?? null} />
                     </div>
                     
                     <div className="flex flex-col h-full overflow-hidden bg-white">

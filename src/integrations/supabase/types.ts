@@ -320,7 +320,7 @@ export type Database = {
       invoices: {
         Row: {
           amount: number
-          client_id: string
+          client_id: string | null
           created_at: string
           currency: string
           description: string | null
@@ -328,19 +328,22 @@ export type Database = {
           id: string
           invoice_number: string
           issued_date: string
+          lead_id: string | null
           notes: string | null
           payment_terms: string | null
           pdf_url: string | null
           project_id: string | null
+          proposal_pdf_url: string | null
           status: string
           tax_amount: number | null
           title: string
           total_amount: number
           updated_at: string
+          word_doc_link: string | null
         }
         Insert: {
           amount: number
-          client_id: string
+          client_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -348,19 +351,22 @@ export type Database = {
           id?: string
           invoice_number: string
           issued_date?: string
+          lead_id?: string | null
           notes?: string | null
           payment_terms?: string | null
           pdf_url?: string | null
           project_id?: string | null
+          proposal_pdf_url?: string | null
           status?: string
           tax_amount?: number | null
           title: string
           total_amount: number
           updated_at?: string
+          word_doc_link?: string | null
         }
         Update: {
           amount?: number
-          client_id?: string
+          client_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -368,15 +374,18 @@ export type Database = {
           id?: string
           invoice_number?: string
           issued_date?: string
+          lead_id?: string | null
           notes?: string | null
           payment_terms?: string | null
           pdf_url?: string | null
           project_id?: string | null
+          proposal_pdf_url?: string | null
           status?: string
           tax_amount?: number | null
           title?: string
           total_amount?: number
           updated_at?: string
+          word_doc_link?: string | null
         }
         Relationships: [
           {

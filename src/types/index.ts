@@ -74,7 +74,8 @@ export interface ProposalItem {
 
 export interface Proposal {
   id: string;
-  client_id: string;
+  client_id: string | null;
+  lead_id?: string | null;
   title: string;
   status: ProposalStatus;
   terms: string | null;
@@ -82,6 +83,8 @@ export interface Proposal {
   signature_url: string | null;
   approved_at: string | null;
   sent_at: string | null;
+  word_doc_link?: string | null;
+  proposal_pdf_url?: string | null;
   created_at: string;
   clients?: { name: string; email: string };
   proposal_items?: ProposalItem[];

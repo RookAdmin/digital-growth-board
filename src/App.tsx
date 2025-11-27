@@ -29,6 +29,7 @@ import PartnerAgreements from "./pages/PartnerAgreements";
 import PartnerProject from "./pages/PartnerProject";
 import PartnerProjects from "./pages/PartnerProjects";
 import PartnerLeads from "./pages/PartnerLeads";
+import Billing from "./pages/Billing";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientProtectedRoute from "./components/ClientProtectedRoute";
 import PartnerProtectedRoute from "./components/PartnerProtectedRoute";
@@ -206,6 +207,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Scheduling />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
                 </ProtectedRoute>
               }
             />

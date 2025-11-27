@@ -86,6 +86,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
     }
     
+    // Billing page: Only CEO, CTO, Client Executive, and Project Manager
+    if (location.pathname === '/billing' || location.pathname.startsWith('/billing/')) {
+      const allowedRoles = ['CEO', 'CTO / Director of Technology', 'Client Executive', 'Project Manager'];
+      if (!allowedRoles.includes(userRole)) {
+        return <Navigate to="/dashboard" replace />;
+      }
+    }
+    
     // CEO and CTO: Full access (no restrictions)
   }
 

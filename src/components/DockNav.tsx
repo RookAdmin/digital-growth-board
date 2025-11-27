@@ -9,8 +9,12 @@ import {
   Folder,
   CalendarCheck,
   BarChart3,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const dockItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -24,13 +28,42 @@ const dockItems = [
   { label: "Reporting", href: "/reporting", icon: BarChart3 },
 ];
 
+const billingItem = { label: "Billing", href: "/billing", icon: Receipt };
+
+const allowedBillingRoles = ['CEO', 'CTO / Director of Technology', 'Client Executive', 'Project Manager'];
+
 export const DockNav = () => {
   const location = useLocation();
+  const { user, userType } = useUnifiedAuth();
+
+  // Fetch user role
+  const { data: userRole } = useQuery({
+    queryKey: ['userRole', user?.id],
+    queryFn: async () => {
+      if (!user || userType !== 'admin') return null;
+      const { data } = await supabase
+        .from('team_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      return data?.role || null;
+    },
+    enabled: !!user && userType === 'admin',
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  // Filter dock items based on role
+  const visibleItems = [...dockItems];
+  if (userRole && allowedBillingRoles.includes(userRole)) {
+    visibleItems.push(billingItem);
+  }
 
   return (
     <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 pointer-events-none">
       <nav className="pointer-events-auto flex items-center gap-4 rounded-[32px] border border-white/60 bg-white/90 px-6 py-3 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl max-w-3xl w-full justify-center">
-        {dockItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             location.pathname === item.href ||
