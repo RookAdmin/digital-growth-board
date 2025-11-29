@@ -152,7 +152,7 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
       // Refetch queries immediately to update the UI
       queryClient.refetchQueries({ queryKey: ['leads'] });
       queryClient.refetchQueries({ queryKey: ['leads-with-history'] });
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.refetchQueries({ queryKey: ['clients'] }); // Force refetch to show new client immediately
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: (error: Error) => {

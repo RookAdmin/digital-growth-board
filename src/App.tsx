@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import Files from "./pages/Files";
 import Scheduling from "./pages/Scheduling";
 import ClientPortal from "./pages/ClientPortal";
+import ClientChangePassword from "./pages/ClientChangePassword";
 import Partners from "./pages/Partners";
 import PartnerSignup from "./pages/PartnerSignup";
 import PartnerDashboard from "./pages/PartnerDashboard";
@@ -111,7 +112,15 @@ function App() {
               }
             />
             
-            {/* Client Portal Route */}
+            {/* Client Portal Routes */}
+            <Route
+              path="/client/change-password"
+              element={
+                <ClientProtectedRoute>
+                  <ClientChangePassword />
+                </ClientProtectedRoute>
+              }
+            />
             <Route
               path="/client-portal"
               element={

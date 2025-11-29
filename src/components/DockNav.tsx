@@ -10,31 +10,36 @@ import {
   CalendarCheck,
   BarChart3,
   Receipt,
+  Ellipsis,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useRef, useState, useEffect } from "react";
 
 const dockItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Clients", href: "/clients", icon: Users },
   { label: "Leads", href: "/leads", icon: UserPlus2 },
   { label: "Projects", href: "/projects", icon: FolderKanban },
+  { label: "Scheduling", href: "/scheduling", icon: CalendarCheck },
   { label: "Partners", href: "/partners", icon: Handshake },
   { label: "Team", href: "/team", icon: UserCircle2 },
   { label: "Files", href: "/files", icon: Folder },
-  { label: "Scheduling", href: "/scheduling", icon: CalendarCheck },
   { label: "Reporting", href: "/reporting", icon: BarChart3 },
 ];
 
 const billingItem = { label: "Billing", href: "/billing", icon: Receipt };
 
 const allowedBillingRoles = ['CEO', 'CTO / Director of Technology', 'Client Executive', 'Project Manager'];
+const mainItemHrefs = new Set(["/dashboard", "/clients", "/leads", "/projects", "/scheduling", "/billing"]);
 
 export const DockNav = () => {
   const location = useLocation();
   const { user, userType } = useUnifiedAuth();
+  const [showOthers, setShowOthers] = useState(false);
+  const othersRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch user role
   const { data: userRole } = useQuery({
@@ -60,10 +65,23 @@ export const DockNav = () => {
     visibleItems.push(billingItem);
   }
 
+  const mainItems = visibleItems.filter(item => mainItemHrefs.has(item.href));
+  const otherItems = visibleItems.filter(item => !mainItemHrefs.has(item.href));
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (othersRef.current && !othersRef.current.contains(event.target as Node)) {
+        setShowOthers(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 pointer-events-none">
       <nav className="pointer-events-auto flex items-center gap-4 rounded-[32px] border border-white/60 bg-white/90 px-6 py-3 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl max-w-3xl w-full justify-center">
-        {visibleItems.map((item) => {
+        {mainItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             location.pathname === item.href ||
@@ -102,6 +120,60 @@ export const DockNav = () => {
             </Link>
           );
         })}
+
+        {otherItems.length > 0 && (
+          <div className="relative" ref={othersRef}>
+            <button
+              onClick={() => setShowOthers((prev) => !prev)}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-2xl px-3 py-2 text-gray-500 hover:text-gray-900 hover:bg-white/80 transition-all duration-200",
+                showOthers && "bg-[#131313] text-white"
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-200",
+                  showOthers
+                    ? "bg-white/10 text-white scale-110"
+                    : "bg-gray-100 text-gray-700 group-hover:bg-white group-hover:text-gray-900 group-hover:scale-110"
+                )}
+              >
+                <Ellipsis className="h-5 w-5" />
+              </div>
+              <span className="text-[11px] font-medium tracking-wide">
+                Others
+              </span>
+            </button>
+
+            {showOthers && (
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 min-w-[200px] rounded-2xl border border-white/60 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.15)] p-3 space-y-2">
+                {otherItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    location.pathname === item.href ||
+                    location.pathname.startsWith(`${item.href}/`);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setShowOthers(false)}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-150",
+                        isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Additional links handled in the dropdown */}
       </nav>
     </div>
   );

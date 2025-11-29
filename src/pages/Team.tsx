@@ -2,11 +2,13 @@
 import { useEffect } from "react";
 import { Header } from '@/components/Header';
 import { TeamMembersTable } from '@/components/TeamMembersTable';
+import { AccessLevels } from '@/components/AccessLevels';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DockNav } from '@/components/DockNav';
 import { LoadingState } from '@/components/LoadingState';
 import { PageHero } from '@/components/PageHero';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TeamPage = () => {
   const queryClient = useQueryClient();
@@ -25,6 +27,22 @@ const TeamPage = () => {
       
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Get current user role for Access Levels
+  const { data: currentUserRole } = useQuery({
+    queryKey: ['currentUserRole'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase
+        .from('team_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      return data?.role || null;
     },
   });
 
@@ -54,9 +72,24 @@ const TeamPage = () => {
           description="Keep your crew organized, informed, and instantly deployable across every initiative."
         />
         
-        <section className="rounded-[32px] border border-white/80 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)] overflow-hidden animate-in fade-in duration-500">
-          <TeamMembersTable teamMembers={teamMembers} onRefresh={handleRefresh} />
-        </section>
+        <Tabs defaultValue="members" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="members">Team Members</TabsTrigger>
+            <TabsTrigger value="access-levels">Access Levels</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="members" className="space-y-6">
+            <section className="rounded-[32px] border border-white/80 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)] overflow-hidden animate-in fade-in duration-500">
+              <TeamMembersTable teamMembers={teamMembers} onRefresh={handleRefresh} />
+            </section>
+          </TabsContent>
+          
+          <TabsContent value="access-levels" className="space-y-6">
+            <section className="rounded-[32px] border border-white/80 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)] overflow-hidden animate-in fade-in duration-500 p-6">
+              <AccessLevels currentUserRole={currentUserRole} />
+            </section>
+          </TabsContent>
+        </Tabs>
       </main>
       <DockNav />
     </div>

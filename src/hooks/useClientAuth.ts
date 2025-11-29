@@ -9,6 +9,7 @@ interface ClientUser {
   email: string;
   is_active: boolean;
   last_login: string | null;
+  password_changed: boolean | null;
 }
 
 export const useClientAuth = () => {
@@ -106,6 +107,12 @@ export const useClientAuth = () => {
         setClientUser(null);
         return { data: null, error: customError };
       }
+
+      // Update last_login timestamp
+      await supabase
+        .from('client_users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', data.user.id);
 
       setClientUser(clientUserData);
       return { data, error: null };

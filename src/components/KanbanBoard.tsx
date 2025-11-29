@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeadDetailsModal } from './LeadDetailsModal';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 const fetchLeads = async (): Promise<Lead[]> => {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
@@ -93,6 +94,144 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
       queryClient.invalidateQueries({ queryKey: ['lead-status-history'] });
+    },
+  });
+
+  // Conversion mutation for when lead is moved to "Converted"
+  const convertLeadMutation = useMutation({
+    mutationFn: async (leadId: string) => {
+      const { data: lead, error: leadError } = await supabase
+        .from("leads")
+        .select("*")
+        .eq("id", leadId)
+        .maybeSingle();
+
+      if (leadError || !lead) {
+        throw new Error(leadError?.message || "Lead not found");
+      }
+
+      const { data: existingClient, error: existingClientError } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("email", lead.email)
+        .maybeSingle();
+      if (existingClientError) {
+        throw new Error(existingClientError.message);
+      }
+
+      if (existingClient) {
+        const { error: leadUpdateError } = await supabase
+          .from("leads")
+          .update({ status: "Converted", client_id: existingClient.id })
+          .eq("id", leadId);
+        if (leadUpdateError) {
+          throw new Error(leadUpdateError.message);
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        await supabase.from("lead_status_history").insert({
+          lead_id: leadId,
+          old_status: lead.status,
+          new_status: "Converted",
+          changed_by: user?.id,
+          changed_at: new Date().toISOString(),
+        });
+
+        return { wasExisting: true };
+      }
+
+      const { data: newClient, error: clientError } = await supabase
+        .from("clients")
+        .insert({
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          business_name: lead.business_name,
+          lead_id: lead.id,
+          services_interested: lead.services_interested,
+          budget_range: lead.budget_range,
+        })
+        .select()
+        .single();
+
+      if (clientError) {
+        console.error("Client creation error:", clientError);
+        console.error("Error details:", {
+          code: clientError.code,
+          message: clientError.message,
+          details: clientError.details,
+          hint: clientError.hint,
+        });
+        throw new Error(`Failed to create client: ${clientError.message}`);
+      }
+
+      if (!newClient) {
+        console.error("Client insert returned no data");
+        throw new Error("Client was not created successfully - no data returned");
+      }
+
+      console.log("Client created successfully:", newClient.id);
+
+      const { error: projectError } = await supabase
+        .from("projects")
+        .insert({
+          client_id: newClient.id,
+          name: `${newClient.business_name || newClient.name}'s Initial Project`,
+          description: `Project created from lead conversion. Services of interest: ${lead.services_interested?.join(", ") || "Not specified"}.`,
+          status: "Not Started",
+        });
+
+      if (projectError) {
+        console.error("Failed to create project for new client:", projectError);
+      }
+
+      const { error: leadUpdateError } = await supabase
+        .from("leads")
+        .update({ status: "Converted", client_id: newClient.id })
+        .eq("id", leadId);
+
+      if (leadUpdateError) {
+        throw new Error(leadUpdateError.message);
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("lead_status_history").insert({
+        lead_id: leadId,
+        old_status: lead.status,
+        new_status: "Converted",
+        changed_by: user?.id,
+        changed_at: new Date().toISOString(),
+      });
+
+      return { wasExisting: false };
+    },
+    onSuccess: async ({ wasExisting }) => {
+      toast.success(
+        wasExisting
+          ? "Lead linked to existing client."
+          : "Lead converted to client and project created."
+      );
+      
+      // Small delay to ensure database transaction is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Invalidate and refetch queries to ensure UI updates
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leads"] }),
+        queryClient.invalidateQueries({ queryKey: ["leads-with-history"] }),
+        queryClient.invalidateQueries({ queryKey: ["clients"] }),
+        queryClient.invalidateQueries({ queryKey: ["projects"] }),
+      ]);
+      
+      // Force refetch clients to ensure new client appears immediately
+      await queryClient.refetchQueries({ queryKey: ["clients"] });
+      await queryClient.refetchQueries({ queryKey: ["leads"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Conversion failed: ${error.message}`);
+      // Revert optimistic update on error by refetching leads
+      queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
+      queryClient.refetchQueries({ queryKey: ['leads-with-history'] });
     },
   });
 
@@ -234,8 +373,19 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
 
     setData(newData);
 
-    // Update backend with timestamp tracking
-    updateLeadMutation.mutate({ leadId: draggableId, status: newStatus });
+    // If moving to "Converted", trigger full conversion process
+    // Otherwise, just update the status
+    if (newStatus === 'Converted') {
+      convertLeadMutation.mutate(draggableId, {
+        onError: () => {
+          // Revert the optimistic update on error
+          queryClient.refetchQueries({ queryKey: ['leads-with-history'] });
+        }
+      });
+    } else {
+      // Update backend with timestamp tracking
+      updateLeadMutation.mutate({ leadId: draggableId, status: newStatus });
+    }
   };
   
   if (isLoading) {
