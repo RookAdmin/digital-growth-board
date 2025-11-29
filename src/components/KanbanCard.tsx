@@ -114,6 +114,41 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
       if (clientError) throw clientError;
 
+      // Create auth user for the client via Edge Function
+      try {
+        const { data: authData, error: authError } = await supabase.functions.invoke('create-client-auth', {
+          body: {
+            client_id: clientData.id,
+            email: clientData.email,
+            phone: clientData.phone || '',
+            name: clientData.name || clientData.email
+          }
+        });
+
+        if (authError) {
+          console.error("Failed to create auth user:", authError);
+          console.error("Auth error details:", {
+            message: authError.message,
+            context: authError.context,
+            name: authError.name
+          });
+          toast.error(`Client created but failed to create login credentials. Please use /backfill-client-auth to fix.`);
+          // Don't fail the conversion if auth user creation fails
+        } else {
+          console.log("Auth user created successfully for client:", clientData.email, authData);
+          toast.success("Client created with login credentials! Default password: Welcome@Rook");
+        }
+      } catch (authErr: any) {
+        console.error("Error calling create-client-auth function:", authErr);
+        console.error("Exception details:", {
+          message: authErr?.message,
+          stack: authErr?.stack,
+          name: authErr?.name
+        });
+        toast.error(`Client created but Edge Function call failed. Please use /backfill-client-auth to fix.`);
+        // Continue even if auth user creation fails
+      }
+
       // 3. Create a project for the new client
       const { error: projectError } = await supabase.from('projects').insert({
         client_id: clientData.id,

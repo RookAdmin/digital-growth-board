@@ -31,6 +31,7 @@ import PartnerProject from "./pages/PartnerProject";
 import PartnerProjects from "./pages/PartnerProjects";
 import PartnerLeads from "./pages/PartnerLeads";
 import Billing from "./pages/Billing";
+import { BackfillClientAuth } from "./pages/BackfillClientAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientProtectedRoute from "./components/ClientProtectedRoute";
 import PartnerProtectedRoute from "./components/PartnerProtectedRoute";
@@ -224,6 +225,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Billing />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/backfill-client-auth"
+              element={
+                <ProtectedRoute>
+                  <BackfillClientAuth />
                 </ProtectedRoute>
               }
             />

@@ -83,7 +83,9 @@ const UnifiedLogin = () => {
           user_agent: navigator.userAgent
         });
         
-        toast.error('Unable to sign in. Please check your credentials.');
+        // Show more detailed error message for debugging
+        console.error('Login error:', error);
+        toast.error(`Unable to sign in: ${error.message || 'Please check your credentials.'}`);
       } else {
         // Reset failed attempts on successful login
         await supabase.rpc('reset_failed_login', { user_email: email });

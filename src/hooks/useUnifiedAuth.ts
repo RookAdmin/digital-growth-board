@@ -132,7 +132,9 @@ export const useUnifiedAuth = () => {
         await supabase.auth.signOut();
         return {
           data: null,
-          error: { message: 'User not found in any portal' },
+          error: { 
+            message: 'Login credentials not available. Please contact your administrator to set up your account.' 
+          },
           userType: null,
         };
       }

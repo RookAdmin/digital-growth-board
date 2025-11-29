@@ -169,6 +169,40 @@ export const LeadsTable = ({
 
       console.log("Client created successfully:", newClient.id);
 
+      // Create auth user for the client via Edge Function
+      try {
+        const { data: authData, error: authError } = await supabase.functions.invoke('create-client-auth', {
+          body: {
+            client_id: newClient.id,
+            email: newClient.email,
+            phone: newClient.phone || '',
+            name: newClient.name || newClient.email
+          }
+        });
+
+        if (authError) {
+          console.error("Failed to create auth user:", authError);
+          console.error("Auth error details:", {
+            message: authError.message,
+            context: authError.context,
+            name: authError.name
+          });
+          toast.error(`Client created but failed to create login credentials. Please use /backfill-client-auth to fix.`);
+          // Don't fail the conversion if auth user creation fails
+          // It can be created manually later via backfill
+        } else {
+          console.log("Auth user created successfully for client:", newClient.email, authData);
+          toast.success("Client created with login credentials! Default password: Welcome@Rook");
+        }
+      } catch (authErr: any) {
+        console.error("Error calling create-client-auth function:", authErr);
+        console.error("Exception details:", {
+          message: authErr?.message,
+          stack: authErr?.stack
+        });
+        // Continue even if auth user creation fails
+      }
+
       const { error: projectError } = await supabase
         .from("projects")
         .insert({
