@@ -72,6 +72,9 @@ export const CreateEditRoleDialog = ({
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate both roles queries to update all components
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: ['assignable-roles'] });
       toast.success('Role created successfully');
       onSuccess();
       onClose();
@@ -94,6 +97,9 @@ export const CreateEditRoleDialog = ({
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate both roles queries to update all components
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: ['assignable-roles'] });
       toast.success('Role updated successfully');
       onSuccess();
       onClose();
@@ -157,7 +163,7 @@ export const CreateEditRoleDialog = ({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Content Manager"
                 required
-                disabled={role?.is_system_role}
+disabled={false}
               />
             </div>
 
@@ -177,7 +183,7 @@ export const CreateEditRoleDialog = ({
                 id="is-assignable"
                 checked={isAssignable}
                 onCheckedChange={setIsAssignable}
-                disabled={role?.is_system_role}
+disabled={false}
               />
               <Label htmlFor="is-assignable">Can be assigned to team members</Label>
             </div>

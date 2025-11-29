@@ -30,17 +30,8 @@ BEGIN
       created_at,
       updated_at,
       confirmation_token,
-      email_change,
-      email_change_token_new,
-      email_change_token_current,
-      email_change_confirm_status,
       recovery_token,
-      reauthentication_token,
       phone,
-      phone_confirmed_at,
-      phone_change,
-      phone_change_token,
-      confirmed_at,
       is_sso_user
     )
     VALUES (
@@ -56,17 +47,8 @@ BEGIN
       now(),
       now(),
       '',
-      NULL,
-      '',
-      '',
-      0,
-      '',
       '',
       NEW.phone,
-      NULL,
-      '',
-      '',
-      now(),
       false
     ) RETURNING id INTO auth_user_id;
   END IF;

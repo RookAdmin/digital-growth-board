@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePartnerAuth } from "@/hooks/usePartnerAuth";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface HeaderProps {
@@ -23,6 +24,24 @@ export const Header = ({
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
   const { partner } = usePartnerAuth();
+
+  // Fetch current user role
+  const { data: currentUserRole } = useQuery({
+    queryKey: ['currentUserRole'],
+    queryFn: async () => {
+      if (partner) return null; // Partners don't have roles in team_members
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase
+        .from('team_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      return data?.role || null;
+    },
+    enabled: !!session && !partner, // Only fetch if user is authenticated and not a partner
+  });
 
   const handleSignOut = async () => {
     try {
@@ -102,7 +121,7 @@ export const Header = ({
                       {partner ? partner.full_name : session?.user?.email}
                     </span>
                       <span className={`text-xs ${infoTextColor}`}>
-                        {partner ? "Partner" : "Admin"}
+                        {partner ? "Partner" : (currentUserRole || "Admin")}
                       </span>
                     </div>
                   </div>

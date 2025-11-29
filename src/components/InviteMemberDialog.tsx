@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,11 +31,12 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Role } from '@/types/permissions';
 
 const inviteSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Invalid email address.' }),
-  role: z.enum(['CEO', 'CTO / Director of Technology', 'SME (Subject Matter Expert)', 'Project Manager', 'Client Executive', 'Developer']),
+  role: z.string().min(1, { message: 'Please select a role.' }),
   defaultPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -46,12 +48,23 @@ interface InviteMemberDialogProps {
 
 export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: InviteMemberDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Fetch assignable roles from database
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['assignable-roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_roles', { include_non_assignable: false });
+      if (error) throw error;
+      return (data || []) as Role[];
+    },
+  });
+
   const form = useForm<z.infer<typeof inviteSchema>>({
     resolver: zodResolver(inviteSchema),
     defaultValues: {
       name: '',
       email: '',
-      role: 'Developer',
+      role: '',
       defaultPassword: '',
     },
   });
@@ -131,12 +144,19 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white">
-                      <SelectItem value="CEO">CEO</SelectItem>
-                      <SelectItem value="CTO / Director of Technology">CTO / Director of Technology</SelectItem>
-                      <SelectItem value="SME (Subject Matter Expert)">SME (Subject Matter Expert)</SelectItem>
-                      <SelectItem value="Project Manager">Project Manager</SelectItem>
-                      <SelectItem value="Client Executive">Client Executive</SelectItem>
-                      <SelectItem value="Developer">Developer</SelectItem>
+                      {rolesLoading ? (
+                        <SelectItem value="loading" disabled>Loading roles...</SelectItem>
+                      ) : roles.length === 0 ? (
+                        <SelectItem value="no-roles" disabled>No roles available</SelectItem>
+                      ) : (
+                        roles
+                          .filter(role => role.is_assignable && role.name !== 'Super Admin')
+                          .map((role) => (
+                            <SelectItem key={role.id} value={role.name}>
+                              {role.name}
+                            </SelectItem>
+                          ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Tables } from '@/integrations/supabase/types';
+import { Role } from '@/types/permissions';
 
 type TeamMember = Tables<'team_members'>;
 
@@ -18,8 +19,6 @@ interface EditTeamMemberDialogProps {
   onOpenChange: (open: boolean) => void;
   onEditSuccess: () => void;
 }
-
-const roles = ["CEO", "CTO / Director of Technology", "SME (Subject Matter Expert)", "Project Manager", "Client Executive", "Developer"];
 
 export const EditTeamMemberDialog = ({ 
   teamMember, 
@@ -31,6 +30,16 @@ export const EditTeamMemberDialog = ({
   const [email, setEmail] = useState(teamMember.email);
   const [role, setRole] = useState(teamMember.role);
   const queryClient = useQueryClient();
+
+  // Fetch assignable roles from database
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['assignable-roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_roles', { include_non_assignable: false });
+      if (error) throw error;
+      return (data || []) as Role[];
+    },
+  });
 
   const updateMemberMutation = useMutation({
     mutationFn: async (data: { name: string; email: string; role: string }) => {
@@ -104,11 +113,19 @@ export const EditTeamMemberDialog = ({
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((roleOption) => (
-                  <SelectItem key={roleOption} value={roleOption}>
-                    {roleOption}
-                  </SelectItem>
-                ))}
+                {rolesLoading ? (
+                  <SelectItem value="loading" disabled>Loading roles...</SelectItem>
+                ) : roles.length === 0 ? (
+                  <SelectItem value="no-roles" disabled>No roles available</SelectItem>
+                ) : (
+                  roles
+                    .filter(roleOption => roleOption.is_assignable && roleOption.name !== 'Super Admin')
+                    .map((roleOption) => (
+                      <SelectItem key={roleOption.id} value={roleOption.name}>
+                        {roleOption.name}
+                      </SelectItem>
+                    ))
+                )}
               </SelectContent>
             </Select>
           </div>

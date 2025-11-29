@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Lock, Trash2, Edit2 } from 'lucide-react';
-import { Role, PermissionsSchema, PermissionAction, PERMISSION_CATEGORIES, hasPermission } from '@/types/permissions';
+import { Plus, Lock, Trash2, Edit2, Shield, ChevronDown, ChevronRight, Settings2 } from 'lucide-react';
+import { Role, PermissionsSchema, PermissionAction, PERMISSION_CATEGORIES } from '@/types/permissions';
 import { CreateEditRoleDialog } from './CreateEditRoleDialog';
 import {
   AlertDialog,
@@ -20,8 +20,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface AccessLevelsProps {
   currentUserRole: string | null;
@@ -31,8 +46,10 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [selectedRoleForPermissions, setSelectedRoleForPermissions] = useState<Role | null>(null);
   const queryClient = useQueryClient();
-  const { user } = useUnifiedAuth();
 
   const isSuperAdmin = currentUserRole === 'Super Admin';
 
@@ -74,6 +91,7 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: ['assignable-roles'] });
       toast.success('Permissions updated successfully');
     },
     onError: (error: Error) => {
@@ -89,6 +107,7 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: ['assignable-roles'] });
       toast.success('Role deleted successfully');
       setRoleToDelete(null);
     },
@@ -115,16 +134,10 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
       newPermissions[page] = { read: false, write: false, delete: false, admin: false };
     }
 
-    // Toggle the specific permission
     newPermissions[page][action] = !newPermissions[page][action];
 
-    // If admin is enabled, enable all other permissions
     if (action === 'admin' && newPermissions[page][action]) {
       newPermissions[page] = { read: true, write: true, delete: true, admin: true };
-    }
-    // If admin is disabled, keep other permissions as they are
-    else if (action === 'admin' && !newPermissions[page][action]) {
-      // Don't auto-disable others when admin is toggled off
     }
 
     updatePermissionsMutation.mutate({ roleId, permissions: newPermissions });
@@ -140,21 +153,30 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
     queryClient.invalidateQueries({ queryKey: ['roles'] });
   };
 
+  const getPermissionCount = (role: Role) => {
+    const perms = role.permissions;
+    let total = 0;
+    let enabled = 0;
+    Object.values(perms).forEach(pagePerms => {
+      Object.values(pagePerms).forEach(val => {
+        total++;
+        if (val) enabled++;
+      });
+    });
+    return { enabled, total };
+  };
+
+  const openPermissionsDialog = (role: Role) => {
+    setSelectedRoleForPermissions(role);
+    setPermissionsDialogOpen(true);
+  };
+
   if (rolesLoading || schemaLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-96 mt-2" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <Skeleton key={i} className="h-32 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
     );
   }
 
@@ -166,175 +188,294 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                Access Levels
-                {!isSuperAdmin && (
-                  <Badge variant="outline" className="ml-2">
-                    Read Only
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Manage role permissions and access levels for team members
-              </CardDescription>
-            </div>
-            {isSuperAdmin && (
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create New Role
-              </Button>
-            )}
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Shield className="h-6 w-6 text-gray-700" />
+              Access Levels
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Manage role permissions and access levels for your team
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {displayRoles.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No roles found. Create your first role to get started.
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {displayRoles.map((role) => (
-                <div
-                  key={role.id}
-                  className="border rounded-lg p-6 space-y-4 bg-white"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold">{role.name}</h3>
-                        {role.is_system_role && (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Lock className="h-3 w-3" />
-                            System
-                          </Badge>
-                        )}
-                      </div>
-                      {role.description && (
-                        <p className="text-sm text-gray-600 mt-1">{role.description}</p>
-                      )}
-                    </div>
-                    {isSuperAdmin && !role.is_system_role && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingRole(role)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setRoleToDelete(role)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+          {isSuperAdmin && (
+            <Button 
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="bg-gray-900 hover:bg-gray-800 text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Role
+            </Button>
+          )}
+        </div>
 
-                  {permissionsSchema && (
-                    <div className="space-y-4 pt-4 border-t">
-                      {PERMISSION_CATEGORIES.map((category) => {
-                        const categoryPages = permissionsSchema[category];
-                        if (!categoryPages || Object.keys(categoryPages).length === 0) {
-                          return null;
-                        }
+        {/* Roles Table */}
+        {displayRoles.length === 0 ? (
+          <Card className="border-2 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Shield className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No roles found</h3>
+              <p className="text-sm text-gray-600 text-center mb-4">
+                Create your first role to get started with access management
+              </p>
+              {isSuperAdmin && (
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Role
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold">Roles & Permissions</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[600px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50/50">
+                      <TableHead className="w-[300px] font-semibold">Role</TableHead>
+                      <TableHead className="font-semibold">Description</TableHead>
+                      <TableHead className="text-center font-semibold">Permissions</TableHead>
+                      <TableHead className="text-center font-semibold">Status</TableHead>
+                      {isSuperAdmin && (
+                        <TableHead className="text-right font-semibold">Actions</TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {displayRoles.map((role) => {
+                      const { enabled, total } = getPermissionCount(role);
+                      const permissionPercentage = total > 0 ? Math.round((enabled / total) * 100) : 0;
+
+                      return (
+                        <TableRow 
+                          key={role.id} 
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {role.is_system_role && (
+                                <Lock className="h-4 w-4 text-gray-400" />
+                              )}
+                              <span>{role.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-gray-600">
+                              {role.description || 'No description'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-20 bg-gray-200 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all"
+                                    style={{ width: `${permissionPercentage}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700 min-w-[45px]">
+                                  {permissionPercentage}%
+                                </span>
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {enabled}/{total}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex justify-center">
+                              <Badge 
+                                variant={role.is_assignable ? "default" : "outline"}
+                                className={role.is_assignable ? "bg-green-100 text-green-700 border-green-200" : ""}
+                              >
+                                {role.is_assignable ? 'Assignable' : 'System'}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          {isSuperAdmin && (
+                            <TableCell>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openPermissionsDialog(role)}
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                >
+                                  <Settings2 className="h-4 w-4 mr-1" />
+                                  Permissions
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setEditingRole(role)}
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setRoleToDelete(role)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Permissions Dialog */}
+      <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedRoleForPermissions?.name} - Permissions
+            </DialogTitle>
+            <DialogDescription>
+              Configure permissions for this role. Toggle individual access levels below.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRoleForPermissions && permissionsSchema && (
+            <div className="space-y-6 py-4">
+              {PERMISSION_CATEGORIES.map((category) => {
+                const categoryPages = permissionsSchema[category];
+                if (!categoryPages || Object.keys(categoryPages).length === 0) {
+                  return null;
+                }
+
+                return (
+                  <div key={category} className="space-y-4">
+                    <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider border-b pb-2">
+                      {category}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {Object.entries(categoryPages).map(([page, displayName]) => {
+                        const pagePerms = selectedRoleForPermissions.permissions[page] || {
+                          read: false,
+                          write: false,
+                          delete: false,
+                          admin: false,
+                        };
+
+                        const hasAnyPermission = Object.values(pagePerms).some(v => v);
+                        const hasAdmin = pagePerms.admin;
 
                         return (
-                          <div key={category} className="space-y-3">
-                            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                              {category}
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {Object.entries(categoryPages).map(([page, displayName]) => {
-                                const pagePerms = role.permissions[page] || {
-                                  read: false,
-                                  write: false,
-                                  delete: false,
-                                  admin: false,
-                                };
-
-                                return (
-                                  <div
-                                    key={page}
-                                    className="border rounded-md p-3 space-y-2 bg-gray-50"
-                                  >
-                                    <div className="font-medium text-sm">{displayName}</div>
-                                    <div className="space-y-2">
-                                      <div className="flex items-center justify-between">
-                                        <Label htmlFor={`${role.id}-${page}-read`} className="text-xs">
-                                          Read
-                                        </Label>
-                                        <Switch
-                                          id={`${role.id}-${page}-read`}
-                                          checked={pagePerms.read}
-                                          disabled={!isSuperAdmin || role.is_system_role}
-                                          onCheckedChange={() =>
-                                            handlePermissionToggle(role.id, page, 'read')
-                                          }
-                                        />
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <Label htmlFor={`${role.id}-${page}-write`} className="text-xs">
-                                          Write
-                                        </Label>
-                                        <Switch
-                                          id={`${role.id}-${page}-write`}
-                                          checked={pagePerms.write}
-                                          disabled={!isSuperAdmin || role.is_system_role}
-                                          onCheckedChange={() =>
-                                            handlePermissionToggle(role.id, page, 'write')
-                                          }
-                                        />
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <Label htmlFor={`${role.id}-${page}-delete`} className="text-xs">
-                                          Delete
-                                        </Label>
-                                        <Switch
-                                          id={`${role.id}-${page}-delete`}
-                                          checked={pagePerms.delete}
-                                          disabled={!isSuperAdmin || role.is_system_role}
-                                          onCheckedChange={() =>
-                                            handlePermissionToggle(role.id, page, 'delete')
-                                          }
-                                        />
-                                      </div>
-                                      <div className="flex items-center justify-between border-t pt-2">
-                                        <Label htmlFor={`${role.id}-${page}-admin`} className="text-xs font-semibold">
-                                          Admin
-                                        </Label>
-                                        <Switch
-                                          id={`${role.id}-${page}-admin`}
-                                          checked={pagePerms.admin}
-                                          disabled={!isSuperAdmin || role.is_system_role}
-                                          onCheckedChange={() =>
-                                            handlePermissionToggle(role.id, page, 'admin')
-                                          }
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                          <div
+                            key={page}
+                            className={`border rounded-lg p-4 transition-all ${
+                              hasAnyPermission 
+                                ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200' 
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="font-medium text-sm text-gray-900">
+                                {displayName}
+                              </div>
+                              {hasAdmin && (
+                                <Badge variant="default" className="bg-blue-600 text-white text-xs">
+                                  Admin
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="space-y-2.5">
+                              <div className="flex items-center justify-between">
+                                <Label 
+                                  htmlFor={`${selectedRoleForPermissions.id}-${page}-read`} 
+                                  className="text-xs font-medium text-gray-700"
+                                >
+                                  Read
+                                </Label>
+                                <Switch
+                                  id={`${selectedRoleForPermissions.id}-${page}-read`}
+                                  checked={pagePerms.read}
+                                  disabled={!isSuperAdmin}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(selectedRoleForPermissions.id, page, 'read')
+                                  }
+                                  className="data-[state=checked]:bg-blue-600"
+                                />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label 
+                                  htmlFor={`${selectedRoleForPermissions.id}-${page}-write`} 
+                                  className="text-xs font-medium text-gray-700"
+                                >
+                                  Write
+                                </Label>
+                                <Switch
+                                  id={`${selectedRoleForPermissions.id}-${page}-write`}
+                                  checked={pagePerms.write}
+                                  disabled={!isSuperAdmin}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(selectedRoleForPermissions.id, page, 'write')
+                                  }
+                                  className="data-[state=checked]:bg-blue-600"
+                                />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label 
+                                  htmlFor={`${selectedRoleForPermissions.id}-${page}-delete`} 
+                                  className="text-xs font-medium text-gray-700"
+                                >
+                                  Delete
+                                </Label>
+                                <Switch
+                                  id={`${selectedRoleForPermissions.id}-${page}-delete`}
+                                  checked={pagePerms.delete}
+                                  disabled={!isSuperAdmin}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(selectedRoleForPermissions.id, page, 'delete')
+                                  }
+                                  className="data-[state=checked]:bg-blue-600"
+                                />
+                              </div>
+                              <div className="flex items-center justify-between border-t pt-2">
+                                <Label 
+                                  htmlFor={`${selectedRoleForPermissions.id}-${page}-admin`} 
+                                  className="text-xs font-semibold text-gray-900"
+                                >
+                                  Admin
+                                </Label>
+                                <Switch
+                                  id={`${selectedRoleForPermissions.id}-${page}-admin`}
+                                  checked={pagePerms.admin}
+                                  disabled={!isSuperAdmin}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(selectedRoleForPermissions.id, page, 'admin')
+                                  }
+                                  className="data-[state=checked]:bg-blue-600"
+                                />
+                              </div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
       {/* Create/Edit Role Dialog */}
       <CreateEditRoleDialog
@@ -372,4 +513,3 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
     </>
   );
 };
-
