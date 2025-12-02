@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Area, AreaChart, CartesianGrid, XAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 const fetchRevenueData = async (workspaceId: string | null) => {
   if (!workspaceId) return [];

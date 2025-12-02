@@ -13,22 +13,26 @@ import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 const TeamPage = () => {
   const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
 
   useEffect(() => {
     document.title = "Team - Rook";
   }, []);
 
   const { data: teamMembers = [], isLoading } = useQuery({
-    queryKey: ['team-members'],
+    queryKey: ['team-members', workspaceId],
     queryFn: async () => {
+      if (!workspaceId) return [];
       const { data, error } = await supabase
         .from('team_members')
         .select('*')
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
     },
+    enabled: !!workspaceId,
   });
 
   // Get current user role for Access Levels
@@ -51,7 +55,7 @@ const TeamPage = () => {
   });
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['team-members'] });
+    queryClient.invalidateQueries({ queryKey: ['team-members', workspaceId] });
   };
 
   if (isLoading) {
