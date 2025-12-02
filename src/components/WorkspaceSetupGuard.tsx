@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useClientAuth } from '@/hooks/useClientAuth';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 import { JoinWorkspaceDialog } from './JoinWorkspaceDialog';
 import {
@@ -18,23 +19,35 @@ interface WorkspaceSetupGuardProps {
 }
 
 export const WorkspaceSetupGuard = ({ children }: WorkspaceSetupGuardProps) => {
-  const { user, loading: authLoading } = useUnifiedAuth();
+  const { user, loading: authLoading, userType } = useUnifiedAuth();
   const { workspaces, isLoading, currentWorkspace } = useWorkspace();
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
 
   useEffect(() => {
+    // Skip workspace setup for client users - they don't need workspaces
+    if (userType === 'client') {
+      setShowSetupDialog(false);
+      return;
+    }
+    
     // Only show setup dialog if user is logged in, has no workspaces, and not loading
-    if (!authLoading && user && !isLoading && workspaces.length === 0) {
+    // Only for team members (admin) - partners also don't need workspaces
+    if (!authLoading && user && userType === 'admin' && !isLoading && workspaces.length === 0) {
       setShowSetupDialog(true);
-    } else if (workspaces.length > 0 || !user) {
+    } else if (workspaces.length > 0 || !user || userType === 'client' || userType === 'partner') {
       setShowSetupDialog(false);
     }
-  }, [authLoading, user, isLoading, workspaces.length]);
+  }, [authLoading, user, userType, isLoading, workspaces.length]);
 
   // Don't show anything if auth is still loading
   if (authLoading) {
+    return <>{children}</>;
+  }
+
+  // Skip workspace setup for client and partner users - they don't need workspaces
+  if (userType === 'client' || userType === 'partner') {
     return <>{children}</>;
   }
 
