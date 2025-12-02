@@ -58,6 +58,19 @@ const ProjectDetails = () => {
     document.title = "Project Details - Rook";
   }, []);
 
+  // Fetch roles for color mapping
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_roles', { include_non_assignable: true });
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; color: string }>;
+    },
+  });
+
+  // Create a map of role name to color
+  const roleColorMap = new Map(roles.map(role => [role.name, role.color || '#6366f1']));
+
   const { data: projectData, isLoading } = useQuery<any>({
     queryKey: ['project', id],
     queryFn: async () => {
@@ -362,7 +375,13 @@ const ProjectDetails = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{member.name}</div>
-                          <div className="text-xs text-gray-500">{member.role}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                            <div
+                              className="h-2 w-2 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: roleColorMap.get(member.role) || '#6366f1' }}
+                            />
+                            <span>{member.role}</span>
+                          </div>
                         </div>
                       </div>
                     ))}

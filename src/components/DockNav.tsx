@@ -17,6 +17,7 @@ import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRef, useState, useEffect } from "react";
+import { useWorkspaceId } from "@/hooks/useWorkspaceId";
 
 const dockItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -38,8 +39,15 @@ const mainItemHrefs = new Set(["/dashboard", "/clients", "/leads", "/projects", 
 export const DockNav = () => {
   const location = useLocation();
   const { user, userType } = useUnifiedAuth();
+  const workspaceId = useWorkspaceId();
   const [showOthers, setShowOthers] = useState(false);
   const othersRef = useRef<HTMLDivElement | null>(null);
+  
+  // Helper to build href with workspace ID
+  const buildHref = (baseHref: string) => {
+    if (!workspaceId) return baseHref;
+    return `${baseHref}/${workspaceId}`;
+  };
 
   // Fetch user role
   const { data: userRole } = useQuery({
@@ -65,8 +73,22 @@ export const DockNav = () => {
     visibleItems.push(billingItem);
   }
 
-  const mainItems = visibleItems.filter(item => mainItemHrefs.has(item.href));
-  const otherItems = visibleItems.filter(item => !mainItemHrefs.has(item.href));
+  // Check if current page is from "Others" (check against base hrefs)
+  const currentOtherItem = visibleItems.find(
+    item => !mainItemHrefs.has(item.href) && 
+    (location.pathname.includes(item.href) || location.pathname.includes(`${item.href}/`))
+  );
+
+  // Build main items: always show main items, plus current "Others" item if active
+  const mainItems = [
+    ...visibleItems.filter(item => mainItemHrefs.has(item.href)),
+    ...(currentOtherItem ? [currentOtherItem] : [])
+  ].map(item => ({ ...item, href: buildHref(item.href) }));
+
+  // Other items: exclude the currently active one (since it's in mainItems)
+  const otherItems = visibleItems
+    .filter(item => !mainItemHrefs.has(item.href) && item.href !== currentOtherItem?.href)
+    .map(item => ({ ...item, href: buildHref(item.href) }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -17,11 +17,14 @@ import { LeadDetailsModal } from "@/components/LeadDetailsModal";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
+import { useWorkspaceId } from "@/hooks/useWorkspaceId";
 
-const fetchLeads = async (): Promise<Lead[]> => {
+const fetchLeads = async (workspaceId: string | null): Promise<Lead[]> => {
+  if (!workspaceId) return [];
   const { data, error } = await supabase
     .from("leads")
     .select("*")
+    .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data as Lead[];
@@ -52,9 +55,11 @@ export const LeadsTable = ({
   singleDate,
   statusFilter = "all",
 }: LeadsTableProps) => {
+  const workspaceId = useWorkspaceId();
   const { data: leads, isLoading, error } = useQuery({
-    queryKey: ["leads"],
-    queryFn: fetchLeads,
+    queryKey: ["leads", workspaceId],
+    queryFn: () => fetchLeads(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const queryClient = useQueryClient();
@@ -90,13 +95,15 @@ export const LeadsTable = ({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["leads", workspaceId] });
       queryClient.invalidateQueries({ queryKey: ["leads-with-history"] });
     },
   });
 
   const convertLeadMutation = useMutation({
     mutationFn: async (leadId: string) => {
+      if (!workspaceId) throw new Error('Workspace ID is required');
+      
       const { data: lead, error: leadError } = await supabase
         .from("leads")
         .select("*")
@@ -111,6 +118,7 @@ export const LeadsTable = ({
         .from("clients")
         .select("id")
         .eq("email", lead.email)
+        .eq("workspace_id", workspaceId)
         .maybeSingle();
       if (existingClientError) {
         throw new Error(existingClientError.message);
@@ -147,6 +155,7 @@ export const LeadsTable = ({
           lead_id: lead.id,
           services_interested: lead.services_interested,
           budget_range: lead.budget_range,
+          workspace_id: workspaceId,
         })
         .select()
         .single();
@@ -170,7 +179,15 @@ export const LeadsTable = ({
       console.log("Client created successfully:", newClient.id);
 
       // Create auth user for the client via Edge Function
+      // This is critical for client portal access
       try {
+        console.log("Calling create-client-auth Edge Function for client:", {
+          client_id: newClient.id,
+          email: newClient.email,
+          phone: newClient.phone,
+          name: newClient.name
+        });
+
         const { data: authData, error: authError } = await supabase.functions.invoke('create-client-auth', {
           body: {
             client_id: newClient.id,
@@ -187,20 +204,24 @@ export const LeadsTable = ({
             context: authError.context,
             name: authError.name
           });
-          toast.error(`Client created but failed to create login credentials. Please use /backfill-client-auth to fix.`);
-          // Don't fail the conversion if auth user creation fails
-          // It can be created manually later via backfill
-        } else {
+          toast.error(`Client created but failed to create login credentials. Error: ${authError.message}`);
+          // Don't fail the conversion, but log the error
+        } else if (authData?.success) {
           console.log("Auth user created successfully for client:", newClient.email, authData);
           toast.success("Client created with login credentials! Default password: Welcome@Rook");
+        } else {
+          console.warn("Edge Function returned unexpected response:", authData);
+          toast.warning("Client created but auth user creation status unclear. Please verify login.");
         }
       } catch (authErr: any) {
-        console.error("Error calling create-client-auth function:", authErr);
+        console.error("Exception calling create-client-auth function:", authErr);
         console.error("Exception details:", {
           message: authErr?.message,
-          stack: authErr?.stack
+          stack: authErr?.stack,
+          name: authErr?.name
         });
-        // Continue even if auth user creation fails
+        toast.error(`Client created but Edge Function call failed: ${authErr?.message || 'Unknown error'}`);
+        // Continue even if auth user creation fails - it can be fixed manually
       }
 
       const { error: projectError } = await supabase
@@ -210,6 +231,7 @@ export const LeadsTable = ({
           name: `${newClient.business_name || newClient.name}'s Initial Project`,
           description: `Project created from lead conversion. Services of interest: ${lead.services_interested?.join(", ") || "Not specified"}.`,
           status: "Not Started",
+          workspace_id: workspaceId,
         });
 
       if (projectError) {

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePartnerAuth } from "@/hooks/usePartnerAuth";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 
 interface HeaderProps {
   isAuthenticated?: boolean;
@@ -25,20 +26,32 @@ export const Header = ({
   const { session, loading: authLoading } = useAuth();
   const { partner } = usePartnerAuth();
 
-  // Fetch current user role
-  const { data: currentUserRole } = useQuery({
-    queryKey: ['currentUserRole'],
+  // Fetch current user role with color
+  const { data: currentUserRoleData } = useQuery({
+    queryKey: ['currentUserRoleData'],
     queryFn: async () => {
       if (partner) return null; // Partners don't have roles in team_members
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
-      const { data } = await supabase
+      const { data: teamMember } = await supabase
         .from('team_members')
         .select('role')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .maybeSingle();
-      return data?.role || null;
+      if (!teamMember?.role) return null;
+      
+      // Fetch role color
+      const { data: roleData } = await supabase
+        .from('roles')
+        .select('name, color')
+        .eq('name', teamMember.role)
+        .maybeSingle();
+      
+      return {
+        name: teamMember.role,
+        color: roleData?.color || '#6366f1'
+      };
     },
     enabled: !!session && !partner, // Only fetch if user is authenticated and not a partner
   });
@@ -110,6 +123,7 @@ export const Header = ({
             <div className="hidden md:flex items-center gap-4 pl-6 border-l border-white/60">
               {isLoggedIn ? (
                 <>
+                  {!isPartner && <WorkspaceSwitcher />}
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white text-sm font-semibold">
                       {partner
@@ -120,9 +134,17 @@ export const Header = ({
                       <span className="text-sm font-medium text-gray-900">
                       {partner ? partner.full_name : session?.user?.email}
                     </span>
-                      <span className={`text-xs ${infoTextColor}`}>
-                        {partner ? "Partner" : (currentUserRole || "Admin")}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {currentUserRoleData && (
+                          <div
+                            className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: currentUserRoleData.color }}
+                          />
+                        )}
+                        <span className={`text-xs ${infoTextColor}`}>
+                          {partner ? "Partner" : (currentUserRoleData?.name || "Admin")}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <Button 

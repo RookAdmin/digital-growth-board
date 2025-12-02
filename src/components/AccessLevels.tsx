@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Lock, Trash2, Edit2, Shield, ChevronDown, ChevronRight, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Shield, ChevronDown, ChevronRight, Settings2 } from 'lucide-react';
 import { Role, PermissionsSchema, PermissionAction, PERMISSION_CATEGORIES } from '@/types/permissions';
 import { CreateEditRoleDialog } from './CreateEditRoleDialog';
 import {
@@ -180,11 +180,22 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
     );
   }
 
-  // Filter roles to show only assignable ones (excluding Super Admin from display if not super admin)
-  const displayRoles = roles.filter(role => {
-    if (role.name === 'Super Admin' && !isSuperAdmin) return false;
-    return role.is_assignable || isSuperAdmin;
-  });
+  // Filter and sort roles - Super Admin always at top
+  const displayRoles = roles
+    .filter(role => {
+      if (role.name === 'Super Admin' && !isSuperAdmin) return false;
+      return role.is_assignable || isSuperAdmin;
+    })
+    .sort((a, b) => {
+      // Super Admin always first
+      if (a.name === 'Super Admin') return -1;
+      if (b.name === 'Super Admin') return 1;
+      // Then system roles, then custom roles
+      if (a.is_system_role && !b.is_system_role) return -1;
+      if (!a.is_system_role && b.is_system_role) return 1;
+      // Alphabetical within groups
+      return a.name.localeCompare(b.name);
+    });
 
   return (
     <>
@@ -259,9 +270,10 @@ export const AccessLevels = ({ currentUserRole }: AccessLevelsProps) => {
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              {role.is_system_role && (
-                                <Lock className="h-4 w-4 text-gray-400" />
-                              )}
+                              <div
+                                className="h-4 w-4 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: role.color || '#6366f1' }}
+                              />
                               <span>{role.name}</span>
                             </div>
                           </TableCell>

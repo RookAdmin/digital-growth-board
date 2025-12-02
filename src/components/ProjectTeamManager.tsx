@@ -19,6 +19,19 @@ export const ProjectTeamManager = ({ projectId, assignedTeamMembers }: ProjectTe
   const [selectedMembers, setSelectedMembers] = useState<string[]>(assignedTeamMembers);
   const queryClient = useQueryClient();
 
+  // Fetch roles for color mapping
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_roles', { include_non_assignable: true });
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; color: string }>;
+    },
+  });
+
+  // Create a map of role name to color
+  const roleColorMap = new Map(roles.map(role => [role.name, role.color || '#6366f1']));
+
   // Fetch all team members
   const { data: allTeamMembers, isLoading } = useQuery({
     queryKey: ['team-members'],
@@ -179,7 +192,13 @@ export const ProjectTeamManager = ({ projectId, assignedTeamMembers }: ProjectTe
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm">{member.name}</div>
-                    <div className="text-xs text-muted-foreground">{member.role}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <div
+                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: roleColorMap.get(member.role) || '#6366f1' }}
+                      />
+                      <span>{member.role}</span>
+                    </div>
                   </div>
                 </div>
                 <Button

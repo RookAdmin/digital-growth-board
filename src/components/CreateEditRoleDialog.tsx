@@ -35,6 +35,7 @@ export const CreateEditRoleDialog = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isAssignable, setIsAssignable] = useState(true);
+  const [color, setColor] = useState('#6366f1');
   const [permissions, setPermissions] = useState<Role['permissions']>({});
   const queryClient = useQueryClient();
 
@@ -43,6 +44,7 @@ export const CreateEditRoleDialog = ({
       setName(role.name);
       setDescription(role.description || '');
       setIsAssignable(role.is_assignable);
+      setColor(role.color || '#6366f1');
       setPermissions(role.permissions);
     } else {
       // Initialize with default empty permissions
@@ -57,6 +59,7 @@ export const CreateEditRoleDialog = ({
       setName('');
       setDescription('');
       setIsAssignable(true);
+      setColor('#6366f1');
       setPermissions(defaultPerms);
     }
   }, [role, permissionsSchema]);
@@ -68,6 +71,7 @@ export const CreateEditRoleDialog = ({
         role_description: description,
         role_permissions: permissions,
         role_is_assignable: isAssignable,
+        role_color: color,
       });
       if (error) throw error;
     },
@@ -93,6 +97,7 @@ export const CreateEditRoleDialog = ({
         role_description: description,
         role_permissions: permissions,
         role_is_assignable: isAssignable,
+        role_color: color,
       });
       if (error) throw error;
     },
@@ -186,6 +191,45 @@ disabled={false}
 disabled={false}
               />
               <Label htmlFor="is-assignable">Can be assigned to team members</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role-color">Role Color *</Label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="h-10 w-10 rounded-full border-2 border-gray-300 flex-shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <Input
+                  id="role-color"
+                  type="text"
+                  value={color}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow typing, validate on blur
+                    if (value === '' || value.match(/^#[0-9A-Fa-f]{0,6}$/)) {
+                      setColor(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Validate and fix color format
+                    const value = e.target.value.trim();
+                    if (!value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                      setColor('#6366f1');
+                      toast.error('Invalid color format. Using default color.');
+                    } else {
+                      setColor(value);
+                    }
+                  }}
+                  placeholder="#6366f1"
+                  maxLength={7}
+                  className="font-mono"
+                />
+                <span className="text-sm text-gray-500">6-character hex code</span>
+              </div>
+              <p className="text-xs text-gray-500">
+                This color will appear as a circle next to the role name
+              </p>
             </div>
           </div>
 

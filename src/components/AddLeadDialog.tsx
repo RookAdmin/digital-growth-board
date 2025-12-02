@@ -6,6 +6,7 @@ import * as z from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useWorkspaceId } from "@/hooks/useWorkspaceId";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -89,6 +90,7 @@ const sanitizePhoneNumber = (value?: string | null) => {
 
 const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
@@ -186,6 +188,8 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         findExistingPartnerId()
       ]);
 
+      if (!workspaceId) throw new Error('Workspace ID is required');
+      
       const leadData = {
         name: fullName,
         first_name: newLead.first_name,
@@ -199,7 +203,8 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         notes: newLead.notes || null,
         status: 'New',
         client_id: matchedClientId,
-        partner_id: matchedPartnerId
+        partner_id: matchedPartnerId,
+        workspace_id: workspaceId
       };
       
       const { data, error } = await supabase.from("leads").insert(leadData).select().single();
@@ -215,6 +220,37 @@ const AddLeadForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         new_status: 'New',
         changed_by: user?.id
       });
+      
+      // Create auth user for the lead via Edge Function (no duplicates for same email/mobile)
+      if (normalizedEmail) {
+        try {
+          console.log("Calling create-lead-auth Edge Function for lead:", {
+            lead_id: data.id,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            name: fullName
+          });
+
+          const { data: authData, error: authError } = await supabase.functions.invoke('create-lead-auth', {
+            body: {
+              lead_id: data.id,
+              email: normalizedEmail,
+              phone: normalizedPhone || '',
+              name: fullName
+            }
+          });
+
+          if (authError) {
+            console.error("Failed to create auth user for lead:", authError);
+            // Don't fail lead creation if auth user creation fails
+          } else if (authData?.success) {
+            console.log("Auth user created/linked successfully for lead:", normalizedEmail, authData);
+          }
+        } catch (authErr: any) {
+          console.error("Exception calling create-lead-auth function:", authErr);
+          // Continue even if auth user creation fails
+        }
+      }
       
       return data;
     },

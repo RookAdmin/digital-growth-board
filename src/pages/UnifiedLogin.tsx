@@ -31,7 +31,13 @@ const UnifiedLogin = () => {
           navigate('/partner-dashboard', { replace: true });
           break;
         case 'admin':
-          navigate('/dashboard', { replace: true });
+          // Will redirect to workspace dashboard after workspace is selected
+          const workspaceId = localStorage.getItem('currentWorkspaceId');
+          if (workspaceId) {
+            navigate(`/dashboard/${workspaceId}`, { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
           break;
       }
     }

@@ -4,21 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Bar, BarChart, XAxis, YAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
-const fetchLeadConversionData = async () => {
-  const { count: leadCount, error: leadError } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+const fetchLeadConversionData = async (workspaceId: string | null) => {
+  if (!workspaceId) return { leadCount: 0, clientCount: 0 };
+  
+  const { count: leadCount, error: leadError } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId);
   if (leadError) throw new Error(leadError.message);
 
-  const { count: clientCount, error: clientError } = await supabase.from('clients').select('*', { count: 'exact', head: true });
+  const { count: clientCount, error: clientError } = await supabase
+    .from('clients')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId);
   if (clientError) throw new Error(clientError.message);
   
   return { leadCount, clientCount };
 };
 
 export const LeadConversionChart = () => {
+  const workspaceId = useWorkspaceId();
   const { data, isLoading } = useQuery({
-    queryKey: ['leadConversionData'],
-    queryFn: fetchLeadConversionData,
+    queryKey: ['leadConversionData', workspaceId],
+    queryFn: () => fetchLeadConversionData(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const chartData = [

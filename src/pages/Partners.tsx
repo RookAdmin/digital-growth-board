@@ -18,6 +18,7 @@ import { PageHero } from '@/components/PageHero';
 import { PARTNER_TIERS, getPartnerTier } from '@/utils/partnerTiers';
 import { getCurrentFiscalYearRange, getFiscalYearRangeForDate } from '@/utils/fiscalYear';
 import { FiscalYearFilter } from '@/components/FiscalYearFilter';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 type Partner = Tables<'partners'>;
 
@@ -33,9 +34,11 @@ const Partners = () => {
     document.title = "Partners - Rook";
   }, []);
 
+  const workspaceId = useWorkspaceId();
   const { data: partners = [], isLoading } = useQuery({
-    queryKey: ['partners'],
+    queryKey: ['partners', workspaceId],
     queryFn: async () => {
+      if (!workspaceId) return [];
       const { data, error } = await supabase
         .from('partners')
         .select(`
@@ -50,12 +53,14 @@ const Partners = () => {
             )
           )
         `)
+        .eq('workspace_id', workspaceId)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!workspaceId,
   });
 
   const currentFY = getCurrentFiscalYearRange();
@@ -288,6 +293,14 @@ const Partners = () => {
                   >
                     <UserPlus className="h-4 w-4 mr-2" />
                     Assign Project
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => window.location.href = `/partners/${partner.id}`}
+                  >
+                    View Details
                   </Button>
                 </div>
               </CardContent>

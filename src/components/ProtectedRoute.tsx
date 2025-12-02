@@ -4,6 +4,7 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -43,9 +44,10 @@ const getPermissionPageFromPath = (pathname: string): string | null => {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, userType, loading } = useUnifiedAuth();
   const location = useLocation();
+  const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace();
   const { permissions, isLoading: permissionsLoading, canAccessPage } = useUserPermissions();
-
-  // Fetch user role for fallback checks
+  
+  // Fetch user role for fallback checks (must be called before any early returns)
   const { data: userRole, isLoading: roleLoading } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -63,7 +65,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     gcTime: 60 * 60 * 1000,
   });
 
-  if (loading || (userType === 'admin' && (roleLoading || permissionsLoading))) {
+  // Check if route has workspace ID (after all hooks are called)
+  const hasWorkspaceId = location.pathname.match(/\/[^/]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  
+  // Wait for workspace to load
+  if (workspaceLoading || loading || (userType === 'admin' && (roleLoading || permissionsLoading))) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-2xl">Loading...</div>
@@ -77,6 +83,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (userType === 'partner') {
     return <Navigate to="/partner/dashboard" replace />;
+  }
+
+  // If no workspace ID in URL but we have a current workspace, redirect
+  if (currentWorkspace?.id && !hasWorkspaceId && !location.pathname.includes('/login') && !location.pathname.includes('/register')) {
+    const basePath = location.pathname.split('/').filter(Boolean)[0] || 'dashboard';
+    return <Navigate to={`/${basePath}/${currentWorkspace.id}`} replace />;
   }
 
   // Check permissions-based access control

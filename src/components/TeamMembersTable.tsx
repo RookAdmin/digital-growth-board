@@ -17,7 +17,7 @@ import { EditTeamMemberDialog } from './EditTeamMemberDialog';
 import { Plus, Edit, UserX, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { pillClasses } from '@/constants/palette';
 
 type TeamMember = Tables<'team_members'>;
@@ -31,6 +31,19 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const queryClient = useQueryClient();
+
+  // Fetch all roles with colors to create a map
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_roles', { include_non_assignable: true });
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; color: string }>;
+    },
+  });
+
+  // Create a map of role name to color
+  const roleColorMap = new Map(roles.map(role => [role.name, role.color || '#6366f1']));
 
   const toggleMemberStatusMutation = useMutation({
     mutationFn: async ({ memberId, isActive }: { memberId: string; isActive: boolean }) => {
@@ -143,7 +156,13 @@ export const TeamMembersTable = ({ teamMembers, onRefresh }: TeamMembersTablePro
               <TableCell className="text-gray-600 py-4 px-6">{member.email}</TableCell>
               <TableCell className="py-4 px-6">
                 <Badge variant="outline" className={getRoleBadge(member.role)}>
-                  {member.role}
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: roleColorMap.get(member.role) || '#6366f1' }}
+                    />
+                    <span>{member.role}</span>
+                  </div>
                 </Badge>
               </TableCell>
               <TableCell className="py-4 px-6">

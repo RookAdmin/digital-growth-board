@@ -8,20 +8,28 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LeadDetailsModal } from './LeadDetailsModal';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
-const fetchLeads = async (): Promise<Lead[]> => {
-  const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: true });
+const fetchLeads = async (workspaceId: string | null): Promise<Lead[]> => {
+  if (!workspaceId) return [];
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: true });
   if (error) throw new Error(error.message);
   return data as Lead[];
 };
 
-const fetchLeadsWithStatusHistory = async (): Promise<any[]> => {
+const fetchLeadsWithStatusHistory = async (workspaceId: string | null): Promise<any[]> => {
+  if (!workspaceId) return [];
   const { data, error } = await supabase
     .from('leads')
     .select(`
       *,
       lead_status_history(changed_at, new_status, old_status)
     `)
+    .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: true });
   
   if (error) throw new Error(error.message);
@@ -80,19 +88,21 @@ interface KanbanBoardProps {
 
 export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endDateFilter }: KanbanBoardProps) => {
   const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
   const [data, setData] = useState<KanbanData>(initialData);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const { data: leadsData, isLoading } = useQuery({
-    queryKey: ['leads-with-history'],
-    queryFn: fetchLeadsWithStatusHistory,
+    queryKey: ['leads-with-history', workspaceId],
+    queryFn: () => fetchLeadsWithStatusHistory(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const updateLeadMutation = useMutation({
     mutationFn: updateLeadStatus,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
-      queryClient.invalidateQueries({ queryKey: ['leads-with-history'] });
+      queryClient.invalidateQueries({ queryKey: ['leads', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['leads-with-history', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['lead-status-history'] });
     },
   });
@@ -100,6 +110,8 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
   // Conversion mutation for when lead is moved to "Converted"
   const convertLeadMutation = useMutation({
     mutationFn: async (leadId: string) => {
+      if (!workspaceId) throw new Error('Workspace ID is required');
+      
       const { data: lead, error: leadError } = await supabase
         .from("leads")
         .select("*")
@@ -114,6 +126,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
         .from("clients")
         .select("id")
         .eq("email", lead.email)
+        .eq("workspace_id", workspaceId)
         .maybeSingle();
       if (existingClientError) {
         throw new Error(existingClientError.message);
@@ -150,6 +163,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
           lead_id: lead.id,
           services_interested: lead.services_interested,
           budget_range: lead.budget_range,
+          workspace_id: workspaceId,
         })
         .select()
         .single();
@@ -179,6 +193,7 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
           name: `${newClient.business_name || newClient.name}'s Initial Project`,
           description: `Project created from lead conversion. Services of interest: ${lead.services_interested?.join(", ") || "Not specified"}.`,
           status: "Not Started",
+          workspace_id: workspaceId,
         });
 
       if (projectError) {
@@ -217,10 +232,10 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
       
       // Invalidate and refetch queries to ensure UI updates
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["leads"] }),
-        queryClient.invalidateQueries({ queryKey: ["leads-with-history"] }),
-        queryClient.invalidateQueries({ queryKey: ["clients"] }),
-        queryClient.invalidateQueries({ queryKey: ["projects"] }),
+        queryClient.invalidateQueries({ queryKey: ["leads", workspaceId] }),
+        queryClient.invalidateQueries({ queryKey: ["leads-with-history", workspaceId] }),
+        queryClient.invalidateQueries({ queryKey: ["clients", workspaceId] }),
+        queryClient.invalidateQueries({ queryKey: ["projects", workspaceId] }),
       ]);
       
       // Force refetch clients to ensure new client appears immediately

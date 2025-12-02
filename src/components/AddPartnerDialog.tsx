@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 interface AddPartnerDialogProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const registrationTypes = [
 
 export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartnerDialogProps) {
   const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -79,6 +81,8 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user');
 
+      if (!workspaceId) throw new Error('Workspace ID is required');
+      
       // Step 2: Create partner record
       const { error: partnerError } = await supabase
         .from('partners')
@@ -101,6 +105,7 @@ export function AddPartnerDialog({ isOpen, onOpenChange, onSuccess }: AddPartner
           country: data.country || null,
           service_categories: data.selectedCategories.length > 0 ? data.selectedCategories : null,
           is_active: true,
+          workspace_id: workspaceId,
         });
 
       if (partnerError) throw partnerError;

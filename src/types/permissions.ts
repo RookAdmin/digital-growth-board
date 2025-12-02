@@ -20,6 +20,7 @@ export interface Role {
   permissions: RolePermissions;
   is_system_role: boolean;
   is_assignable: boolean;
+  color: string;
   created_at: string;
   updated_at: string;
 }

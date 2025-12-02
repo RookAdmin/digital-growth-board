@@ -22,9 +22,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Trash2, Users } from 'lucide-react';
 import { EditClientDialog } from './EditClientDialog';
 import { Country, State } from 'country-state-city';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
-const fetchClients = async (): Promise<Client[]> => {
-  const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+const fetchClients = async (workspaceId: string | null): Promise<Client[]> => {
+  if (!workspaceId) return [];
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data;
 };
@@ -45,9 +51,11 @@ export const ClientsTable = ({
   statusFilter = 'all',
 }: ClientsTableProps) => {
   const navigate = useNavigate();
+  const workspaceId = useWorkspaceId();
   const { data: clients, isLoading, error } = useQuery({
-    queryKey: ['clients'],
-    queryFn: fetchClients,
+    queryKey: ['clients', workspaceId],
+    queryFn: () => fetchClients(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);

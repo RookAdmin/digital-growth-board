@@ -119,6 +119,51 @@ const RegisterPage = () => {
         changed_by: user?.id
       });
       
+      // Create auth user for the lead via Edge Function (no duplicates for same email/mobile)
+      // This is critical for lead portal access
+      if (newLead.email) {
+        try {
+          console.log("Calling create-lead-auth Edge Function for lead:", {
+            lead_id: data.id,
+            email: newLead.email,
+            phone: newLead.phone,
+            name: `${newLead.firstName}${newLead.lastName ? ' ' + newLead.lastName : ''}`.trim()
+          });
+
+          const fullName = `${newLead.firstName}${newLead.lastName ? ' ' + newLead.lastName : ''}`.trim();
+          const { data: authData, error: authError } = await supabase.functions.invoke('create-lead-auth', {
+            body: {
+              lead_id: data.id,
+              email: newLead.email,
+              phone: newLead.phone || '',
+              name: fullName
+            }
+          });
+
+          if (authError) {
+            console.error("Failed to create auth user for lead:", authError);
+            console.error("Auth error details:", {
+              message: authError.message,
+              context: authError.context,
+              name: authError.name
+            });
+            // Don't fail registration, but log the error
+          } else if (authData?.success) {
+            console.log("Auth user created/linked successfully for lead:", newLead.email, authData);
+          } else {
+            console.warn("Edge Function returned unexpected response:", authData);
+          }
+        } catch (authErr: any) {
+          console.error("Exception calling create-lead-auth function:", authErr);
+          console.error("Exception details:", {
+            message: authErr?.message,
+            stack: authErr?.stack,
+            name: authErr?.name
+          });
+          // Continue even if auth user creation fails - it can be fixed manually
+        }
+      }
+      
       return data;
     },
     onSuccess: () => {

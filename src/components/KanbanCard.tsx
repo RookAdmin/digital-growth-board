@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { useState, useEffect } from 'react';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ const statusColors: { [key in Lead['status']]: string } = {
 
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isApprovalConfirmOpen, setIsApprovalConfirmOpen] = useState(false);
@@ -80,11 +82,14 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
 
   const convertToClientMutation = useMutation({
     mutationFn: async (leadToConvert: Lead) => {
+      if (!workspaceId) throw new Error('Workspace ID is required');
+      
       // 1. Check if a client with this email already exists
       const { data: existingClient, error: checkError } = await supabase
         .from('clients')
         .select('*')
         .eq('email', leadToConvert.email)
+        .eq('workspace_id', workspaceId)
         .maybeSingle();
 
       if (checkError) throw checkError;
@@ -110,12 +115,21 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         lead_id: leadToConvert.id,
         services_interested: leadToConvert.services_interested,
         budget_range: leadToConvert.budget_range,
+        workspace_id: workspaceId,
       }).select().single();
 
       if (clientError) throw clientError;
 
       // Create auth user for the client via Edge Function
+      // This is critical for client portal access
       try {
+        console.log("Calling create-client-auth Edge Function for client:", {
+          client_id: clientData.id,
+          email: clientData.email,
+          phone: clientData.phone,
+          name: clientData.name
+        });
+
         const { data: authData, error: authError } = await supabase.functions.invoke('create-client-auth', {
           body: {
             client_id: clientData.id,
@@ -132,21 +146,24 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
             context: authError.context,
             name: authError.name
           });
-          toast.error(`Client created but failed to create login credentials. Please use /backfill-client-auth to fix.`);
-          // Don't fail the conversion if auth user creation fails
-        } else {
+          toast.error(`Client created but failed to create login credentials. Error: ${authError.message}`);
+          // Don't fail the conversion, but log the error
+        } else if (authData?.success) {
           console.log("Auth user created successfully for client:", clientData.email, authData);
           toast.success("Client created with login credentials! Default password: Welcome@Rook");
+        } else {
+          console.warn("Edge Function returned unexpected response:", authData);
+          toast.warning("Client created but auth user creation status unclear. Please verify login.");
         }
       } catch (authErr: any) {
-        console.error("Error calling create-client-auth function:", authErr);
+        console.error("Exception calling create-client-auth function:", authErr);
         console.error("Exception details:", {
           message: authErr?.message,
           stack: authErr?.stack,
           name: authErr?.name
         });
-        toast.error(`Client created but Edge Function call failed. Please use /backfill-client-auth to fix.`);
-        // Continue even if auth user creation fails
+        toast.error(`Client created but Edge Function call failed: ${authErr?.message || 'Unknown error'}`);
+        // Continue even if auth user creation fails - it can be fixed manually
       }
 
       // 3. Create a project for the new client
@@ -155,6 +172,7 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
         name: `${clientData.business_name || clientData.name}'s Initial Project`,
         description: `Project created from lead conversion. Services of interest: ${leadToConvert.services_interested?.join(', ') || 'Not specified'}.`,
         status: 'Not Started',
+        workspace_id: workspaceId,
       });
 
       if (projectError) {
@@ -185,10 +203,10 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
       }
 
       // Refetch queries immediately to update the UI
-      queryClient.refetchQueries({ queryKey: ['leads'] });
+      queryClient.refetchQueries({ queryKey: ['leads', workspaceId] });
       queryClient.refetchQueries({ queryKey: ['leads-with-history'] });
-      queryClient.refetchQueries({ queryKey: ['clients'] }); // Force refetch to show new client immediately
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.refetchQueries({ queryKey: ['clients', workspaceId] }); // Force refetch to show new client immediately
+      queryClient.invalidateQueries({ queryKey: ['projects', workspaceId] });
     },
     onError: (error: Error) => {
       toast.error(`Conversion failed: ${error.message}`);

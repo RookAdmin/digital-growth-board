@@ -12,6 +12,7 @@ import { PageHero } from "@/components/PageHero";
 import { SearchInput } from '@/components/SearchInput';
 import { UnifiedDateFilter } from '@/components/UnifiedDateFilter';
 import { Button } from '@/components/ui/button';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,9 +34,11 @@ const ProjectsPage = () => {
     setSingleDate(date);
   };
 
+  const workspaceId = useWorkspaceId();
   const { data: projects = [], isLoading } = useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', workspaceId],
     queryFn: async () => {
+      if (!workspaceId) return [];
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -43,6 +46,7 @@ const ProjectsPage = () => {
         .from('team_members')
         .select('role, id')
         .eq('user_id', user.id)
+        .eq('workspace_id', workspaceId)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -62,7 +66,9 @@ const ProjectsPage = () => {
 
         if (assignError) throw assignError;
         
-        return (assignedProjects?.map(ap => ap.projects).filter(Boolean) || []) as Project[];
+        // Filter by workspace_id
+        const projects = (assignedProjects?.map(ap => ap.projects).filter(Boolean) || []) as Project[];
+        return projects.filter((p: any) => p.workspace_id === workspaceId);
       }
 
       // CEO, CTO, SME, Client Executive: fetch all projects
@@ -73,11 +79,13 @@ const ProjectsPage = () => {
           clients(id, name, email, business_name),
           tasks(id, title, status)
         `)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return (data || []) as Project[];
     },
+    enabled: !!workspaceId,
   });
 
   if (isLoading) {

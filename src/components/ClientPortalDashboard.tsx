@@ -4,10 +4,11 @@ import { ClientOnboardingProgress } from './ClientOnboardingProgress';
 import { ClientProjectsList } from './ClientProjectsList';
 import { ClientInvoicesList } from './ClientInvoicesList';
 import { ClientFilesList } from './ClientFilesList';
+import { ClientDock } from './ClientDock';
 
 export const ClientPortalDashboard = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-32">
       <ClientPortalHeader />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -38,6 +39,7 @@ export const ClientPortalDashboard = () => {
           </div>
         </div>
       </main>
+      <ClientDock />
     </div>
   );
 };

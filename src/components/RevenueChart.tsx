@@ -7,11 +7,14 @@ import { Area, AreaChart, CartesianGrid, XAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 
-const fetchRevenueData = async () => {
+const fetchRevenueData = async (workspaceId: string | null) => {
+  if (!workspaceId) return [];
+  
   const { data, error } = await supabase
     .from('invoices')
-    .select('total_amount, issued_date')
+    .select('total_amount, issued_date, project_id, projects!inner(workspace_id)')
     .eq('status', 'Paid')
+    .eq('projects.workspace_id', workspaceId)
     .order('issued_date', { ascending: true });
     
   if (error) throw new Error(error.message);
@@ -30,9 +33,11 @@ const fetchRevenueData = async () => {
 };
 
 export const RevenueChart = () => {
+  const workspaceId = useWorkspaceId();
   const { data: chartData, isLoading } = useQuery({
-    queryKey: ['revenueData'],
-    queryFn: fetchRevenueData,
+    queryKey: ['revenueData', workspaceId],
+    queryFn: () => fetchRevenueData(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const chartConfig = {

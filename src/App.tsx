@@ -3,6 +3,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
+import { WorkspaceRoute } from "@/components/WorkspaceRoute";
+import { WorkspaceSetupGuard } from "@/components/WorkspaceSetupGuard";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
@@ -22,7 +25,11 @@ import Files from "./pages/Files";
 import Scheduling from "./pages/Scheduling";
 import ClientPortal from "./pages/ClientPortal";
 import ClientChangePassword from "./pages/ClientChangePassword";
+import ClientProjects from "./pages/ClientProjects";
+import ClientInvoices from "./pages/ClientInvoices";
+import ClientFiles from "./pages/ClientFiles";
 import Partners from "./pages/Partners";
+import PartnerDetails from "./pages/PartnerDetails";
 import PartnerSignup from "./pages/PartnerSignup";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerAwards from "./pages/PartnerAwards";
@@ -53,7 +60,9 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <Routes>
+          <WorkspaceProvider>
+            <WorkspaceSetupGuard>
+              <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<UnifiedLogin />} />
             <Route path="/register" element={<Register />} />
@@ -130,114 +139,185 @@ function App() {
                 </ClientProtectedRoute>
               }
             />
+            <Route
+              path="/client/projects"
+              element={
+                <ClientProtectedRoute>
+                  <ClientProjects />
+                </ClientProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/invoices"
+              element={
+                <ClientProtectedRoute>
+                  <ClientInvoices />
+                </ClientProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/files"
+              element={
+                <ClientProtectedRoute>
+                  <ClientFiles />
+                </ClientProtectedRoute>
+              }
+            />
             
-            {/* Protected Admin Routes */}
+            {/* Protected Admin Routes with Workspace */}
+            <Route
+              path="/dashboard/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Dashboard />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Clients />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:workspaceId/:id"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <ClientDetails />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leads/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Leads />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Projects />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects/:workspaceId/:id"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <ProjectDetails />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/partners/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Partners />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/partners/:workspaceId/:id"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <PartnerDetails />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Team />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reporting/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Reporting />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/files/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Files />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scheduling/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Scheduling />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Billing />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/backfill-client-auth/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <BackfillClientAuth />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            {/* Legacy routes - will be handled by ProtectedRoute redirect */}
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/clients"
-              element={
-                <ProtectedRoute>
-                  <Clients />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/clients/:id"
-              element={
-                <ProtectedRoute>
-                  <ClientDetails />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/leads"
-              element={
-                <ProtectedRoute>
-                  <Leads />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/projects"
-              element={
-                <ProtectedRoute>
-                  <Projects />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/projects/:id"
-              element={
-                <ProtectedRoute>
-                  <ProjectDetails />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/partners"
-              element={
-                <ProtectedRoute>
-                  <Partners />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/team"
-              element={
-                <ProtectedRoute>
-                  <Team />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reporting"
-              element={
-                <ProtectedRoute>
-                  <Reporting />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/files"
-              element={
-                <ProtectedRoute>
-                  <Files />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/scheduling"
-              element={
-                <ProtectedRoute>
-                  <Scheduling />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/billing"
-              element={
-                <ProtectedRoute>
-                  <Billing />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/backfill-client-auth"
-              element={
-                <ProtectedRoute>
-                  <BackfillClientAuth />
+                  <Navigate to="/dashboard" replace />
                 </ProtectedRoute>
               }
             />
             <Route path="*" element={<NotFound />} />
-          </Routes>
+              </Routes>
+            </WorkspaceSetupGuard>
+          </WorkspaceProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

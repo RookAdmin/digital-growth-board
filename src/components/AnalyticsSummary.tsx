@@ -4,31 +4,54 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Briefcase, DollarSign, FileClock, CheckCircle } from 'lucide-react';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
-const fetchAnalyticsSummary = async () => {
-  const { count: leadCount, error: leadError } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+const fetchAnalyticsSummary = async (workspaceId: string | null) => {
+  if (!workspaceId) return { leadCount: 0, clientCount: 0, totalRevenue: 0, activeProjectsCount: 0, pendingInvoicesCount: 0 };
+  
+  const { count: leadCount, error: leadError } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId);
   if (leadError) throw new Error(leadError.message);
 
-  const { count: clientCount, error: clientError } = await supabase.from('clients').select('*', { count: 'exact', head: true });
+  const { count: clientCount, error: clientError } = await supabase
+    .from('clients')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId);
   if (clientError) throw new Error(clientError.message);
   
-  const { data: paidInvoices, error: invoiceError } = await supabase.from('invoices').select('total_amount').eq('status', 'Paid');
+  const { data: paidInvoices, error: invoiceError } = await supabase
+    .from('invoices')
+    .select('total_amount, projects!inner(workspace_id)')
+    .eq('status', 'Paid')
+    .eq('projects.workspace_id', workspaceId);
   if (invoiceError) throw new Error(invoiceError.message);
   const totalRevenue = paidInvoices?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0;
 
-  const { count: activeProjectsCount, error: activeProjectsError } = await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'In Progress');
+  const { count: activeProjectsCount, error: activeProjectsError } = await supabase
+    .from('projects')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'In Progress')
+    .eq('workspace_id', workspaceId);
   if (activeProjectsError) throw new Error(activeProjectsError.message);
 
-  const { count: pendingInvoicesCount, error: pendingInvoicesError } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).in('status', ['Sent', 'Overdue']);
+  const { count: pendingInvoicesCount, error: pendingInvoicesError } = await supabase
+    .from('invoices')
+    .select('*, projects!inner(workspace_id)', { count: 'exact', head: true })
+    .in('status', ['Sent', 'Overdue'])
+    .eq('projects.workspace_id', workspaceId);
   if (pendingInvoicesError) throw new Error(pendingInvoicesError.message);
 
   return { leadCount, clientCount, totalRevenue, activeProjectsCount, pendingInvoicesCount };
 };
 
 export const AnalyticsSummary = () => {
+  const workspaceId = useWorkspaceId();
   const { data, isLoading } = useQuery({
-    queryKey: ['analyticsSummary'],
-    queryFn: fetchAnalyticsSummary,
+    queryKey: ['analyticsSummary', workspaceId],
+    queryFn: () => fetchAnalyticsSummary(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const summaryData = [

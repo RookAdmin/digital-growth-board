@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 import {
   Dialog,
   DialogContent,
@@ -69,15 +70,22 @@ export const InviteMemberDialog = ({ isOpen, onOpenChange, onInviteSuccess }: In
     },
   });
 
+  const workspaceId = useWorkspaceId();
   const onSubmit = async (values: z.infer<typeof inviteSchema>) => {
     setIsSubmitting(true);
     try {
+      if (!workspaceId) {
+        toast.error('Workspace ID is required');
+        return;
+      }
+      
       const { error } = await supabase.functions.invoke('invite-team-member', {
         body: {
           name: values.name,
           email: values.email,
           role: values.role,
           defaultPassword: values.defaultPassword,
+          workspaceId: workspaceId,
         },
       });
 

@@ -9,7 +9,8 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, role, defaultPassword } = await req.json()
+    const requestBody = await req.json()
+    const { email, name, role, defaultPassword, workspaceId } = requestBody
 
     console.log('Invite request:', { email, name, role })
 
@@ -36,10 +37,10 @@ serve(async (req) => {
     
     console.log('Inviter user ID:', inviter.id)
     
-    // Check if inviter is an admin
+    // Check if inviter is an admin and get their workspace_id
     const { data: adminProfile, error: adminError } = await supabaseAdmin
       .from('team_members')
-      .select('role')
+      .select('role, workspace_id')
       .eq('user_id', inviter.id)
       .single()
 
@@ -49,6 +50,16 @@ serve(async (req) => {
       console.log('User is not admin:', { adminError, adminProfile })
       return new Response(JSON.stringify({ error: 'Only admins can invite new members.' }), {
         status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Get workspace_id from request body or use inviter's workspace_id
+    const workspace_id = workspaceId || adminProfile.workspace_id
+
+    if (!workspace_id) {
+      return new Response(JSON.stringify({ error: 'Workspace ID is required' }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -90,6 +101,7 @@ serve(async (req) => {
         joined_at: new Date().toISOString(),
         default_password: defaultPassword,
         password_changed: false,
+        workspace_id: workspace_id,
       })
       .select()
       .single()

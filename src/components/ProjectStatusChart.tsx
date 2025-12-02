@@ -5,9 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pie, PieChart, Tooltip, Cell } from 'recharts';
 import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
-const fetchProjectStatusData = async () => {
-  const { data, error } = await supabase.from('projects').select('status');
+const fetchProjectStatusData = async (workspaceId: string | null) => {
+  if (!workspaceId) return [];
+  
+  const { data, error } = await supabase
+    .from('projects')
+    .select('status')
+    .eq('workspace_id', workspaceId);
   if (error) throw new Error(error.message);
 
   const statusCounts = data.reduce((acc, project) => {
@@ -24,9 +30,11 @@ const fetchProjectStatusData = async () => {
 };
 
 export const ProjectStatusChart = () => {
+  const workspaceId = useWorkspaceId();
   const { data: chartData, isLoading } = useQuery({
-    queryKey: ['projectStatusData'],
-    queryFn: fetchProjectStatusData,
+    queryKey: ['projectStatusData', workspaceId],
+    queryFn: () => fetchProjectStatusData(workspaceId),
+    enabled: !!workspaceId,
   });
 
   const chartConfig = {

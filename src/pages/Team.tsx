@@ -9,6 +9,7 @@ import { DockNav } from '@/components/DockNav';
 import { LoadingState } from '@/components/LoadingState';
 import { PageHero } from '@/components/PageHero';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 const TeamPage = () => {
   const queryClient = useQueryClient();
@@ -32,18 +33,21 @@ const TeamPage = () => {
 
   // Get current user role for Access Levels
   const { data: currentUserRole } = useQuery({
-    queryKey: ['currentUserRole'],
+    queryKey: ['currentUserRole', workspaceId],
     queryFn: async () => {
+      if (!workspaceId) return null;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
       const { data } = await supabase
         .from('team_members')
         .select('role')
         .eq('user_id', user.id)
+        .eq('workspace_id', workspaceId)
         .eq('is_active', true)
         .maybeSingle();
       return data?.role || null;
     },
+    enabled: !!workspaceId,
   });
 
   const handleRefresh = () => {
