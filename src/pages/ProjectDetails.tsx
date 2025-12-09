@@ -49,7 +49,7 @@ type ProjectDetailsProject = Project & {
 
 
 const ProjectDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { workspaceId, id } = useParams<{ workspaceId: string; id: string }>();
   const navigate = useNavigate();
   const [showAddMilestone, setShowAddMilestone] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
@@ -128,7 +128,7 @@ const ProjectDetails = () => {
               <FolderOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Project Not Found</h3>
               <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or has been deleted.</p>
-              <Button onClick={() => navigate('/projects')} variant="outline">
+              <Button onClick={() => navigate(workspaceId ? `/projects/${workspaceId}` : '/projects')} variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Projects
               </Button>
@@ -152,7 +152,7 @@ const ProjectDetails = () => {
         <div className="mb-6">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/projects')}
+            onClick={() => navigate(workspaceId ? `/projects/${workspaceId}` : '/projects')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

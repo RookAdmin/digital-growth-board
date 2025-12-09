@@ -28,7 +28,7 @@ const getStatusColor = (status: string) => {
 };
 
 const ClientDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { workspaceId, id } = useParams<{ workspaceId: string; id: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,7 +93,7 @@ const ClientDetails = () => {
               <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Client Not Found</h3>
               <p className="text-gray-500 mb-4">The client you're looking for doesn't exist or has been deleted.</p>
-              <Button onClick={() => navigate('/clients')} variant="outline">
+              <Button onClick={() => navigate(workspaceId ? `/clients/${workspaceId}` : '/clients')} variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Clients
               </Button>
@@ -114,7 +114,7 @@ const ClientDetails = () => {
         <div className="mb-6">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/clients')}
+            onClick={() => navigate(workspaceId ? `/clients/${workspaceId}` : '/clients')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ const ClientDetails = () => {
                     <Card 
                       key={project.id}
                       className="cursor-pointer hover:shadow-md transition-shadow border-gray-200"
-                      onClick={() => navigate(`/projects/${project.id}`)}
+                      onClick={() => navigate(workspaceId ? `/projects/${workspaceId}/${project.id}` : `/projects/${project.id}`)}
                     >
                       <CardHeader>
                         <div className="flex items-start justify-between">
@@ -221,7 +221,7 @@ const ClientDetails = () => {
                 <div className="text-center py-8">
                   <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 mb-2">No projects assigned to this client yet.</p>
-                  <Button onClick={() => navigate('/projects')} variant="outline">
+                  <Button onClick={() => navigate(workspaceId ? `/projects/${workspaceId}` : '/projects')} variant="outline">
                     View All Projects
                   </Button>
                 </div>

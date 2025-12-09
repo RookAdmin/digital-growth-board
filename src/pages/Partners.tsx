@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ const Partners = () => {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Partners - Rook";
@@ -204,7 +206,11 @@ const Partners = () => {
           const nextTier = tierInfo.nextTier;
 
           return (
-            <Card key={partner.id} className="hover:-translate-y-1 hover:shadow-[0_25px_80px_rgba(15,23,42,0.12)] transition-all duration-300 border border-white/70 bg-white">
+            <Card 
+              key={partner.id} 
+              className="hover:-translate-y-1 hover:shadow-[0_25px_80px_rgba(15,23,42,0.12)] transition-all duration-300 border border-white/70 bg-white cursor-pointer"
+              onClick={() => workspaceId && navigate(`/partners/${workspaceId}/${partner.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -289,7 +295,10 @@ const Partners = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => handleAssignProject(partner)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAssignProject(partner);
+                    }}
                   >
                     <UserPlus className="h-4 w-4 mr-2" />
                     Assign Project
@@ -298,7 +307,12 @@ const Partners = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => window.location.href = `/partners/${partner.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (workspaceId) {
+                        navigate(`/partners/${workspaceId}/${partner.id}`);
+                      }
+                    }}
                   >
                     View Details
                   </Button>

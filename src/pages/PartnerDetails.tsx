@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, CreditCard, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, CreditCard, FileText, FolderOpen, Calendar, DollarSign, Users } from 'lucide-react';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { LoadingState } from '@/components/LoadingState';
 import { Tables } from '@/integrations/supabase/types';
@@ -60,7 +61,7 @@ const TAX_TYPES: Record<string, string[]> = {
 };
 
 const PartnerDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { workspaceId, id } = useParams<{ workspaceId: string; id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<Partial<Partner>>({});
@@ -81,6 +82,48 @@ const PartnerDetails = () => {
         .single();
       if (error) throw error;
       return data as Partner;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch partner's projects
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
+    queryKey: ['partner-projects', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('partner_project_assignments')
+        .select(`
+          id,
+          assigned_role,
+          notes,
+          assigned_at,
+          projects:project_id (
+            id,
+            name,
+            description,
+            status,
+            deadline,
+            budget,
+            created_at,
+            clients:client_id (
+              id,
+              name,
+              business_name,
+              email
+            )
+          )
+        `)
+        .eq('partner_id', id)
+        .order('assigned_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map((assignment: any) => ({
+        ...assignment.projects,
+        assigned_role: assignment.assigned_role,
+        notes: assignment.notes,
+        assigned_at: assignment.assigned_at,
+      })).filter((p: any) => p.id); // Filter out null projects
     },
     enabled: !!id,
   });
@@ -178,7 +221,7 @@ const PartnerDetails = () => {
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <div className="text-center py-12">
             <p className="text-gray-600">Partner not found</p>
-            <Button onClick={() => navigate('/partners')} className="mt-4">
+            <Button onClick={() => navigate(workspaceId ? `/partners/${workspaceId}` : '/partners')} className="mt-4">
               Back to Partners
             </Button>
           </div>
@@ -194,14 +237,14 @@ const PartnerDetails = () => {
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="mb-6 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/partners')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate(workspaceId ? `/partners/${workspaceId}` : '/partners')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
           <h1 className="text-3xl font-bold text-gray-900">Partner Details</h1>
         </div>
 
@@ -599,7 +642,7 @@ const PartnerDetails = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/partners')}
+              onClick={() => navigate(workspaceId ? `/partners/${workspaceId}` : '/partners')}
             >
               Cancel
             </Button>
@@ -613,6 +656,99 @@ const PartnerDetails = () => {
             </Button>
           </div>
         </form>
+
+        {/* Projects Section */}
+        <Card className="border border-white/80 bg-white/90 shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FolderOpen className="h-5 w-5" />
+              Assigned Projects
+              {projects && projects.length > 0 && (
+                <Badge variant="secondary">{projects.length}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {projectsLoading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading projects...</p>
+              </div>
+            ) : projects && projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {projects.map((project: any) => (
+                  <Card 
+                    key={project.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow border-gray-200"
+                    onClick={() => workspaceId && navigate(`/projects/${workspaceId}/${project.id}`)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg">{project.name}</CardTitle>
+                        <Badge 
+                          className={`${
+                            project.status === 'Not Started' ? 'bg-[#F1F1F1] text-[#131313]' :
+                            project.status === 'In Progress' ? 'bg-[#131313] text-[#FAF9F6]' :
+                            project.status === 'Review' ? 'bg-[#222222] text-[#FAF9F6]' :
+                            'bg-[#FAF9F6] text-[#131313]'
+                          } text-xs font-medium px-2 py-1 rounded-full`} 
+                          variant="outline"
+                        >
+                          {project.status}
+                        </Badge>
+                      </div>
+                      {project.clients && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {project.clients.business_name || project.clients.name}
+                        </p>
+                      )}
+                      {project.assigned_role && (
+                        <Badge variant="outline" className="mt-2 text-xs">
+                          Role: {project.assigned_role}
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {project.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{project.description}</p>
+                      )}
+                      <div className="space-y-2 text-sm">
+                        {project.deadline && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Calendar className="w-4 h-4" />
+                            <span>Due: {format(new Date(project.deadline), 'MMM dd, yyyy')}</span>
+                          </div>
+                        )}
+                        {project.budget && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <DollarSign className="w-4 h-4" />
+                            <span>${project.budget.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {project.assigned_at && (
+                          <div className="flex items-center gap-2 text-gray-500 text-xs">
+                            <Calendar className="w-3 h-3" />
+                            <span>Assigned: {format(new Date(project.assigned_at), 'MMM dd, yyyy')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2">No projects assigned to this partner yet.</p>
+                <Button 
+                  onClick={() => workspaceId && navigate(`/partners/${workspaceId}`)} 
+                  variant="outline"
+                >
+                  Back to Partners
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
       <DockNav />
     </div>

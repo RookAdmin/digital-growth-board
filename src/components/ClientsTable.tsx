@@ -224,7 +224,7 @@ export const ClientsTable = ({
                 className={`border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
                   index < filteredClients.length - 1 ? 'border-b border-gray-100' : ''
                 }`}
-                onClick={() => navigate(`/clients/${client.id}`)}
+                onClick={() => navigate(`/clients/${workspaceId}/${client.id}`)}
               >
                 <TableCell className="font-medium text-gray-900 py-4 px-6">{client.name}</TableCell>
                 <TableCell className="text-gray-600 py-4 px-6">{client.email}</TableCell>

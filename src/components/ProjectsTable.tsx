@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -202,9 +203,12 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const workspaceId = useWorkspaceId();
 
   const handleViewProject = (project: Project) => {
-    navigate(`/projects/${project.id}`);
+    if (workspaceId) {
+      navigate(`/projects/${workspaceId}/${project.id}`);
+    }
   };
 
   const handleCloseModal = () => {
@@ -563,6 +567,7 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                     className={`border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
                       index < filteredProjects.length - 1 ? 'border-b border-gray-100' : ''
                     }`}
+                    onClick={() => handleViewProject(project)}
                   >
                     <TableCell className="py-4">
                       <div className="space-y-1">
@@ -623,7 +628,7 @@ export const ProjectsTable = ({ projects, searchTerm = '', startDate, endDate, s
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="outline"
                           size="sm"
