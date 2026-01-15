@@ -38,14 +38,11 @@ interface LeadsTableProps {
   statusFilter?: string;
 }
 
-const statusStyles: Record<LeadStatus, string> = {
-  New: "bg-gray-100 text-gray-900",
-  Contacted: "bg-blue-100 text-blue-800",
-  Qualified: "bg-emerald-100 text-emerald-800",
-  "Proposal Sent": "bg-purple-100 text-purple-800",
-  Approvals: "bg-amber-100 text-amber-800",
-  Converted: "bg-black text-white",
-  Dropped: "bg-red-100 text-red-700",
+// Helper function to get status style from color
+const getStatusStyle = (color: string): string => {
+  // Convert hex color to a light background with appropriate text color
+  // For now, use a simple approach: light background with dark text
+  return `bg-[${color}]/10 text-[${color}] border border-[${color}]/20`;
 };
 
 export const LeadsTable = ({
@@ -60,6 +57,29 @@ export const LeadsTable = ({
     queryKey: ["leads", workspaceId],
     queryFn: () => fetchLeads(workspaceId),
     enabled: !!workspaceId,
+  });
+
+  // Fetch lead statuses with colors
+  const { data: leadStatuses = [] } = useQuery({
+    queryKey: ['lead-statuses', workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const { data, error } = await (supabase as any)
+        .from('lead_statuses')
+        .select('name, color')
+        .eq('workspace_id', workspaceId)
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; color: string }>;
+    },
+    enabled: !!workspaceId,
+  });
+
+  // Create status styles map from database
+  const statusStyles: Record<string, string> = {};
+  leadStatuses.forEach(status => {
+    statusStyles[status.name] = getStatusStyle(status.color);
   });
 
   const queryClient = useQueryClient();
@@ -441,7 +461,18 @@ export const LeadsTable = ({
                 </TableCell>
                 <TableCell className="py-4 px-6">
                   <Badge
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[lead.status]}`}
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      statusStyles[lead.status] || 'bg-gray-100 text-gray-900'
+                    }`}
+                    style={
+                      leadStatuses.find(s => s.name === lead.status)?.color
+                        ? {
+                            backgroundColor: `${leadStatuses.find(s => s.name === lead.status)?.color}20`,
+                            color: leadStatuses.find(s => s.name === lead.status)?.color,
+                            borderColor: `${leadStatuses.find(s => s.name === lead.status)?.color}40`,
+                          }
+                        : undefined
+                    }
                   >
                     {lead.status}
                   </Badge>

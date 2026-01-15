@@ -1,6 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface WorkspaceRouteProps {
   children: React.ReactNode;
@@ -10,16 +10,19 @@ export const WorkspaceRoute = ({ children }: WorkspaceRouteProps) => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { currentWorkspace, workspaces, isLoading } = useWorkspace();
 
+  const hasReloadedRef = useRef(false);
+  
   useEffect(() => {
-    if (workspaceId && currentWorkspace?.id && currentWorkspace.id !== workspaceId) {
+    if (workspaceId && currentWorkspace?.id && currentWorkspace.id !== workspaceId && !hasReloadedRef.current) {
       // Update localStorage if workspace ID in URL is different
       const workspace = workspaces.find(w => w.id === workspaceId);
       if (workspace) {
         localStorage.setItem('currentWorkspaceId', workspaceId);
+        hasReloadedRef.current = true;
         window.location.reload();
       }
     }
-  }, [workspaceId, currentWorkspace, workspaces]);
+  }, [workspaceId, currentWorkspace?.id, workspaces]);
 
   if (isLoading) {
     return (

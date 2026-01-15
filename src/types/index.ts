@@ -1,4 +1,7 @@
-export type LeadStatus = "New" | "Contacted" | "Qualified" | "Proposal Sent" | "Approvals" | "Converted" | "Dropped";
+// LeadStatus is now dynamic - can be any string from the lead_statuses table
+// Default statuses: "New", "Converted", "Dropped" are always present
+// Other statuses can be created dynamically per workspace
+export type LeadStatus = string;
 
 export interface Lead {
   id: string;

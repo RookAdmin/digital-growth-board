@@ -11,6 +11,7 @@ import {
   BarChart3,
   Receipt,
   Ellipsis,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
@@ -29,6 +30,7 @@ const dockItems = [
   { label: "Team", href: "/team", icon: UserCircle2 },
   { label: "Files", href: "/files", icon: Folder },
   { label: "Reporting", href: "/reporting", icon: BarChart3 },
+  { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
 const billingItem = { label: "Billing", href: "/billing", icon: Receipt };

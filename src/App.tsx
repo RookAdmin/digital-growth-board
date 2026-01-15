@@ -38,6 +38,7 @@ import PartnerProject from "./pages/PartnerProject";
 import PartnerProjects from "./pages/PartnerProjects";
 import PartnerLeads from "./pages/PartnerLeads";
 import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
 import { BackfillClientAuth } from "./pages/BackfillClientAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientProtectedRoute from "./components/ClientProtectedRoute";
@@ -251,6 +252,16 @@ function App() {
                 <ProtectedRoute>
                   <WorkspaceRoute>
                     <Team />
+                  </WorkspaceRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspaceRoute>
+                    <Settings />
                   </WorkspaceRoute>
                 </ProtectedRoute>
               }

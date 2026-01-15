@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { LeadActivityLog } from './LeadActivityLog';
 import { PhoneInput } from '@/components/PhoneInput';
 import { LeadProposals } from './LeadProposals';
+import { useWorkspaceId } from '@/hooks/useWorkspaceId';
 
 interface LeadDetailsModalProps {
   lead: Lead | null;
@@ -177,7 +178,23 @@ export const LeadDetailsModal = ({ lead, isOpen, onClose, onUpdateLeadStatus }: 
 
     if (!lead) return null;
     
-    const statusOptions: LeadStatus[] = ["New", "Contacted", "Qualified", "Proposal Sent", "Converted", "Dropped"];
+    // Fetch dynamic status options from database
+    const { data: statusOptions = [] } = useQuery({
+      queryKey: ['lead-statuses', workspaceId],
+      queryFn: async () => {
+        if (!workspaceId) return [];
+          const { data, error } = await (supabase as any)
+            .from('lead_statuses')
+            .select('name')
+            .eq('workspace_id', workspaceId)
+            .eq('is_active', true)
+            .order('display_order', { ascending: true });
+        
+        if (error) throw error;
+        return (data || []).map(s => s.name) as LeadStatus[];
+      },
+      enabled: !!workspaceId,
+    });
     const currentDisplayStatus = pendingStatus || lead.status;
 
     return (

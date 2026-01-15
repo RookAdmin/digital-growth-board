@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -84,10 +84,12 @@ export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
   // Get current workspace
   const currentWorkspace = workspaces.find(w => w.id === currentWorkspaceId) || workspaces[0] || null;
 
-  // Update current workspace in localStorage when it changes
-  if (currentWorkspace?.id && currentWorkspaceId !== currentWorkspace.id) {
-    localStorage.setItem('currentWorkspaceId', currentWorkspace.id);
-  }
+  // Update current workspace in localStorage when it changes (using useEffect to prevent infinite loops)
+  useEffect(() => {
+    if (currentWorkspace?.id && currentWorkspaceId !== currentWorkspace.id) {
+      localStorage.setItem('currentWorkspaceId', currentWorkspace.id);
+    }
+  }, [currentWorkspace?.id, currentWorkspaceId]);
 
   // Create workspace mutation
   const createWorkspaceMutation = useMutation({
@@ -217,36 +219,40 @@ export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const switchWorkspace = (workspaceId: string) => {
+  const switchWorkspace = useCallback((workspaceId: string) => {
     localStorage.setItem('currentWorkspaceId', workspaceId);
     queryClient.invalidateQueries();
     window.location.reload(); // Reload to update all queries with new workspace
-  };
+  }, [queryClient]);
 
-  const createWorkspace = async (data: CreateWorkspaceData) => {
+  const createWorkspace = useCallback(async (data: CreateWorkspaceData) => {
     await createWorkspaceMutation.mutateAsync(data);
-  };
+  }, [createWorkspaceMutation]);
 
-  const joinWorkspace = async (inviteCode: string) => {
+  const joinWorkspace = useCallback(async (inviteCode: string) => {
     await joinWorkspaceMutation.mutateAsync(inviteCode);
-  };
+  }, [joinWorkspaceMutation]);
 
-  const refreshWorkspaces = () => {
+  const refreshWorkspaces = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['workspaces', user?.id] });
-  };
+  }, [queryClient, user?.id]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      currentWorkspace,
+      workspaces,
+      isLoading,
+      switchWorkspace,
+      createWorkspace,
+      joinWorkspace,
+      refreshWorkspaces,
+    }),
+    [currentWorkspace, workspaces, isLoading, switchWorkspace, createWorkspace, joinWorkspace, refreshWorkspaces]
+  );
 
   return (
-    <WorkspaceContext.Provider
-      value={{
-        currentWorkspace,
-        workspaces,
-        isLoading,
-        switchWorkspace,
-        createWorkspace,
-        joinWorkspace,
-        refreshWorkspaces,
-      }}
-    >
+    <WorkspaceContext.Provider value={contextValue}>
       {children}
     </WorkspaceContext.Provider>
   );

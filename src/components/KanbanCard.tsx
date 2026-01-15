@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Draggable } from '@hello-pangea/dnd';
 import { Mail, Phone, Briefcase, Trash2 } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { useState, useEffect } from 'react';
@@ -26,19 +26,29 @@ interface KanbanCardProps {
   onCardClick: (lead: Lead) => void;
 }
 
-const statusColors: { [key in Lead['status']]: string } = {
-  New: "bg-[#F1F1F1] text-[#131313] border border-[#E0E0E0]",
-  Contacted: "bg-[#131313] text-[#FAF9F6] border border-[#131313]",
-  Qualified: "bg-[#222222] text-[#FAF9F6] border border-[#222222]",
-  "Proposal Sent": "bg-[#FAF9F6] text-[#131313] border border-[#E0E0E0]",
-  Approvals: "bg-[#131313] text-[#FAF9F6] border border-[#131313]",
-  Converted: "bg-[#222222] text-[#FAF9F6] border border-[#222222]",
-  Dropped: "bg-[#F1F1F1] text-[#222222] border border-[#E0E0E0]",
-};
-
 export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
   const queryClient = useQueryClient();
   const workspaceId = useWorkspaceId();
+
+  // Fetch lead statuses with colors
+  const { data: leadStatuses = [] } = useQuery({
+    queryKey: ['lead-statuses', workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const { data, error } = await (supabase as any)
+        .from('lead_statuses')
+        .select('name, color')
+        .eq('workspace_id', workspaceId)
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; color: string }>;
+    },
+    enabled: !!workspaceId,
+  });
+
+  // Get status color from database
+  const statusColor = leadStatuses.find(s => s.name === lead.status)?.color || '#9ca3af';
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isApprovalConfirmOpen, setIsApprovalConfirmOpen] = useState(false);
@@ -282,7 +292,15 @@ export const KanbanCard = ({ lead, index, onCardClick }: KanbanCardProps) => {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Badge className={`${statusColors[lead.status]} text-xs px-2 py-0.5 rounded-lg`}>
+                  <Badge
+                    className="text-xs px-2 py-0.5 rounded-lg"
+                    style={{
+                      backgroundColor: `${statusColor}20`,
+                      color: statusColor,
+                      borderColor: `${statusColor}40`,
+                      borderWidth: '1px',
+                    }}
+                  >
                     {lead.status}
                   </Badge>
                   <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>

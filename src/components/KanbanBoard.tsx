@@ -9,6 +9,8 @@ import { LeadDetailsModal } from './LeadDetailsModal';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useWorkspaceId } from '@/hooks/useWorkspaceId';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const fetchLeads = async (workspaceId: string | null): Promise<Lead[]> => {
   if (!workspaceId) return [];
@@ -65,18 +67,21 @@ const updateLeadStatus = async ({ leadId, status }: { leadId: string; status: Le
   }
 };
 
-const initialData: KanbanData = {
-  leads: {},
-  columns: {
-    'New': { id: 'New', title: 'New', leadIds: [] },
-    'Contacted': { id: 'Contacted', title: 'Contacted', leadIds: [] },
-    'Qualified': { id: 'Qualified', title: 'Qualified', leadIds: [] },
-    'Proposal Sent': { id: 'Proposal Sent', title: 'Proposal Sent', leadIds: [] },
-    'Approvals': { id: 'Approvals', title: 'Approvals', leadIds: [] },
-    'Converted': { id: 'Converted', title: 'Converted', leadIds: [] },
-    'Dropped': { id: 'Dropped', title: 'Dropped', leadIds: [] },
-  },
-  columnOrder: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Approvals', 'Converted', 'Dropped'],
+// Helper function to build initial data from lead statuses
+const buildInitialData = (leadStatuses: Array<{ name: string }>): KanbanData => {
+  const columns: { [key: string]: Column } = {};
+  const columnOrder: string[] = [];
+
+  leadStatuses.forEach(status => {
+    columns[status.name] = { id: status.name as LeadStatus, title: status.name as LeadStatus, leadIds: [] };
+    columnOrder.push(status.name);
+  });
+
+  return {
+    leads: {},
+    columns,
+    columnOrder,
+  };
 };
 
 interface KanbanBoardProps {
@@ -89,14 +94,36 @@ interface KanbanBoardProps {
 export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endDateFilter }: KanbanBoardProps) => {
   const queryClient = useQueryClient();
   const workspaceId = useWorkspaceId();
-  const [data, setData] = useState<KanbanData>(initialData);
+  const navigate = useNavigate();
+  const [data, setData] = useState<KanbanData>({ leads: {}, columns: {}, columnOrder: [] });
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
-  const { data: leadsData, isLoading } = useQuery({
+  // Fetch lead statuses for this workspace
+  const { data: leadStatuses = [], isLoading: statusesLoading } = useQuery({
+    queryKey: ['lead-statuses', workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      // Use type assertion since lead_statuses table types haven't been generated yet
+      const { data, error } = await (supabase as any)
+        .from('lead_statuses')
+        .select('name, display_order')
+        .eq('workspace_id', workspaceId)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      return (data || []) as Array<{ name: string; display_order: number }>;
+    },
+    enabled: !!workspaceId,
+  });
+
+  const { data: leadsData, isLoading: leadsLoading } = useQuery({
     queryKey: ['leads-with-history', workspaceId],
     queryFn: () => fetchLeadsWithStatusHistory(workspaceId),
     enabled: !!workspaceId,
   });
+
+  const isLoading = statusesLoading || leadsLoading;
 
   const updateLeadMutation = useMutation({
     mutationFn: updateLeadStatus,
@@ -250,8 +277,22 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
     },
   });
 
+  // Initialize data structure when statuses are loaded
+  // Only use statuses from database - no fallback defaults
   useEffect(() => {
-    if (leadsData) {
+    if (leadStatuses.length > 0) {
+      const initialData = buildInitialData(leadStatuses);
+      setData(initialData);
+    } else if (workspaceId && !statusesLoading) {
+      // No statuses found - show empty state (statuses should be created via Settings)
+      setData({ leads: {}, columns: {}, columnOrder: [] });
+    }
+  }, [leadStatuses, workspaceId, statusesLoading]);
+
+  useEffect(() => {
+    if (leadsData && leadStatuses.length > 0) {
+      // Only use statuses from database - each workspace has its own statuses
+      const statusesToUse = leadStatuses;
       let filteredLeadsData = leadsData.filter(leadData => {
         const lead = leadData as Lead & { lead_status_history: any[] };
         const term = searchTerm.toLowerCase();
@@ -318,9 +359,16 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
         return acc;
       }, {} as { [key: string]: Lead });
 
-      const columns: { [key: string]: Column } = JSON.parse(JSON.stringify(initialData.columns));
-      Object.values(columns).forEach(c => (c.leadIds = []));
+      // Build columns from statuses to use
+      const columns: { [key: string]: Column } = {};
+      const columnOrder: string[] = [];
       
+      statusesToUse.forEach(status => {
+        columns[status.name] = { id: status.name as LeadStatus, title: status.name as LeadStatus, leadIds: [] };
+        columnOrder.push(status.name);
+      });
+      
+      // Assign leads to columns
       filteredLeadsData.forEach(leadData => {
         const lead = leadData as Lead;
         if (columns[lead.status]) {
@@ -331,10 +379,10 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
       setData({
         leads,
         columns,
-        columnOrder: initialData.columnOrder,
+        columnOrder,
       });
     }
-  }, [leadsData, searchTerm, dateFilter, startDateFilter, endDateFilter]);
+  }, [leadsData, leadStatuses, searchTerm, dateFilter, startDateFilter, endDateFilter, workspaceId]);
 
   useEffect(() => {
     const channel = supabase.channel('realtime-leads')
@@ -406,13 +454,35 @@ export const KanbanBoard = ({ searchTerm = '', dateFilter, startDateFilter, endD
   if (isLoading) {
     return (
       <div className="flex gap-4 overflow-x-auto min-h-[600px]">
-        {initialData.columnOrder.map(columnId => (
-          <div key={columnId} className="flex flex-col w-80 bg-secondary rounded-lg p-2 flex-shrink-0">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex flex-col w-80 bg-secondary rounded-lg p-2 flex-shrink-0">
             <Skeleton className="h-8 w-3/4 mb-4" />
             <Skeleton className="h-24 w-full mb-4" />
             <Skeleton className="h-24 w-full mb-4" />
           </div>
         ))}
+      </div>
+    );
+  }
+
+  // Show message if no statuses are configured
+  if (!isLoading && data.columnOrder.length === 0 && leadStatuses.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[600px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <div className="text-center p-8">
+          <p className="text-lg font-medium text-gray-900 mb-2">No Lead Statuses Configured</p>
+          <p className="text-sm text-gray-600 mb-4">
+            Please configure your lead status columns in Settings to get started.
+          </p>
+          {workspaceId && (
+            <Button
+              onClick={() => navigate(`/settings/${workspaceId}`)}
+              className="mt-4"
+            >
+              Go to Settings
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
